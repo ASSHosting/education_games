@@ -1,0 +1,714 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Data Science Grundlagen | AS Digital Marketing</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+
+        :root {
+            /* --- Corporate Identity --- */
+            --brand-main: #631832;      /* Bordeaux */
+            --brand-accent: #173262;    /* Navy Blue */
+            --text-main: #231A24;
+            --text-light: #606F8C;
+            --bg-body: #f0f2f5;
+            --sidebar-bg: #ffffff;
+            --viz-bg: rgba(255, 255, 255, 0.95);
+            --highlight-flash: #f1c40f; 
+            --success-green: #27ae60;
+        }
+
+        body { 
+            margin: 0; padding: 0; overflow: hidden; 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--bg-body); 
+            color: var(--text-main);
+            height: 100vh; width: 100vw;
+        }
+
+        #app-layout {
+            display: grid;
+            grid-template-columns: 420px 1fr;
+            height: 100%; width: 100%;
+        }
+
+        /* --- SIDEBAR --- */
+        #sidebar {
+            background: var(--sidebar-bg);
+            border-right: 1px solid #ddd;
+            display: flex; flex-direction: column;
+            padding: 30px;
+            box-shadow: 2px 0 15px rgba(0,0,0,0.05);
+            z-index: 20;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .brand-header {
+            font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px;
+            color: var(--text-light); margin-bottom: 20px; font-weight: 700;
+        }
+
+        h2 { color: var(--brand-main); font-size: 1.3rem; margin: 0 0 12px 0; font-weight: 700; line-height: 1.3; }
+        p { line-height: 1.6; color: #444; font-size: 0.95rem; margin-bottom: 15px; }
+
+        .highlight-box {
+            background: #f8f9fa; border-left: 4px solid var(--brand-accent);
+            padding: 15px; border-radius: 6px; margin-bottom: 20px;
+            font-size: 0.9rem; color: var(--brand-accent);
+        }
+
+        /* Context Sentence for AI Step */
+        .ai-sentence {
+            font-size: 1.1rem; font-weight: bold; color: var(--text-main);
+            background: #eef2f6; padding: 10px; border-radius: 6px;
+            margin-bottom: 10px; border: 1px solid #ddd; text-align: center;
+        }
+        .missing-word { color: var(--brand-main); border-bottom: 2px dashed var(--brand-main); }
+
+        /* KI Context Block */
+        .ai-context-box {
+            background: rgba(99, 24, 50, 0.05); 
+            border: 1px solid var(--brand-main);
+            color: var(--brand-main);
+            padding: 12px; border-radius: 6px; margin-bottom: 15px;
+            font-size: 0.9rem; font-weight: 500;
+        }
+        .tooltip-trigger {
+            text-decoration: underline; cursor: pointer; color: var(--brand-accent); font-weight: 700;
+            display: inline-block; margin-top: 5px; font-size: 0.8rem;
+        }
+        .tooltip-content {
+            display: none; margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(0,0,0,0.1);
+            font-size: 0.85rem; color: var(--text-main); font-weight: 400;
+        }
+
+        /* Liste für Fazit */
+        .conclusion-list { list-style: none; padding: 0; margin-bottom: 20px; }
+        .conclusion-list li {
+            background: #f0fff4; border-left: 4px solid var(--success-green);
+            padding: 10px; margin-bottom: 8px; font-size: 0.9rem; border-radius: 0 4px 4px 0;
+        }
+
+        .step-content { display: none; animation: fadeIn 0.4s ease-out; }
+        .step-content.active { display: block; }
+
+        .controls-wrapper { margin-top: auto; padding-top: 20px; border-top: 1px solid #eee; position: relative; }
+
+        button {
+            background: var(--brand-accent); color: white; border: none; padding: 14px;
+            border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 0.95rem;
+            width: 100%; margin-bottom: 8px; transition: transform 0.1s;
+            box-shadow: 0 4px 6px rgba(23, 50, 98, 0.15);
+        }
+        button:hover { background: #1f4282; transform: translateY(-1px); }
+        
+        button.secondary { background: white; color: var(--text-light); border: 1px solid #ddd; box-shadow: none; font-size: 0.85rem; padding: 10px; }
+        button.secondary:hover { background: #f1f1f1; color: var(--brand-accent); }
+        
+        button.nav-btn { background: transparent; border: 1px solid var(--brand-main); color: var(--brand-main); margin-top: 10px; box-shadow: none; }
+        button.nav-btn:hover { background: var(--brand-main); color: white; }
+
+        button.cta-btn { background: var(--success-green); box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3); }
+        button.cta-btn:hover { background: #219150; }
+        
+        button.restart-btn { background: #555; margin-top: 5px; }
+
+        /* Pulsierender Pfeil für Auto-Modus */
+        .click-hint {
+            position: absolute; left: 50%; transform: translateX(-50%); bottom: 100%;
+            background: var(--brand-main); color: white; padding: 5px 10px; border-radius: 4px;
+            font-size: 0.8rem; margin-bottom: 5px; animation: bounce 1s infinite;
+            display: none; white-space: nowrap; pointer-events: none;
+        }
+        .click-hint::after {
+            content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+            border-width: 5px; border-style: solid; border-color: var(--brand-main) transparent transparent transparent;
+        }
+        @keyframes bounce { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, -5px); } }
+
+
+        /* --- STAGE --- */
+        #stage {
+            position: relative; background: #eef2f6; overflow: hidden;
+            display: flex; flex-direction: column;
+        }
+        #c { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; outline: none; }
+
+        #top-display {
+            position: relative; z-index: 10; margin: 20px auto;
+            background: rgba(255,255,255,0.9); backdrop-filter: blur(10px);
+            padding: 12px 30px; border-radius: 50px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05); display: flex; gap: 30px;
+            width: fit-content; border: 1px solid white;
+        }
+        .dice-res { font-size: 1.4rem; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+        .t-white { color: #333; }
+        .t-red { color: var(--brand-main); }
+        .t-sum { color: var(--brand-accent); padding-left: 20px; border-left: 2px solid #ddd; }
+
+        /* Viz Panel */
+        #viz-panel {
+            position: absolute; bottom: 20px; right: 20px; z-index: 10;
+            background: var(--viz-bg); backdrop-filter: blur(15px);
+            padding: 20px; border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.6);
+            display: flex; gap: 30px; max-width: 90%;
+        }
+
+        #info-btn {
+            position: absolute; top: -10px; right: -10px;
+            width: 24px; height: 24px; border-radius: 50%;
+            background: var(--brand-accent); color: white;
+            font-weight: bold; font-size: 14px; display: flex; align-items: center; justify-content: center;
+            cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.2); z-index: 20;
+        }
+        #info-overlay {
+            position: absolute; bottom: 110%; right: 0;
+            width: 260px; background: white; padding: 15px; border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); border: 1px solid #eee;
+            font-size: 0.85rem; color: #555; display: none;
+            opacity: 0; transform: translateY(10px); transition: all 0.3s;
+        }
+        #info-overlay.show { display: block; opacity: 1; transform: translateY(0); }
+        
+        /* Final Modal Overlay */
+        #final-modal {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5); z-index: 100;
+            display: none; justify-content: center; align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background: white; padding: 40px; border-radius: 12px; max-width: 500px; text-align: center;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+        }
+        .modal-icon { font-size: 3rem; margin-bottom: 20px; }
+        .example-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 20px 0; }
+        .ex-item { background: #f8f9fa; padding: 10px; border-radius: 8px; font-size: 0.8rem; color: #555; }
+        .close-modal { background: #ddd; color: #333; margin-top: 20px; }
+
+        .viz-group { text-align: center; }
+        .viz-head { font-size: 0.75rem; font-weight: 700; color: var(--brand-accent); text-transform: uppercase; margin-bottom: 10px; }
+
+        #grid-wrapper { display: grid; grid-template-columns: 20px 1fr; gap: 5px; }
+        .axis-v { grid-row: 2; writing-mode: vertical-rl; transform: rotate(180deg); font-size: 0.7rem; color: #888; font-weight: bold; text-align: center; }
+        .axis-h { grid-column: 2; font-size: 0.7rem; color: #888; font-weight: bold; }
+        
+        #grid {
+            grid-column: 2; grid-row: 2; display: grid;
+            grid-template-columns: repeat(6, 1fr); gap: 2px;
+            width: 160px; height: 160px; background: #eee; border: 1px solid #ddd;
+        }
+        .cell { background: #fff; display: flex; justify-content: center; align-items: center; font-size: 0.6rem; color: #ccc; transition: all 0.2s; }
+        .cell.active { background: var(--brand-main); color: white; transform: scale(1.1); z-index: 5; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .cell.hl-line { background: #fff3cd; } 
+
+        #bars {
+            display: flex; align-items: flex-end; width: 240px; height: 160px;
+            gap: 4px; border-bottom: 1px solid #ccc; padding-bottom: 5px;
+        }
+        .b-col { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; height: 100%; position: relative; }
+        .bar { width: 100%; background: #e2e8f0; border-radius: 2px 2px 0 0; height: 2px; transition: height 0.3s, background 0.2s; }
+        .bar.win { background: var(--brand-accent); }
+        .bar.active-flash { background: var(--highlight-flash) !important; filter: brightness(1.1); }
+        .b-lbl { font-size: 0.65rem; color: #666; margin-top: 4px; }
+
+        /* AI Word Animation (Step 4) */
+        #word-viz {
+            display: none; width: 240px; margin-top: 10px; border-top: 1px solid #eee; padding-top: 5px;
+            justify-content: space-between; gap: 4px;
+        }
+        .w-item { flex: 1; text-align: center; font-size: 0.65rem; color: var(--text-light); opacity: 0.5; transition: opacity 0.3s; background: #fff; padding: 4px; border-radius: 4px; border: 1px solid #eee; }
+        .w-item.active { opacity: 1; font-weight: bold; color: white; background: var(--brand-main); border-color: var(--brand-main); transform: scale(1.05); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .w-val { display: block; font-size: 0.6rem; margin-top: 2px; }
+        .w-word { display: block; margin-bottom: 2px; }
+        
+        /* Debug Error Box */
+        #error-box {
+            position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
+            background: #e74c3c; color: white; padding: 15px; border-radius: 8px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3); z-index: 9999;
+            display: none; max-width: 80%; font-size: 0.9rem;
+        }
+
+        @media (max-width: 900px) {
+            #app-layout { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
+            #sidebar { height: auto; max-height: 40vh; border-right: none; border-bottom: 1px solid #ddd; padding: 20px; }
+            #viz-panel { 
+                position: relative; bottom: auto; right: auto; 
+                margin: 0; width: 100%; box-sizing: border-box; 
+                justify-content: center; flex-wrap: wrap;
+                background: rgba(255,255,255,0.8);
+            }
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <!-- Error Display -->
+    <div id="error-box">
+        <strong>Fehler aufgetreten:</strong><br>
+        <span id="error-msg"></span><br><br>
+        <em id="error-tip">Tipp: WebGL ist deaktiviert oder nicht verfügbar. Aktiviere Hardwarebeschleunigung im Browser oder nutze Firefox.</em>
+    </div>
+
+    <div id="app-layout">
+        
+        <div id="sidebar">
+            <div class="brand-header">AS Digital Marketing | Data Science Lab</div>
+            
+            <div id="content-area">
+                <!-- STEP 0 -->
+                <div id="step-0" class="step-content active">
+                    <h2>1. Der Mythos KI</h2>
+                    <p>Viele denken, eine KI "versteht" uns wie ein Mensch. Das ist falsch.</p>
+                    <p>Im Kern ist KI reine <strong>Mathematik und Statistik</strong>. Sie würfelt die Antwort – aber sie würfelt sehr schlau.</p>
+                    <div class="highlight-box">
+                        <strong>Dein Ziel:</strong> Wir bauen jetzt das Gehirn einer KI nach. Unsere Hardware: Zwei einfache Würfel.
+                    </div>
+                    <p style="font-size:0.9rem; color:#666;">Klicke auf "Würfeln", um den ersten Datensatz zu erzeugen.</p>
+                </div>
+
+                <!-- STEP 1 -->
+                <div id="step-1" class="step-content">
+                    <h2>2. Vom Chaos zur Struktur</h2>
+                    <p>Ein einzelnes Paar, z.B. (3,4), ist für eine KI nur Daten-Lärm. Um etwas zu lernen, muss sie das Wesentliche erkennen.</p>
+                    <p>Wir machen das, indem wir die <strong>Summe</strong> bilden (3+4=7). Das ist unser "Feature".</p>
+                    <div class="highlight-box">
+                        Schau ins Gitter: Wir verwandeln zwei zufällige Zahlen in EINE nützliche Information (die Summe).
+                    </div>
+                </div>
+
+                <!-- STEP 2 -->
+                <div id="step-2" class="step-content">
+                    <h2>3. Der Aha-Moment (Training)</h2>
+                    <p>Jetzt beginnt das eigentliche <strong>Lernen</strong>. Eine KI wird erst schlau, wenn sie Tausende von Datenpunkten sieht.</p>
+                    <p>Beobachte genau, was passiert, wenn wir die Datenmenge drastisch erhöhen.</p>
+                    
+                    <div class="highlight-box">
+                        <strong>Wichtig:</strong> Klicke jetzt auf <strong>"Auto-Modus"</strong>! Das ist der Moment, in dem aus Zufall ein verlässliches Muster (Wissen) wird.
+                    </div>
+
+                    <!-- KI Brücke -->
+                    <div class="ai-context-box">
+                        <div style="font-weight:700; margin-bottom:5px;">💡 Das nennt man "Überwachtes Lernen"</div>
+                        Wir zeigen der KI viele Beispiele, und sie lernt: "Die 7 ist normal, die 2 ist die Ausnahme."
+                        <div class="tooltip-trigger" onclick="document.getElementById('ai-tooltip').style.display = 'block';">Mehr erfahren ▾</div>
+                        <div id="ai-tooltip" class="tooltip-content">
+                            Genauso lernt ein Spam-Filter: Tausende E-Mails mit "Gewinn" = Hohe Wahrscheinlichkeit für Spam.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- STEP 3 (AI Analogy) -->
+                <div id="step-3" class="step-content">
+                    <h2>4. Die Anwendung (Inference)</h2>
+                    <p>Training abgeschlossen! Unsere Mini-KI weiß jetzt, was wahrscheinlich ist. Wir geben ihr eine Aufgabe:</p>
+                    
+                    <div class="ai-sentence">
+                        "Das Wetter ist <span class="missing-word">_______</span>"
+                    </div>
+
+                    <p>Statt einer Zahl gibt die KI jetzt ein Wort aus, das der Summe entspricht:</p>
+                    <ul style="font-size:0.9rem; margin-bottom:15px; color:#555;">
+                        <li><strong>Summe 7 (Sehr oft):</strong> Wort "schön"</li>
+                        <li><strong>Summe 2 (Fast nie):</strong> Wort "lila"</li>
+                    </ul>
+
+                    <div class="highlight-box">
+                        Siehst du unten bei den Wörtern? Die KI wählt "schön", weil ihre interne Statistik (die Balken) sagt: "Das gewinnt fast immer."
+                    </div>
+
+                    <p style="font-size:0.85rem; color:#888;">Und wenn sie doch mal die 2 würfelt? Dann sagt sie "Das Wetter ist lila". Das nennt man Halluzination.</p>
+                </div>
+
+                <!-- STEP 4 (Conclusion) -->
+                <div id="step-4" class="step-content">
+                    <h2>5. Fazit & Neustart</h2>
+                    <p>Du hast das Prinzip verstanden: KI ist kein Zauberwerk, sondern <strong>würfeln mit gezinkten Würfeln</strong> (basierend auf Trainingsdaten).</p>
+                    
+                    <ul class="conclusion-list">
+                        <li><strong>Training:</strong> Daten sammeln, um Muster zu finden.</li>
+                        <li><strong>Anwendung:</strong> Das Muster nutzen, um das nächste Wort vorherzusagen.</li>
+                    </ul>
+
+                    <p>Um eine echte KI zu bauen, bräuchten wir statt 2 Würfeln Milliarden von Parametern. Das Prinzip bleibt gleich.</p>
+                </div>
+            </div>
+
+            <div class="controls-wrapper">
+                <div id="auto-hint" class="click-hint">Hier Klicken! 👇</div>
+                <button id="roll-btn">🎲 Einmal Würfeln</button>
+                <button id="auto-btn" class="secondary">⚡ Auto-Modus (Schnell)</button>
+                <button id="next-btn" class="nav-btn">Weiter zur Erklärung &rarr;</button>
+                <button id="restart-btn" class="secondary restart-btn" style="display:none;">↺ Labor zurücksetzen & Neustart</button>
+            </div>
+        </div>
+
+        <div id="stage">
+            <canvas id="c"></canvas>
+
+            <div id="top-display">
+                <div class="dice-res t-white">⬜ <span id="val-w">-</span></div>
+                <div class="dice-res t-red">🟥 <span id="val-r">-</span></div>
+                <div class="dice-res t-sum">Summe: <span id="val-sum">-</span></div>
+            </div>
+
+            <div id="viz-panel">
+                <div id="info-btn">?</div>
+                <div id="info-overlay"><span id="info-text">Hilfe</span></div>
+
+                <div class="viz-group">
+                    <div class="viz-head">36 Kombinationen</div>
+                    <div style="font-size:0.65rem; color:#888; margin-bottom:4px;">Inhalt = Summe</div>
+                    <div id="grid-wrapper">
+                        <div class="axis-v">Rot (1-6)</div>
+                        <div class="axis-h">Weiß (1-6)</div>
+                        <div id="grid"></div>
+                    </div>
+                </div>
+                <div class="viz-group">
+                    <div class="viz-head">Häufigkeit der Summen</div>
+                    <div style="font-size:0.65rem; color:#888; margin-bottom:4px;">Glockenkurve (Wissen)</div>
+                    <div id="bars"></div>
+                    
+                    <!-- AI Word Animation -->
+                    <div id="word-viz">
+                        <div class="w-item" id="word-2">
+                            <span class="w-word">"lila"</span>
+                            <span class="w-val">0%</span>
+                        </div>
+                        <div class="w-item" id="word-6">
+                            <span class="w-word">"wechselhaft"</span>
+                            <span class="w-val">0%</span>
+                        </div>
+                        <div class="w-item" id="word-7">
+                            <span class="w-word">"schön"</span>
+                            <span class="w-val">0%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- FINAL OVERLAY -->
+        <div id="final-modal">
+            <div class="modal-content">
+                <div class="modal-icon">🚀</div>
+                <h2 style="color:#231A24; font-size:1.5rem;">Praxis-Beispiele</h2>
+                <p>KI funktioniert überall nach diesem Würfel-Prinzip:</p>
+                
+                <div class="example-grid">
+                    <div class="ex-item">
+                        <strong>📧 Spam-Filter</strong><br>
+                        Wort-Kombinationen werden gewichtet (Summen).
+                    </div>
+                    <div class="ex-item">
+                        <strong>🚗 Autonomes Fahren</strong><br>
+                        Sensordaten werden als "Hindernis" oder "Straße" klassifiziert.
+                    </div>
+                    <div class="ex-item">
+                        <strong>🏭 Produktion</strong><br>
+                        Abweichungen (Summe 2) werden als Fehler erkannt.
+                    </div>
+                </div>
+
+                <button class="cta-btn close-modal" onclick="document.getElementById('final-modal').style.display='none'">Zurück zum Spiel</button>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- UMD fallback: include local three.min.js (place ./libs/three.min.js on the server) -->
+    <script src="./libs/three.min.js"></script>
+    <script>
+        (function () {
+            const errorBox = document.getElementById('error-box');
+            const errorMsg = document.getElementById('error-msg');
+            const errorTip = document.getElementById('error-tip');
+            const showError = (msg) => {
+                if (!errorBox || !errorMsg) return;
+                errorMsg.textContent = msg;
+                if (errorTip) {
+                    let tip = 'Tipp: WebGL ist deaktiviert oder nicht verfügbar. Aktiviere Hardwarebeschleunigung im Browser oder nutze Firefox.';
+                    if (msg.includes('Three.js')) {
+                        tip = 'Tipp: Prüfe, ob ./libs/three.min.js vorhanden ist und korrekt geladen wird.';
+                    } else if (msg.includes('WebGL')) {
+                        tip = 'Tipp: WebGL ist deaktiviert oder nicht verfügbar. Aktiviere Hardwarebeschleunigung im Browser oder nutze Firefox.';
+                    } else if (msg.includes('Canvas') || msg.includes('Stage')) {
+                        tip = 'Tipp: Prüfe, ob die Elemente #c und #stage im HTML existieren.';
+                    }
+                    errorTip.textContent = tip;
+                }
+                errorBox.style.display = 'block';
+            };
+
+            window.onerror = function(message, source, lineno, colno, error) {
+                showError(String(message));
+            };
+
+            if (!window.THREE) {
+                showError('Three.js konnte nicht geladen werden. Bitte pruefe den Pfad zu ./libs/three.min.js.');
+                return;
+            }
+
+            // --- THREE JS ---
+            const canvas = document.querySelector('#c');
+            const stage = document.querySelector('#stage');
+            if (!canvas || !stage) {
+                showError('Canvas oder Stage-Element fehlt. Bitte pruefe die HTML-Struktur.');
+                return;
+            }
+
+            let renderer;
+            try {
+                renderer = new THREE.WebGLRenderer({canvas, antialias: true, alpha: true});
+            } catch (err) {
+                showError('WebGL konnte nicht initialisiert werden. Bitte pruefe Browser-Unterstuetzung.');
+                return;
+            }
+            renderer.shadowMap.enabled = true;
+            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.setClearColor(0xeef2f6, 1); 
+
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.Fog(0xeef2f6, 10, 40);
+
+        const camera = new THREE.PerspectiveCamera(35, stage.clientWidth / stage.clientHeight, 0.1, 100);
+        camera.position.set(0, 16, 10); camera.lookAt(0, 0, 0);
+
+        function resize() {
+            const width = stage.clientWidth; const height = stage.clientHeight;
+            if (canvas.width !== width || canvas.height !== height) {
+                renderer.setSize(width, height, false);
+                camera.aspect = width / height; camera.updateProjectionMatrix();
+            }
+        }
+        window.addEventListener('resize', resize);
+        resize();
+
+        const ambLight = new THREE.AmbientLight(0xffffff, 0.7); scene.add(ambLight);
+        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        dirLight.position.set(5, 15, 8); dirLight.castShadow = true;
+        dirLight.shadow.mapSize.width = 1024; dirLight.shadow.mapSize.height = 1024;
+        scene.add(dirLight);
+        const fillLight = new THREE.DirectionalLight(0xccddff, 0.4); 
+        fillLight.position.set(-5, 5, -5); scene.add(fillLight);
+
+        const plane = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 }));
+        plane.rotation.x = -Math.PI/2; plane.receiveShadow = true; scene.add(plane);
+
+        function createDie(colorHex, dotHex) {
+            const geo = new THREE.BoxGeometry(2, 2, 2);
+            const mats = [1, 6, 2, 5, 3, 4].map(f => {
+                const cvs = document.createElement('canvas'); cvs.width = 128; cvs.height = 128;
+                const ctx = cvs.getContext('2d'); ctx.fillStyle = colorHex; ctx.fillRect(0,0,128,128);
+                ctx.fillStyle = dotHex; const r=12; const c=64; const o=35;
+                const dots = {1:[[c,c]],2:[[c-o,c-o],[c+o,c+o]],3:[[c-o,c-o],[c,c],[c+o,c+o]],4:[[c-o,c-o],[c+o,c-o],[c-o,c+o],[c+o,c+o]],5:[[c-o,c-o],[c+o,c-o],[c,c],[c-o,c+o],[c+o,c+o]],6:[[c-o,c-o],[c+o,c-o],[c-o,c],[c+o,c],[c-o,c+o],[c+o,c+o]]};
+                dots[f].forEach(([x,y])=>{ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();});
+                ctx.strokeStyle="rgba(0,0,0,0.1)";ctx.lineWidth=5;ctx.strokeRect(0,0,128,128);
+                return new THREE.MeshStandardMaterial({map:new THREE.CanvasTexture(cvs), roughness:0.1});
+            });
+            const m = new THREE.Mesh(geo, mats); m.castShadow = true; m.receiveShadow = true;
+            return m;
+        }
+
+        const whiteDie = createDie('#ffffff', '#231A24'); whiteDie.position.set(-1.5, 1, 0); scene.add(whiteDie);
+        const redDie = createDie('#631832', '#ffffff'); redDie.position.set(1.5, 1, 0); scene.add(redDie);
+
+        // --- LOGIK ---
+        const gridEl = document.getElementById('grid');
+        for(let i=0; i<36; i++) {
+            const d = document.createElement('div'); d.className = 'cell';
+            const r = Math.floor(i/6); const w = i%6;
+            d.dataset.r = r+1; d.dataset.w = w+1; d.id = `c-${w+1}-${r+1}`;
+            d.innerText = (w+1)+(r+1); gridEl.appendChild(d);
+        }
+
+        const barsEl = document.getElementById('bars');
+        for(let i=2; i<=12; i++) {
+            barsEl.innerHTML += `<div class="b-col"><div class="bar ${i===7?'win':''}" id="b-${i}"></div><div class="b-lbl">${i}</div></div>`;
+        }
+
+        let stats = new Array(13).fill(0);
+        let maxC = 0; let isRolling = false; let step = 0;
+        let totalRolls = 0;
+        let infoClicked = false; 
+
+        // Info Button Logic
+        const infoBtn = document.getElementById('info-btn');
+        const infoOverlay = document.getElementById('info-overlay');
+        const infoText = document.getElementById('info-text');
+
+        infoBtn.onclick = () => {
+            infoOverlay.classList.toggle('show');
+            infoClicked = true;
+        };
+
+        function updateInfoText() {
+            if(step === 0) infoText.innerText = "Setup: Wir bauen einen Datensatz auf. Jeder Wurf ist ein neuer Datenpunkt.";
+            else if(step === 1) infoText.innerText = "Feature Engineering: Wir rechnen 'Weiß + Rot', um die Summe als Merkmal zu erhalten.";
+            else if(step === 2) infoText.innerText = "Supervised Learning: Wir nutzen die bekannte Verteilung, um die KI zu trainieren.";
+            else infoText.innerText = "Inference: Die KI nutzt das gelernte Muster für Vorhersagen.";
+            
+            if(step > 2) infoOverlay.classList.remove('show');
+        }
+
+        function updateUI(w, r) {
+            const s = w+r; totalRolls++;
+            document.getElementById('val-w').innerText = w;
+            document.getElementById('val-r').innerText = r;
+            document.getElementById('val-sum').innerText = s;
+
+            document.querySelectorAll('.cell').forEach(c => { c.classList.remove('active'); c.classList.remove('hl-line'); });
+            document.querySelectorAll(`.cell[data-w="${w}"]`).forEach(c => c.classList.add('hl-line'));
+            document.querySelectorAll(`.cell[data-r="${r}"]`).forEach(c => c.classList.add('hl-line'));
+            const cell = document.getElementById(`c-${w}-${r}`);
+            if(cell) { cell.classList.remove('hl-line'); cell.classList.add('active'); }
+            setTimeout(() => document.querySelectorAll('.hl-line').forEach(c => c.classList.remove('hl-line')), 600);
+
+            stats[s]++; if(stats[s] > maxC) maxC = stats[s];
+            for(let i=2; i<=12; i++) {
+                const h = (stats[i]/maxC)*100;
+                document.getElementById(`b-${i}`).style.height = Math.max(2, h) + '%';
+            }
+            const activeBar = document.getElementById(`b-${s}`);
+            if(activeBar) { activeBar.classList.add('active-flash'); setTimeout(()=>activeBar.classList.remove('active-flash'), 600); }
+
+            // LIVE UPDATE WORD VIZ
+            updateWordViz();
+        }
+
+        function updateWordViz() {
+            const sumTotal = Math.max(1, totalRolls);
+            
+            const pLila = Math.round((stats[2]/sumTotal)*100);
+            const pWechsel = Math.round((stats[6]/sumTotal)*100);
+            const pSchoen = Math.round((stats[7]/sumTotal)*100);
+
+            document.getElementById('word-2').querySelector('.w-val').innerText = pLila + '%';
+            document.getElementById('word-6').querySelector('.w-val').innerText = pWechsel + '%';
+            document.getElementById('word-7').querySelector('.w-val').innerText = pSchoen + '%';
+
+            // Highlight winner logic
+            document.querySelectorAll('.w-item').forEach(e => e.classList.remove('active'));
+            if(pSchoen >= pWechsel && pSchoen >= pLila && pSchoen > 0) document.getElementById('word-7').classList.add('active');
+            else if(pWechsel >= pLila && pWechsel > 0) document.getElementById('word-6').classList.add('active');
+            else if (pLila > 0) document.getElementById('word-2').classList.add('active');
+        }
+
+        function setRot(mesh, val) {
+            mesh.rotation.set(0,0,0);
+            const m = {1:{z:Math.PI/2},6:{z:-Math.PI/2},2:{},5:{x:Math.PI},3:{x:-Math.PI/2},4:{x:Math.PI/2}};
+            if(m[val].x) mesh.rotation.x = m[val].x; if(m[val].z) mesh.rotation.z = m[val].z;
+            mesh.rotation.y += (Math.random()-0.5)*0.3;
+        }
+
+        function roll(fast=false) {
+            if(isRolling && !fast) return; isRolling = true;
+            const w = Math.floor(Math.random()*6)+1; const r = Math.floor(Math.random()*6)+1;
+            if(fast) { setRot(whiteDie, w); setRot(redDie, r); updateUI(w,r); isRolling = false; return; }
+            let f = 0; const iv = setInterval(() => {
+                f++; whiteDie.rotation.x+=0.4; whiteDie.rotation.z+=0.2; redDie.rotation.x+=0.3; redDie.rotation.z-=0.3;
+                whiteDie.position.y = 1 + Math.abs(Math.sin(f*0.3)*2); redDie.position.y = 1 + Math.abs(Math.sin(f*0.3+1)*2);
+                if(f>20) { clearInterval(iv); whiteDie.position.y=1; redDie.position.y=1; setRot(whiteDie, w); setRot(redDie, r); updateUI(w,r); isRolling = false; }
+            }, 20);
+        }
+
+        // Restart Function
+        document.getElementById('restart-btn').onclick = () => {
+            // Reset Data
+            stats = new Array(13).fill(0);
+            maxC = 0;
+            totalRolls = 0;
+            step = 0;
+
+            // Reset UI Viz
+            document.getElementById('val-w').innerText = "-";
+            document.getElementById('val-r').innerText = "-";
+            document.getElementById('val-sum').innerText = "-";
+            document.querySelectorAll('.bar').forEach(b => b.style.height = '2px');
+            document.querySelectorAll('.cell').forEach(c => c.classList.remove('active'));
+            updateWordViz();
+
+            // Reset Steps
+            document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+            document.getElementById('step-0').classList.add('active');
+
+            // Reset Buttons
+            document.getElementById('roll-btn').style.display = 'block';
+            document.getElementById('auto-btn').style.display = 'block';
+            document.getElementById('restart-btn').style.display = 'none';
+            document.getElementById('auto-hint').style.display = 'none';
+            
+            const nextBtn = document.getElementById('next-btn');
+            nextBtn.innerText = "Weiter zur Erklärung →";
+            nextBtn.classList.remove('cta-btn');
+            nextBtn.onclick = handleNextStep; // Restore original handler
+
+            updateInfoText();
+        };
+
+        // Extracted Next Step Logic
+        const handleNextStep = () => {
+            document.getElementById(`step-${step}`).classList.remove('active');
+            step = (step+1)%5; 
+            document.getElementById(`step-${step}`).classList.add('active');
+            
+            updateInfoText();
+            const btn = document.getElementById('next-btn');
+            const rollBtn = document.getElementById('roll-btn');
+            const autoBtn = document.getElementById('auto-btn');
+            const hint = document.getElementById('auto-hint');
+            const restartBtn = document.getElementById('restart-btn');
+
+            // Hint Logic Step 2
+            if(step === 2) hint.style.display = 'block';
+            else hint.style.display = 'none';
+            
+            // Viz Logic Step 3
+            if(step === 3) {
+                document.getElementById('word-viz').style.display = 'flex';
+                updateWordViz();
+            } else {
+                document.getElementById('word-viz').style.display = 'none';
+            }
+
+            // End Step 4
+            if(step === 4) {
+                btn.innerText = "Beispiele aus der Praxis anzeigen";
+                btn.classList.add('cta-btn');
+                btn.onclick = () => document.getElementById('final-modal').style.display = 'flex';
+                
+                rollBtn.style.display = 'none'; 
+                autoBtn.style.display = 'none';
+                restartBtn.style.display = 'block'; // Show Restart
+            } else {
+                btn.innerText = "Weiter zur Erklärung →";
+                btn.classList.remove('cta-btn');
+                rollBtn.style.display = 'block'; 
+                autoBtn.style.display = 'block';
+                restartBtn.style.display = 'none';
+            }
+        };
+
+        document.getElementById('roll-btn').onclick = () => roll();
+        document.getElementById('auto-btn').onclick = () => { 
+            document.getElementById('auto-hint').style.display = 'none';
+            let c=0; const t=setInterval(() => { roll(true); c++; if(c>30) clearInterval(t); }, 50); 
+        };
+        document.getElementById('next-btn').onclick = handleNextStep;
+
+        // Init
+        updateInfoText();
+
+        function animate() { requestAnimationFrame(animate); renderer.render(scene, camera); }
+        animate();
+        })();
+    </script>
+</body>
+</html>

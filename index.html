@@ -1,0 +1,623 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Education Games – Übersicht</title>
+
+  <!-- Fonts (ähnlich wie im Screenshot: clean + condensed möglich) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Roboto+Condensed:wght@400;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --bg:#ffffff;
+      --card:#ffffff;
+      --text:#1b1b1f;
+      --muted:#6b6b73;
+      --brand:#6b1e3a;          /* weinrot ähnlich Screenshot */
+      --brand-2:#7a2846;
+      --border:#e9e9ee;
+      --shadow: 0 14px 30px rgba(0,0,0,.08);
+      --radius: 18px;
+      --max: 1040px;
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      background:var(--bg);
+      color:var(--text);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      line-height:1.45;
+    }
+
+    .page{
+      min-height:100%;
+      padding: 42px 18px 60px;
+    }
+
+    .top{
+      max-width: var(--max);
+      margin: 0 auto;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding: 8px 0 26px;
+    }
+
+    .logo-wrap{
+      text-align:center;
+    }
+    .logo{
+      width: 120px;
+      height:auto;
+      opacity:.92;
+      display:inline-block;
+    }
+    .brandline{
+      margin-top:10px;
+      font-size: 13px;
+      color: var(--muted);
+      letter-spacing:.02em;
+    }
+
+    .card{
+      max-width: var(--max);
+      margin: 0 auto;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .card-topbar{
+      height: 6px;
+      background: linear-gradient(90deg, var(--brand), #5c1932, var(--brand-2));
+    }
+
+    .card-body{
+      padding: 34px 26px 26px;
+      text-align:center;
+    }
+
+    h1{
+      margin:0 0 10px;
+      font-family: "Roboto Condensed", Inter, sans-serif;
+      font-size: 42px;
+      letter-spacing:.2px;
+      color: var(--brand);
+    }
+
+    .subtitle{
+      margin: 0 auto 22px;
+      max-width: 760px;
+      color: var(--text);
+      font-size: 16px;
+    }
+
+    .hint{
+      margin: 0 auto 26px;
+      max-width: 760px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .tabs{
+      display:flex;
+      flex-wrap:wrap;
+      gap:10px;
+      justify-content:center;
+      margin: 10px 0 22px;
+    }
+    .tab{
+      border:1px solid var(--border);
+      background:#fff;
+      padding: 10px 14px;
+      border-radius: 999px;
+      cursor:pointer;
+      font-weight:600;
+      color:#2a2a30;
+      transition: .15s ease;
+      user-select:none;
+    }
+    .tab:hover{transform: translateY(-1px); box-shadow: 0 8px 16px rgba(0,0,0,.06);}
+    .tab.active{
+      border-color: rgba(107,30,58,.35);
+      box-shadow: 0 10px 20px rgba(107,30,58,.12);
+      color: var(--brand);
+    }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 14px;
+      text-align:left;
+      padding: 0 18px 22px;
+    }
+
+    .folder{
+      grid-column: span 12;
+      border:1px solid var(--border);
+      border-radius: 16px;
+      overflow:hidden;
+      background:#fff;
+    }
+
+    .folder-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding: 14px 16px;
+      gap:12px;
+      border-bottom:1px solid var(--border);
+      background: rgba(107,30,58,.03);
+      cursor:pointer;
+    }
+
+    .folder-title{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width:0;
+    }
+
+    .badge{
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      background: var(--brand);
+      flex: 0 0 auto;
+      box-shadow: 0 0 0 3px rgba(107,30,58,.10);
+    }
+
+    .folder-name{
+      font-weight:700;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .folder-meta{
+      color: var(--muted);
+      font-size: 13px;
+      flex: 0 0 auto;
+    }
+
+    .folder-body{
+      display:none;
+      padding: 10px 12px 14px;
+    }
+    .folder.open .folder-body{display:block;}
+
+    .links{
+      list-style:none;
+      padding: 0;
+      margin: 0;
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 10px;
+    }
+
+    .links li{
+      grid-column: span 12;
+    }
+
+    .game-link{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding: 12px 14px;
+      border:1px solid var(--border);
+      border-radius: 14px;
+      text-decoration:none;
+      color: inherit;
+      background:#fff;
+      transition:.15s ease;
+    }
+    .game-link:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 10px 20px rgba(0,0,0,.06);
+      border-color: rgba(107,30,58,.25);
+    }
+
+    .game-left{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      min-width:0;
+    }
+    .game-title{
+      font-weight:700;
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+    .game-path{
+      font-size:12px;
+      color: var(--muted);
+      white-space:nowrap;
+      overflow:hidden;
+      text-overflow:ellipsis;
+    }
+
+    .cta{
+      flex:0 0 auto;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      background: var(--brand);
+      color:#fff;
+      border-radius: 12px;
+      padding: 12px 18px;
+      font-weight:800;
+      text-decoration:none;
+      box-shadow: 0 12px 22px rgba(107,30,58,.18);
+      transition:.15s ease;
+      margin: 12px auto 2px;
+    }
+    .cta:hover{transform: translateY(-1px); box-shadow: 0 16px 28px rgba(107,30,58,.22);}
+    .cta svg{width:18px;height:18px;fill:none;stroke:#fff;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+    .footer{
+      max-width: var(--max);
+      margin: 16px auto 0;
+      text-align:center;
+      color: var(--muted);
+      font-size: 12px;
+      padding: 12px 10px 0;
+    }
+
+    @media (min-width: 760px){
+      .card-body{padding: 40px 34px 28px;}
+      .links li{grid-column: span 6;}
+      .folder{grid-column: span 12;}
+    }
+    @media (min-width: 980px){
+      .links li{grid-column: span 4;}
+    }
+  </style>
+</head>
+
+<body>
+  <div class="page">
+    <header class="top">
+      <div class="logo-wrap">
+        <img class="logo" src="https://as-digitalmarketing.de/img/ASS-2024-03_Logo2000x2000_black.png" alt="A.S. – Arno Schimmelpfennig" />
+        <div class="brandline">Arno Schimmelpfennig · Marketinglösungen, die bewegen</div>
+      </div>
+    </header>
+
+    <main class="card" role="main">
+      <div class="card-topbar"></div>
+
+      <div class="card-body">
+        <h1>Education Games</h1>
+        <p class="subtitle">
+          Interaktive Lernspiele für KI-Sicherheit, Datenschutz, SQL und mehr. Wähle eine Kategorie und starte direkt.
+        </p>
+
+        <a class="cta" href="#kategorien" id="jump">
+          Übersicht öffnen
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h12"></path><path d="M13 6l6 6-6 6"></path></svg>
+        </a>
+
+        <p class="hint">
+          Tipp: Wenn du lokal hostest, nutze z.B. <code>python -m http.server 8000</code> und öffne dann <code>http://localhost:8000/</code>.
+        </p>
+
+        <div class="tabs" aria-label="Filter">
+          <button class="tab active" data-filter="all" type="button">Alle</button>
+          <button class="tab" data-filter="ai-security" type="button">KI-Sicherheit</button>
+          <button class="tab" data-filter="data-protection" type="button">Datenschutz</button>
+          <button class="tab" data-filter="sql" type="button">SQL</button>
+          <button class="tab" data-filter="python" type="button">Python</button>
+          <button class="tab" data-filter="logic-and-math" type="button">Logik/Mathe</button>
+          <button class="tab" data-filter="media-literacy" type="button">Medienkompetenz</button>
+        </div>
+      </div>
+
+      <section class="grid" id="kategorien" aria-label="Kategorien und Spiele">
+        <!-- AI SECURITY -->
+        <article class="folder open" data-cat="ai-security">
+          <div class="folder-header" role="button" tabindex="0" aria-expanded="true">
+            <div class="folder-title">
+              <span class="badge"></span>
+              <span class="folder-name">KI-Sicherheit</span>
+            </div>
+            <div class="folder-meta">Ordner: <code>ai-security/</code></div>
+          </div>
+          <div class="folder-body">
+            <ul class="links">
+              <li>
+                <a class="game-link" href="ai-security/as-marketing_lernmaterial_spiele_ki-sicherheit-01_data-defender.html">
+                  <span class="game-left">
+                    <span class="game-title">Data Defender Quiz</span>
+                    <span class="game-path">ai-security/…_data-defender.html</span>
+                  </span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              </li>
+              <li>
+                <a class="game-link" href="ai-security/as-marketing_lernmaterial_spiele_ki-sicherheit-02_prompt-puzzler.html">
+                  <span class="game-left">
+                    <span class="game-title">Prompt Puzzler</span>
+                    <span class="game-path">ai-security/…_prompt-puzzler.html</span>
+                  </span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              </li>
+              <li>
+                <a class="game-link" href="ai-security/as-marketing_lernmaterial_spiele_ki-sicherheit-03_fake-or-fact.html">
+                  <span class="game-left">
+                    <span class="game-title">Fake or Fact</span>
+                    <span class="game-path">ai-security/…_fake-or-fact.html</span>
+                  </span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- DATA PROTECTION -->
+        <article class="folder" data-cat="data-protection">
+          <div class="folder-header" role="button" tabindex="0" aria-expanded="false">
+            <div class="folder-title">
+              <span class="badge"></span>
+              <span class="folder-name">Datenschutz (VHS &amp; Training)</span>
+            </div>
+            <div class="folder-meta">Ordner: <code>data-protection/</code></div>
+          </div>
+          <div class="folder-body">
+            <ul class="links">
+              <li>
+                <a class="game-link" href="data-protection/as-marketing_lernmaterial_spiele_vhs-datenschutz_chat-raetsel.html">
+                  <span class="game-left">
+                    <span class="game-title">Chat-Rätsel</span>
+                    <span class="game-path">data-protection/…_chat-raetsel.html</span>
+                  </span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              </li>
+              <li>
+                <a class="game-link" href="data-protection/as-marketing_lernmaterial_spiele_vhs-datenschutz_hook.html">
+                  <span class="game-left">
+                    <span class="game-title">Hook</span>
+                    <span class="game-path">data-protection/…_hook.html</span>
+                  </span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              </li>
+              <li>
+                <a class="game-link" href="data-protection/as-marketing_lernmaterial_spiele_vhs-datenschutz_industry-tool.html">
+                  <span class="game-left">
+                    <span class="game-title">Industry Tool</span>
+                    <span class="game-path">data-protection/…_industry-tool.html</span>
+                  </span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              </li>
+              <li>
+                <a class="game-link" href="data-protection/as-marketing_lernmaterial_spiele_vhs-datenschutz_speed-quiz.html">
+                  <span class="game-left">
+                    <span class="game-title">Speed-Quiz</span>
+                    <span class="game-path">data-protection/…_speed-quiz.html</span>
+                  </span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              </li>
+              <li>
+                <a class="game-link" href="data-protection/as-marketing_lernmaterial_spiele_vhs-datenschutz_tarffic-light-quiz.html">
+                  <span class="game-left">
+                    <span class="game-title">Ampel-Quiz</span>
+                    <span class="game-path">data-protection/…_tarffic-light-quiz.html</span>
+                  </span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              </li>
+              <li>
+                <a class="game-link" href="data-protection/VHS_Game_DataDefender.html">
+                  <span class="game-left">
+                    <span class="game-title">VHS – Data Defender</span>
+                    <span class="game-path">data-protection/VHS_Game_DataDefender.html</span>
+                  </span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              </li>
+              <li>
+                <a class="game-link" href="data-protection/VHS_Game_FakeOrFact.html">
+                  <span class="game-left">
+                    <span class="game-title">VHS – Fake or Fact</span>
+                    <span class="game-path">data-protection/VHS_Game_FakeOrFact.html</span>
+                  </span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- SQL -->
+        <article class="folder" data-cat="sql">
+          <div class="folder-header" role="button" tabindex="0" aria-expanded="false">
+            <div class="folder-title">
+              <span class="badge"></span>
+              <span class="folder-name">SQL</span>
+            </div>
+            <div class="folder-meta">Ordner: <code>sql/</code></div>
+          </div>
+          <div class="folder-body">
+            <ul class="links">
+              <li>
+                <a class="game-link" href="sql/as-marketing_lernmaterial_spiele_sql_select-from.html">
+                  <span class="game-left">
+                    <span class="game-title">SELECT / FROM</span>
+                    <span class="game-path">sql/…_select-from.html</span>
+                  </span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              </li>
+              <li>
+                <a class="game-link" href="sql/as-marketing_lernmaterial_spiele_sql_where.html">
+                  <span class="game-left">
+                    <span class="game-title">WHERE</span>
+                    <span class="game-path">sql/…_where.html</span>
+                  </span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              </li>
+              <li>
+                <a class="game-link" href="sql/as-marketing_lernmaterial_spiele_sql_join.html">
+                  <span class="game-left">
+                    <span class="game-title">JOIN</span>
+                    <span class="game-path">sql/…_join.html</span>
+                  </span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- PYTHON -->
+        <article class="folder" data-cat="python">
+          <div class="folder-header" role="button" tabindex="0" aria-expanded="false">
+            <div class="folder-title">
+              <span class="badge"></span>
+              <span class="folder-name">Python</span>
+            </div>
+            <div class="folder-meta">Ordner: <code>python/</code></div>
+          </div>
+          <div class="folder-body">
+            <ul class="links">
+              <li>
+                <a class="game-link" href="python/as-marketing_lernmaterial_spiele_numpy-arrays.html">
+                  <span class="game-left">
+                    <span class="game-title">NumPy Arrays</span>
+                    <span class="game-path">python/…_numpy-arrays.html</span>
+                  </span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- LOGIC / MATH -->
+        <article class="folder" data-cat="logic-and-math">
+          <div class="folder-header" role="button" tabindex="0" aria-expanded="false">
+            <div class="folder-title">
+              <span class="badge"></span>
+              <span class="folder-name">Logik &amp; Mathe</span>
+            </div>
+            <div class="folder-meta">Ordner: <code>logic-and-math/</code></div>
+          </div>
+          <div class="folder-body">
+            <ul class="links">
+              <li>
+                <a class="game-link" href="logic-and-math/as-marketing_lernmaterial_spiele_kombinatorik.html">
+                  <span class="game-left">
+                    <span class="game-title">Kombinatorik</span>
+                    <span class="game-path">logic-and-math/…_kombinatorik.html</span>
+                  </span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </article>
+
+        <!-- MEDIA LITERACY -->
+        <article class="folder" data-cat="media-literacy">
+          <div class="folder-header" role="button" tabindex="0" aria-expanded="false">
+            <div class="folder-title">
+              <span class="badge"></span>
+              <span class="folder-name">Medienkompetenz</span>
+            </div>
+            <div class="folder-meta">Ordner: <code>media-literacy/</code></div>
+          </div>
+          <div class="folder-body">
+            <ul class="links">
+              <li>
+                <a class="game-link" href="media-literacy/as-marketing_lernmaterial_spiele_monalisa.html">
+                  <span class="game-left">
+                    <span class="game-title">Mona Lisa</span>
+                    <span class="game-path">media-literacy/…_monalisa.html</span>
+                  </span>
+                  <span aria-hidden="true">→</span>
+                </a>
+              </li>
+            </ul>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <div class="footer">
+      © <span id="year"></span> Arno Schimmelpfennig · Education Games · Lokal oder via GitHub Pages nutzbar
+    </div>
+  </div>
+
+  <script>
+    // Footer year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Accordion behavior for folders
+    function toggleFolder(folder, forceState) {
+      const isOpen = folder.classList.contains('open');
+      const next = (forceState !== undefined) ? forceState : !isOpen;
+      folder.classList.toggle('open', next);
+
+      const header = folder.querySelector('.folder-header');
+      if (header) header.setAttribute('aria-expanded', String(next));
+    }
+
+    document.querySelectorAll('.folder').forEach(folder => {
+      const header = folder.querySelector('.folder-header');
+      if (!header) return;
+
+      header.addEventListener('click', () => toggleFolder(folder));
+      header.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          toggleFolder(folder);
+        }
+      });
+    });
+
+    // Filter tabs
+    const tabs = Array.from(document.querySelectorAll('.tab'));
+    const folders = Array.from(document.querySelectorAll('.folder'));
+
+    function setActiveTab(tabEl){
+      tabs.forEach(t => t.classList.toggle('active', t === tabEl));
+    }
+
+    function applyFilter(filter){
+      folders.forEach(f => {
+        const cat = f.getAttribute('data-cat');
+        const show = (filter === 'all' || filter === cat);
+        f.style.display = show ? '' : 'none';
+
+        // optional: auto-open visible folders
+        if (show) toggleFolder(f, true);
+      });
+      // scroll a bit nicely to results
+      const target = document.getElementById('kategorien');
+      if (target) target.scrollIntoView({behavior:'smooth', block:'start'});
+    }
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        setActiveTab(tab);
+        applyFilter(tab.getAttribute('data-filter'));
+      });
+    });
+  </script>
+</body>
+</html>

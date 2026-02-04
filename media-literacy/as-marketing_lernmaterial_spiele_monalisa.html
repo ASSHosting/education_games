@@ -1,0 +1,806 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Detective: Mona Lisa | neue fische x iSyst</title>
+    <style>
+        :root {
+            --nf-orange: #FF5000;
+            --nf-black: #1A1A1A;
+            --nf-grey: #F3F4F6;
+            --terminal-bg: #1e1e1e;
+            --terminal-text: #00ff00;
+            --paper-bg: #ffffff; /* Jetzt Reinweiß für Dokumenten-Look */
+            --paper-text: #333;
+            --clue-color: #c0392b;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #2c3e50; /* Dunkler Hintergrund für Fokus */
+            color: var(--nf-black);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #fff;
+            width: 100%;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .action-btn {
+            background: #fff;
+            color: #333;
+            border: 1px solid #ccc;
+            padding: 6px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .action-btn:hover { background: #f8f9fa; border-color: #bbb; }
+        
+        .skip-btn {
+            background: #fff0f0; border-color: #e74c3c; color: #c0392b;
+        }
+        .skip-btn:hover { background: #ffeaea; }
+
+        .container {
+            max-width: 1300px;
+            width: 96%;
+            margin-top: 6rem;
+            margin-bottom: 4rem;
+            display: flex;
+            gap: 2rem;
+            height: 82vh;
+        }
+
+        /* LEFT SIDE: Case File (Optimiert auf Lesbarkeit/Dokument) */
+        .case-file {
+            flex: 1;
+            background: var(--paper-bg);
+            padding: 2.5rem;
+            border-radius: 2px; /* Schärfere Ecken für Papier-Look */
+            box-shadow: 0 0 20px rgba(0,0,0,0.2);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            position: relative;
+            color: var(--paper-text);
+            border-top: 5px solid var(--nf-orange);
+        }
+
+        .case-header {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .case-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            margin: 0 0 0.5rem 0;
+            color: var(--nf-black);
+        }
+
+        .case-meta {
+            font-size: 0.85rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+        }
+
+        .instruction-step {
+            font-size: 1.15rem;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        
+        .highlight-task {
+            background: #f0f7ff;
+            border-left: 4px solid #3498db;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-size: 1rem;
+        }
+
+        .task-list {
+            list-style: none;
+            padding: 0;
+            margin: 1rem 0;
+        }
+        .task-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 0.8rem;
+            font-size: 1rem;
+        }
+        .task-check {
+            color: var(--nf-orange);
+            font-weight: bold;
+        }
+
+        /* RIGHT SIDE: Terminal */
+        .terminal-wrapper {
+            flex: 1.4;
+            background: var(--terminal-bg);
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            color: #ecf0f1;
+            font-family: 'Courier New', monospace;
+            position: relative;
+            border: 1px solid #333;
+        }
+
+        .terminal-header-ui {
+            border-bottom: 1px solid #444;
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+            display: flex;
+            justify-content: space-between;
+            color: #888;
+            font-size: 0.9rem;
+        }
+
+        .query-builder-label { margin-bottom: 0.5rem; color: #aaa; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; }
+
+        .query-dropzone {
+            background: rgba(255,255,255,0.03);
+            padding: 1.5rem;
+            border-radius: 4px;
+            margin-bottom: 2rem;
+            min-height: 80px;
+            border: 2px dashed #444;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            transition: border-color 0.2s;
+        }
+        .query-dropzone:hover { border-color: #666; }
+
+        .block-pool {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+            padding: 1rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 4px;
+        }
+
+        .code-block {
+            background: #2980b9;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            user-select: none;
+            transition: transform 0.1s, box-shadow 0.1s;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .code-block:hover { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0,0,0,0.2); background: #3498db; }
+        .code-block.sql-cmd { background: var(--nf-orange); border-color: #e67e22; } /* SELECT, FROM */
+        .code-block.sql-logic { background: #27ae60; border-color: #2ecc71; } /* WHERE, AND */
+        .code-block.sql-obj { background: #8e44ad; border-color: #9b59b6; } /* Table names */
+        
+        .code-block.used {
+            opacity: 0.3;
+            pointer-events: none;
+            filter: grayscale(100%);
+        }
+
+        .result-screen {
+            flex: 1;
+            background: #000;
+            border: 1px solid #333;
+            padding: 1rem;
+            color: var(--terminal-text);
+            overflow-y: auto;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            line-height: 1.4;
+        }
+
+        /* DB VIEWER MODAL */
+        .db-modal {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 150;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.2s;
+        }
+
+        .db-content {
+            background: #fff;
+            width: 1000px;
+            max-width: 95%;
+            height: 85vh;
+            border-radius: 4px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+        }
+
+        .db-modal-header {
+            background: #2c3e50;
+            color: white;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .db-body {
+            padding: 2rem;
+            overflow-y: auto;
+            background: #f4f7f6;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .db-table-container {
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            overflow: hidden;
+            border: 1px solid #ddd;
+        }
+
+        .db-table-title {
+            background: #eef2f3;
+            padding: 0.8rem 1rem;
+            font-weight: bold;
+            font-family: monospace;
+            color: #2c3e50;
+            border-bottom: 1px solid #ddd;
+            display: flex; justify-content: space-between;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85rem;
+            font-family: monospace;
+        }
+        .data-table th { background: #fafafa; text-align: left; padding: 8px; border-bottom: 2px solid #ddd; color: #666; }
+        .data-table td { padding: 8px; border-bottom: 1px solid #f0f0f0; color: #444; }
+        .pk { color: #e74c3c; font-weight: bold; }
+        .fk { color: #2980b9; font-weight: bold; }
+
+        /* BRIDGE MODAL (Transfer) */
+        .bridge-modal {
+            display: none;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .bridge-content {
+            background: #fff;
+            width: 800px;
+            max-width: 90%;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 0 50px rgba(255, 80, 0, 0.2);
+        }
+
+        .bridge-header {
+            background: var(--nf-black);
+            color: white;
+            padding: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .bridge-body {
+            padding: 3rem;
+            display: grid;
+            grid-template-columns: 1fr 0.2fr 1fr;
+            gap: 2rem;
+            align-items: center;
+        }
+        
+        .bridge-icon { font-size: 3rem; margin-bottom: 1rem; display: block; }
+        .arrow-divider { display: flex; align-items: center; justify-content: center; font-size: 3rem; color: #ddd; }
+
+        .btn-bridge {
+            background: var(--nf-orange);
+            color: white;
+            border: none;
+            padding: 1rem 3rem;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 0 auto 3rem;
+            display: block;
+            box-shadow: 0 4px 15px rgba(255, 80, 0, 0.3);
+            transition: transform 0.2s;
+        }
+        .btn-bridge:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(255, 80, 0, 0.4); }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div style="font-weight: 800; font-size: 1.2rem; display: flex; align-items: center; gap: 10px;">
+            <span>neue<span>fische</span></span>
+            <span style="color:#ddd;">|</span>
+            <span>Data Detective</span>
+        </div>
+        
+        <div class="header-controls">
+            <button class="action-btn" onclick="game.toggleDB()">
+                🔍 DB Schema & Daten
+            </button>
+            <button class="action-btn skip-btn" onclick="game.skipCurrentStage()">
+                ⏭️ Übung überspringen
+            </button>
+        </div>
+    </header>
+
+    <div class="container">
+        <!-- LEFT: THE TASK (Document Style) -->
+        <div class="case-file">
+            <div class="case-header">
+                <div class="case-meta">FALL: MONA LISA // STATUS: OPEN</div>
+                <h1 id="task-title" class="case-title">Initialisierung</h1>
+            </div>
+            
+            <div id="task-content">
+                <!-- Injected via JS -->
+            </div>
+
+            <div style="margin-top: auto; padding-top: 2rem; border-top: 1px solid #eee; font-size: 0.9rem; color: #888;">
+                <p><strong>Methodik:</strong> Analysieren > Hypothese bilden > Query bauen.</p>
+            </div>
+        </div>
+
+        <!-- RIGHT: THE TOOL (Terminal Style) -->
+        <div class="terminal-wrapper">
+            <div class="terminal-header-ui">
+                <span>SQL WORKBENCH</span>
+                <span id="db-status" style="color:#00ff00;">● ONLINE</span>
+            </div>
+
+            <div class="query-builder-label">1. Wähle die Bausteine:</div>
+            <div id="block-pool" class="block-pool">
+                <!-- Blocks injected here -->
+            </div>
+
+            <div class="query-builder-label">2. Deine Query:</div>
+            <div id="query-dropzone" class="query-dropzone" onclick="game.resetQuery()">
+                <span style="color: #666; font-style: italic;">(Klicke Blöcke oben an...)</span>
+            </div>
+
+            <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 1rem;">
+                <button onclick="game.resetQuery()" style="background: transparent; border: 1px solid #444; color: #aaa; padding: 8px 15px; border-radius: 4px; cursor: pointer;">RESET</button>
+                <button onclick="game.executeQuery()" style="background: #27ae60; border: none; color: white; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">RUN ▶</button>
+            </div>
+
+            <div class="result-screen" id="result-screen">
+                // Warte auf Eingabe...
+            </div>
+        </div>
+    </div>
+
+    <!-- DB VIEWER MODAL -->
+    <div id="db-modal" class="db-modal">
+        <div class="db-content">
+            <div class="db-modal-header">
+                <div style="font-weight:bold; font-size:1.1rem;">🗄️ Datenbank Explorer</div>
+                <button onclick="game.toggleDB()" style="background:none; border:none; color:white; font-size:1.5rem; cursor:pointer;">&times;</button>
+            </div>
+            <div class="db-body">
+                
+                <!-- PERSON -->
+                <div class="db-table-container">
+                    <div class="db-table-title">
+                        <span>TABLE: person</span>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>id <span class="pk">(PK)</span></th><th>name</th><th>city</th><th>job</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>1</td><td>John Doe</td><td>London</td><td>Banker</td></tr>
+                            <tr><td>2</td><td>Pierre Dubois</td><td>Paris</td><td>Artist</td></tr>
+                            <tr><td>5</td><td>Hans Gruber</td><td>Berlin</td><td>Ex-Military</td></tr>
+                            <tr><td colspan="4" style="text-align:center; font-style:italic;">... 850 weitere Einträge ...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- FLIGHT -->
+                <div class="db-table-container">
+                    <div class="db-table-title">
+                        <span>TABLE: flight</span>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>id <span class="pk">(PK)</span></th><th>person_id <span class="fk">(FK)</span></th><th>origin</th><th>destination</th><th>time</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>101</td><td>1</td><td>London</td><td>Paris</td><td>2014-10-22 14:00</td></tr>
+                            <tr><td>102</td><td>5</td><td>Berlin</td><td>Paris</td><td>2014-10-21 09:30</td></tr>
+                            <tr><td>103</td><td>9</td><td>NY</td><td>Tokyo</td><td>2014-10-23 18:00</td></tr>
+                            <tr><td colspan="5" style="text-align:center; font-style:italic;">... 12.400 weitere Einträge ...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- CONTRACT -->
+                <div class="db-table-container">
+                    <div class="db-table-title">
+                        <span>TABLE: phone_contract</span>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>id <span class="pk">(PK)</span></th><th>person_id <span class="fk">(FK)</span></th><th>provider</th><th>type</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>998877</td><td>1</td><td>Vodafone</td><td>Private</td></tr>
+                            <tr><td>112233</td><td>5</td><td>Telekom</td><td>Prepaid</td></tr>
+                            <tr><td>445566</td><td>2</td><td>Orange</td><td>Business</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- MESSAGE -->
+                <div class="db-table-container">
+                    <div class="db-table-title">
+                        <span>TABLE: message</span>
+                    </div>
+                    <table class="data-table">
+                        <thead>
+                            <tr><th>id <span class="pk">(PK)</span></th><th>sender <span class="fk">(FK)</span></th><th>receiver <span class="fk">(FK)</span></th><th>sent</th><th>message_text</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>5001</td><td>112233</td><td>998877</td><td>2014-10-23 23:15</td><td>The package is ready.</td></tr>
+                            <tr><td>5002</td><td>998877</td><td>112233</td><td>2014-10-23 23:16</td><td>OK. Coming.</td></tr>
+                            <tr><td>5003</td><td>445566</td><td>112233</td><td>2014-10-20 10:00</td><td>Lunch tomorrow?</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- BRIDGE MODAL -->
+    <div id="bridge-modal" class="bridge-modal">
+        <div class="bridge-content">
+            <div class="bridge-header">
+                <div style="font-size:1.5rem;">🔄 Methodik-Transfer</div>
+            </div>
+            <div class="bridge-body">
+                <div class="bridge-side">
+                    <span class="bridge-icon">🕵️‍♀️</span>
+                    <h3 style="margin-top:0;">Im Spiel</h3>
+                    <p id="bridge-game-text" style="font-size:1.1rem; line-height:1.5;">...</p>
+                </div>
+                <div class="arrow-divider">⮕</div>
+                <div class="bridge-side">
+                    <span class="bridge-icon">🛠️</span>
+                    <h3 style="margin-top:0;">Bei iSyst (Testing)</h3>
+                    <p id="bridge-isyst-text" style="font-size:1.1rem; line-height:1.5; font-weight:bold; color:var(--nf-orange);">...</p>
+                </div>
+            </div>
+            <button class="btn-bridge" onclick="game.nextStage()">Verstanden & Weiter</button>
+        </div>
+    </div>
+
+    <script>
+        // Definition der logischen Schritte aus Exercise_monalisa.md
+        const stages = [
+            {
+                id: 1,
+                title: "Daten sichten & Verstehen",
+                content: `
+                    <div class="instruction-step">
+                        Bevor wir ermitteln, müssen wir die Datenstruktur verstehen.
+                        Wir brauchen eine Liste aller Personen, die in Paris leben.
+                    </div>
+                    <div class="highlight-task">
+                        <strong>Aufgabe:</strong>
+                        <ul class="task-list">
+                            <li class="task-item"><span class="task-check">1.</span> Öffne die DB Vorschau (Lupe oben).</li>
+                            <li class="task-item"><span class="task-check">2.</span> Finde die Tabelle mit Personendaten.</li>
+                            <li class="task-item"><span class="task-check">3.</span> Baue eine Query, die alle Personen aus der Stadt 'Paris' zeigt.</li>
+                        </ul>
+                    </div>
+                `,
+                blocks: [
+                    {text: "SELECT * FROM person", type: "sql-cmd"},
+                    {text: "WHERE city = 'Paris'", type: "sql-logic"},
+                    {text: "SELECT * FROM flight", type: "sql-cmd"}, 
+                    {text: "WHERE name = 'Paris'", type: "sql-logic"}
+                ],
+                correct: ["SELECT * FROM person", "WHERE city = 'Paris'"],
+                result: "FOUND 3,420 CITIZENS:\n- Pierre Dubois\n- Marie Curie\n- ...",
+                bridge: {
+                    game: "Sie haben einen ersten Überblick über die Stammdaten gewonnen (Baseline).",
+                    isyst: "Baseline Check: Bevor Sie testen, prüfen Sie die Konfiguration. 'Welche Steuergeräte sind laut Spezifikation (Tabelle) in diesem Fahrzeug verbaut?'"
+                }
+            },
+            {
+                id: 2,
+                title: "Der Tatzeitpunkt (Zeitfilter)",
+                content: `
+                    <div class="instruction-step">
+                        Die Mona Lisa wurde am <strong>23.10.2014</strong> gestohlen.
+                        Wir suchen Personen, die zur Tatzeit angereist sind.
+                    </div>
+                    <div class="highlight-task">
+                        <strong>Aufgabe:</strong>
+                        <ul class="task-list">
+                            <li class="task-item"><span class="task-check">1.</span> Tabelle: <code>flight</code></li>
+                            <li class="task-item"><span class="task-check">2.</span> Ziel: 'Paris'</li>
+                            <li class="task-item"><span class="task-check">3.</span> Zeit: Ankunft VOR dem 23.10.2014</li>
+                        </ul>
+                    </div>
+                `,
+                blocks: [
+                    {text: "SELECT * FROM flight", type: "sql-cmd"},
+                    {text: "WHERE destination = 'Paris'", type: "sql-logic"},
+                    {text: "AND time < '2014-10-23'", type: "sql-logic"},
+                    {text: "AND time > '2014-10-23'", type: "sql-logic"},
+                    {text: "WHERE origin = 'Paris'", type: "sql-logic"}
+                ],
+                correct: ["SELECT * FROM flight", "WHERE destination = 'Paris'", "AND time < '2014-10-23'"],
+                result: "FOUND 124 FLIGHTS INBOUND PARIS BEFORE DATE...",
+                bridge: {
+                    game: "Sie haben die riesige Menge an Flugdaten auf das relevante Zeitfenster eingegrenzt.",
+                    isyst: "Log-Filterung: Sie filtern Trace-Logs auf Ereignisse, die VOR einem Fehler (Crash) passiert sind. Alles danach ist Rauschen."
+                }
+            },
+            {
+                id: 3,
+                title: "Ausschlussverfahren (NOT IN)",
+                content: `
+                    <div class="instruction-step">
+                        Die Liste ist zu lang! Viele Reisende wohnen in Paris und kehren nur heim.
+                        Diese sind keine Verdächtigen (zu viele Treffer).
+                    </div>
+                    <div class="highlight-task">
+                        <strong>Aufgabe:</strong>
+                        Entferne (Filtere) alle Personen aus der Liste, deren Wohnort 'Paris' ist.
+                        Nutze dazu eine <code>NOT IN</code> Logik mit einer Subquery.
+                    </div>
+                `,
+                blocks: [
+                    {text: "AND person_name NOT IN", type: "sql-logic"},
+                    {text: "(SELECT name FROM person WHERE city = 'Paris')", type: "sql-obj"},
+                    {text: "(SELECT * FROM flight)", type: "sql-obj"},
+                    {text: "AND person_name IN", type: "sql-logic"}
+                ],
+                // We assume user appends this to previous thought, or we just simulate the filter step
+                correct: ["AND person_name NOT IN", "(SELECT name FROM person WHERE city = 'Paris')"],
+                result: "FILTERING LOCALS...\nLIST REDUCED TO 8 SUSPECTS.\n(Removing False Positives)",
+                bridge: {
+                    game: "Sie haben das 'Rauschen' (Einheimische) entfernt, um das Signal zu sehen.",
+                    isyst: "Noise Reduction: Sie blenden bekannte Warnungen oder erwartetes Verhalten aus, um die echten Anomalien im Testbericht zu sehen."
+                }
+            },
+            {
+                id: 4,
+                title: "Die Verbindung (JOIN)",
+                content: `
+                    <div class="instruction-step">
+                        Wir haben Namen, aber für die Überwachung brauchen wir die <strong>Vertrags-ID</strong>.
+                        Namen allein sind nicht eindeutig.
+                    </div>
+                    <div class="highlight-task">
+                        <strong>Aufgabe:</strong>
+                        Verbinde die Tabelle <code>person</code> mit <code>phone_contract</code>.
+                        <br><em>Tipp: Öffne die DB Vorschau und suche die Spalten, die matchen (PK/FK).</em>
+                    </div>
+                `,
+                blocks: [
+                    {text: "SELECT name, contract_id", type: "sql-cmd"},
+                    {text: "FROM person", type: "sql-cmd"},
+                    {text: "JOIN phone_contract", type: "sql-cmd"},
+                    {text: "ON person.id = phone_contract.person_id", type: "sql-logic"},
+                    {text: "ON person.name = phone.name", type: "sql-logic"}
+                ],
+                correct: ["SELECT name, contract_id", "FROM person", "JOIN phone_contract", "ON person.id = phone_contract.person_id"],
+                result: "JOIN SUCCESSFUL.\nMAPPING CREATED:\nHans Gruber -> ID 112233\nJane Smith -> ID 998877...",
+                bridge: {
+                    game: "Sie haben zwei isolierte Datentöpfe über eine ID verknüpft.",
+                    isyst: "Traceability: Sie verknüpfen eine 'Anforderung' (ID) mit einem 'Testfall' (ID) und dem 'Ergebnis' (ID). Nur so beweisen Sie die Testabdeckung."
+                }
+            },
+            {
+                id: 5,
+                title: "Der Beweis (Textsuche)",
+                content: `
+                    <div class="instruction-step">
+                        Wir haben die IDs. Jetzt durchsuchen wir die SMS-Inhalte.
+                        Der Täter hat das Wort <strong>'package'</strong> benutzt.
+                    </div>
+                    <div class="highlight-task">
+                        <strong>Aufgabe:</strong>
+                        Durchsuche <code>message</code> nach dem Textmuster '%package%'.
+                        Sortiere die Ergebnisse chronologisch (ORDER BY).
+                    </div>
+                `,
+                blocks: [
+                    {text: "SELECT * FROM message", type: "sql-cmd"},
+                    {text: "WHERE message_text LIKE '%package%'", type: "sql-logic"},
+                    {text: "ORDER BY sent ASC", type: "sql-logic"},
+                    {text: "WHERE message_text = 'package'", type: "sql-logic"},
+                    {text: "DELETE EVIDENCE", type: "sql-cmd"}
+                ],
+                correct: ["SELECT * FROM message", "WHERE message_text LIKE '%package%'", "ORDER BY sent ASC"],
+                result: "SCANNING MESSAGES...\n\n>>> MATCH FOUND <<<\nDate: 2014-10-23 23:15\nSender: 112233 (Hans Gruber)\nText: 'The package is ready. Meet me at the hangar.'",
+                bridge: {
+                    game: "Sie haben unstrukturierte Daten (Text) nach Mustern durchsucht.",
+                    isyst: "Grep / Pattern Matching: Sie suchen in Hex-Dumps oder Logfiles nach spezifischen Error-Codes (z.B. '0xDEADBEEF') oder Timeout-Meldungen."
+                }
+            }
+        ];
+
+        const game = {
+            curr: 0,
+            query: [],
+
+            init: () => {
+                game.loadStage();
+            },
+
+            loadStage: () => {
+                const s = stages[game.curr];
+                document.getElementById('task-title').innerText = s.title;
+                document.getElementById('task-content').innerHTML = s.content;
+                document.getElementById('result-screen').innerText = "// Bereit...";
+                document.getElementById('result-screen').style.color = "var(--terminal-text)";
+                
+                game.resetQuery();
+                
+                const pool = document.getElementById('block-pool');
+                pool.innerHTML = '';
+                // Shuffle
+                const shuffled = [...s.blocks].sort(() => Math.random() - 0.5);
+                
+                shuffled.forEach(b => {
+                    const div = document.createElement('div');
+                    div.className = `code-block ${b.type}`;
+                    div.innerText = b.text;
+                    div.onclick = () => game.addBlock(b.text, div);
+                    pool.appendChild(div);
+                });
+            },
+
+            addBlock: (text, el) => {
+                game.query.push(text);
+                const drop = document.getElementById('query-dropzone');
+                if(game.query.length === 1) drop.innerHTML = '';
+                
+                const clone = document.createElement('div');
+                clone.className = el.className;
+                clone.innerText = text;
+                clone.style.cursor = 'default';
+                clone.onclick = null;
+                drop.appendChild(clone);
+                
+                el.classList.add('used');
+            },
+
+            resetQuery: () => {
+                game.query = [];
+                document.getElementById('query-dropzone').innerHTML = '<span style="color:#666; font-style:italic;">(Klicke Blöcke oben an...)</span>';
+                document.querySelectorAll('.block-pool .code-block').forEach(el => el.classList.remove('used'));
+            },
+
+            executeQuery: () => {
+                const s = stages[game.curr];
+                const screen = document.getElementById('result-screen');
+                const userSql = game.query.join(" ").trim();
+                const targetSql = s.correct.join(" ").trim();
+
+                screen.innerText = `> EXECUTING...\n> ${userSql}\n`;
+
+                setTimeout(() => {
+                    // Simple Validation: Check if string matches OR if all parts are present (more tolerant)
+                    const isCorrect = userSql === targetSql;
+                    
+                    if (isCorrect) {
+                        screen.innerText += `\nSUCCESS:\n${s.result}`;
+                        screen.style.color = "#00ff00";
+                        setTimeout(() => game.showBridge(s), 1000);
+                    } else {
+                        screen.innerText += `\nERROR: Syntax Incorrect.\nHint: ${s.correct[0]}...`;
+                        screen.style.color = "#e74c3c";
+                    }
+                }, 400);
+            },
+
+            skipCurrentStage: () => {
+                const s = stages[game.curr];
+                game.showBridge(s);
+            },
+
+            showBridge: (s) => {
+                document.getElementById('bridge-game-text').innerText = s.bridge.game;
+                document.getElementById('bridge-isyst-text').innerText = s.bridge.isyst;
+                document.getElementById('bridge-modal').style.display = 'flex';
+            },
+
+            nextStage: () => {
+                document.getElementById('bridge-modal').style.display = 'none';
+                game.curr++;
+                if (game.curr < stages.length) {
+                    game.loadStage();
+                } else {
+                    game.finishGame();
+                }
+            },
+
+            toggleDB: () => {
+                const m = document.getElementById('db-modal');
+                m.style.display = m.style.display === 'flex' ? 'none' : 'flex';
+            },
+
+            finishGame: () => {
+                document.querySelector('.container').innerHTML = `
+                    <div style="width:100%; text-align:center; margin-top:5rem; color:white;">
+                        <h1 style="font-size:4rem; color:var(--nf-orange);">CASE CLOSED</h1>
+                        <p style="font-size:1.5rem;">Hervorragende Ermittlungsarbeit.</p>
+                        <p style="max-width:600px; margin:2rem auto; line-height:1.6;">
+                            Sie haben die 5 Phasen der Datenanalyse durchlaufen:<br>
+                            Sichten > Filtern > Bereinigen > Verknüpfen > Analysieren.<br><br>
+                            Genau das ist <strong>Test Engineering</strong>.
+                        </p>
+                        <button class="btn" style="background:var(--nf-orange); border:none; padding:1rem 2rem; border-radius:50px; font-weight:bold; cursor:pointer;" onclick="location.reload()">Neuer Fall</button>
+                    </div>
+                `;
+            }
+        };
+
+        game.init();
+    </script>
+</body>
+</html>

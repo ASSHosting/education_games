@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ampel-Quiz Rechtsgrundlagen</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --primary: #631832; 
+            --accent: #173262; 
+            --green: #28A745; 
+            --yellow: #FFC107; 
+            --red: #DC3545; 
+            --bg-start: #F5F5F5;
+            --bg-end: #FFFFFF;
+        }
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: linear-gradient(180deg, var(--bg-start), var(--bg-end)); 
+            height: 100vh; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center; 
+            overflow: hidden; 
+            margin: 0; 
+            color: #231A24;
+        }
+        
+        /* HEADER ELEMENTS */
+        .logo { position: absolute; top: 20px; right: 20px; width: 80px; }
+        
+        .header-bar {
+            position: absolute; top: 30px; left: 0; width: 100%;
+            display: flex; justify-content: space-between; padding: 0 40px;
+            box-sizing: border-box; pointer-events: none;
+        }
+
+        .timer-box {
+            font-size: 24pt; font-weight: 700; color: var(--accent);
+            display: flex; align-items: center; gap: 10px;
+            background: white; padding: 10px 20px; border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            transition: color 0.3s;
+        }
+        .timer-box.urgent { color: var(--red); animation: pulse 1s infinite; }
+
+        .score-box {
+            font-size: 18pt; font-weight: 600; color: var(--primary);
+            background: white; padding: 10px 20px; border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            display: flex; gap: 20px;
+        }
+
+        /* MAIN GAME AREA */
+        .game-container {
+            display: flex; flex-direction: column; align-items: center;
+            width: 100%; max-width: 1000px;
+        }
+
+        .scenario-card { 
+            background: white; border: 2px solid #E0E0E0; padding: 40px; 
+            border-radius: 16px; width: 100%; text-align: center; 
+            box-shadow: 0 10px 30px rgba(23, 50, 98, 0.08); margin-bottom: 50px; 
+            transition: transform 0.3s ease;
+            position: relative; overflow: hidden;
+            min-height: 200px; display: flex; align-items: center; justify-content: center;
+        }
+        
+        .progress-bar {
+            position: absolute; top: 0; left: 0; height: 8px; background: var(--primary);
+            width: 0%; transition: width 0.5s ease;
+        }
+
+        .scenario-card h2 { font-size: 26pt; color: var(--primary); margin: 0; line-height: 1.4; }
+
+        /* TRAFFIC LIGHTS */
+        .traffic-lights { display: flex; gap: 40px; }
+        
+        .light-btn { 
+            width: 200px; height: 100px; border: none; border-radius: 16px; 
+            font-size: 24pt; font-weight: 900; color: white; cursor: pointer; 
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            display: flex; align-items: center; justify-content: center; 
+            box-shadow: 0 6px 0 rgba(0,0,0,0.1); 
+            position: relative;
+        }
+        
+        .bg-green { background: var(--green); }
+        .bg-yellow { background: var(--yellow); color: #231A24; }
+        .bg-red { background: var(--red); }
+        
+        .light-btn:hover { transform: translateY(-4px); box-shadow: 0 10px 0 rgba(0,0,0,0.1); }
+        .light-btn:active { transform: translateY(0); box-shadow: 0 2px 0 rgba(0,0,0,0.1); }
+        
+        .light-btn.disabled { opacity: 0.3; cursor: default; transform: none; box-shadow: none; pointer-events: none; }
+        
+        .light-btn.correct { 
+            opacity: 1 !important; transform: scale(1.1); 
+            box-shadow: 0 0 40px currentColor; z-index: 10; 
+            border: 4px solid white;
+        }
+        
+        .light-btn.wrong-choice {
+            opacity: 0.6; transform: scale(0.9); border: 2px solid var(--text);
+        }
+
+        /* FEEDBACK / RESOLUTION */
+        .feedback-panel { 
+            display: none; margin-top: 40px; width: 900px; 
+            background: white; border: 3px solid var(--accent); 
+            padding: 30px; border-radius: 16px; text-align: center; 
+            animation: popIn 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        
+        .feedback-panel p { font-size: 18pt; color: #231A24; margin: 0 0 20px 0; line-height: 1.4; }
+        
+        .btn-next { 
+            background: var(--primary); color: white; border: none; 
+            padding: 15px 50px; font-size: 18pt; font-weight: 700; 
+            border-radius: 8px; cursor: pointer; transition: background 0.2s; 
+        }
+        .btn-next:hover { background: var(--accent); }
+
+        /* END SCREEN */
+        .end-screen {
+            display: none; flex-direction: column; align-items: center; text-align: center;
+            animation: fadeIn 0.8s;
+        }
+        .end-title { font-size: 48pt; font-weight: 900; color: var(--primary); margin-bottom: 20px; }
+        .end-score { font-size: 30pt; color: var(--accent); margin-bottom: 40px; }
+        .end-badge { 
+            font-size: 24pt; background: var(--yellow); padding: 20px 40px; 
+            border-radius: 50px; font-weight: 700; color: #231A24; 
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1); margin-bottom: 40px;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        @keyframes popIn { from{opacity:0; transform:translateY(20px) scale(0.9);} to{opacity:1; transform:translateY(0) scale(1);} }
+        @keyframes fadeIn { from{opacity:0;} to{opacity:1;} }
+        @keyframes bounce { 0%, 20%, 50%, 80%, 100% {transform: translateY(0);} 40% {transform: translateY(-20px);} 60% {transform: translateY(-10px);} }
+
+    </style>
+</head>
+<body>
+    <img src="https://as-digitalmarketing.de/img/ASS-2024-03_Logo2000x2000_black.png" class="logo">
+    
+    <div class="header-bar">
+        <div class="timer-box" id="timerBox">
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <span id="timerDisplay">60</span>
+        </div>
+        <div class="score-box">
+            <span id="progressDisplay">Frage 1 / 10</span>
+            <span style="border-left: 2px solid #eee; padding-left: 20px;">Punkte: <span id="scoreDisplay">0</span></span>
+        </div>
+    </div>
+
+    <!-- GAME -->
+    <div class="game-container" id="gameUI">
+        <div class="scenario-card">
+            <div class="progress-bar" id="progressBar"></div>
+            <h2 id="scenText">Lade Szenario...</h2>
+        </div>
+
+        <div class="traffic-lights">
+            <button class="light-btn bg-green" onclick="check(0)">GRÜN</button>
+            <button class="light-btn bg-yellow" onclick="check(1)">GELB</button>
+            <button class="light-btn bg-red" onclick="check(2)">ROT</button>
+        </div>
+
+        <div class="feedback-panel" id="fb">
+            <p id="fbText"></p>
+            <button class="btn-next" onclick="next()">Nächstes Szenario</button>
+        </div>
+    </div>
+
+    <!-- END SCREEN -->
+    <div class="end-screen" id="endUI">
+        <div class="end-title">Quiz Beendet! 🎉</div>
+        <div class="end-score" id="finalScoreText">Du hast X von 10 Punkten erreicht.</div>
+        <div class="end-badge" id="finalBadge">Badge</div>
+        <button class="btn-next" onclick="location.reload()">Neustarten</button>
+    </div>
+
+    <script>
+        // 0 = Grün, 1 = Gelb, 2 = Rot
+        const data = [
+            // LEICHT (Einstieg)
+            { 
+                text: "Szenario 1: Du lässt dir von einer KI eine Zusammenfassung eines Wikipedia-Artikels über 'Künstliche Intelligenz' erstellen.", 
+                correct: 0, 
+                expl: "GRÜN (Unbedenklich): Wikipedia-Daten sind öffentlich. Hier gibst du keine personenbezogenen Daten ein." 
+            },
+            { 
+                text: "Szenario 2: Du kopierst eine Kundenbeschwerde mit Name, Adresse und Telefonnummer in die kostenlose Version von DeepL zur Übersetzung.", 
+                correct: 2, 
+                expl: "ROT (Verboten): Klare personenbezogene Daten in einem kostenlosen Tool. Die Daten werden oft zum Training genutzt. Datenschutzverstoß!" 
+            },
+            { 
+                text: "Szenario 3: Du nutzt ChatGPT, um Ideen für einen Slogan für eine neue Marketing-Kampagne (fiktives Produkt) zu brainstormen.", 
+                correct: 0, 
+                expl: "GRÜN (Unbedenklich): Reine Kreativarbeit ohne Daten echter Personen oder Firmengeheimnisse." 
+            },
+            
+            // MITTEL (Denkaufgaben)
+            { 
+                text: "Szenario 4: Ein Kollege empfiehlt dir eine neue KI-App. Du meldest dich sofort mit deiner Firmen-E-Mail an, ohne die IT zu fragen.", 
+                correct: 1, 
+                expl: "GELB (Vorsicht): Das nennt man 'Schatten-IT'. Auch wenn das Tool toll ist: Immer erst IT/Datenschutz prüfen lassen (AV-Vertrag?)." 
+            },
+            { 
+                text: "Szenario 5: Du gibst die Geburtstage aller Mitarbeiter in eine KI ein, um personalisierte Gedichte erstellen zu lassen.", 
+                correct: 2, 
+                expl: "ROT (Verboten): Geburtsdaten + Namen sind personenbezogen. Ohne Einwilligung der Mitarbeiter darfst du das nicht in eine öffentliche KI geben." 
+            },
+            { 
+                text: "Szenario 6: Du nutzt vollständig anonymisierte Verkaufszahlen (z. B. 'Produkt A: 500 Stück'), um Trends zu erkennen.", 
+                correct: 0, 
+                expl: "GRÜN (Erlaubt): Wo kein Personenbezug herstellbar ist (echte Anonymisierung), greift die DSGVO nicht." 
+            },
+            
+            // DENKAUFGABEN (Kontext wichtig)
+            { 
+                text: "Szenario 7: Du lädst deinen *eigenen* Lebenslauf mit Adresse und Foto hoch, um ihn optimieren zu lassen.", 
+                correct: 1, 
+                expl: "GELB (Grauzone): Es sind deine Daten, also darfst du das entscheiden. Aber Achtung: Du fütterst die KI damit. Sensible Daten lieber schwärzen!" 
+            },
+            { 
+                text: "Szenario 8: Du lädst ein Foto vom Whiteboard im Meetingraum hoch. Man sieht darauf im Hintergrund die Gesichter von zwei Kollegen.", 
+                correct: 2, 
+                expl: "ROT (Verboten): Gesichter sind biometrische Daten. Ohne Einwilligung der Kollegen verletzt du deren Bildrechte und Datenschutz." 
+            },
+            { 
+                text: "Szenario 9: Du nutzt ein Tool mit AV-Vertrag, aber die Server stehen in den USA.", 
+                correct: 1, 
+                expl: "GELB (Prüfung nötig): AV-Vertrag ist gut, aber USA ist 'Drittland'. Der Datenschutzbeauftragte muss prüfen, ob das Datenschutzniveau ausreicht." 
+            },
+            { 
+                text: "Szenario 10: Du lässt dir ein Python-Skript (Code) schreiben, das Excel-Dateien sortiert. Du gibst dabei keine Inhalte der Dateien ein.", 
+                correct: 0, 
+                expl: "GRÜN (Unbedenklich): Du verarbeitest nur Programmierlogik, keine personenbezogenen Daten. Das ist sicher." 
+            }
+        ];
+        
+        let current = 0;
+        let score = 0;
+        let active = true;
+        let timerVal = 60;
+        let timerInt;
+        
+        function initGame() {
+            loadRound();
+        }
+
+        function loadRound() {
+            // UI Reset
+            active = true;
+            document.getElementById('scenText').innerText = data[current].text;
+            document.getElementById('progressDisplay').innerText = `Frage ${current + 1} / ${data.length}`;
+            document.getElementById('fb').style.display = 'none';
+            
+            // Progress Bar Update
+            document.getElementById('progressBar').style.width = ((current + 1) / data.length * 100) + "%";
+
+            // Buttons Reset
+            document.querySelectorAll('.light-btn').forEach(b => {
+                b.className = 'light-btn ' + (b.innerText==='GRÜN'?'bg-green':b.innerText==='GELB'?'bg-yellow':'bg-red');
+                // Reset Opacity visuals
+                b.style.color = (b.classList.contains('bg-yellow')) ? '#231A24' : 'white';
+            });
+
+            startTimer();
+        }
+
+        function startTimer() {
+            timerVal = 60;
+            updateTimerUI();
+            clearInterval(timerInt);
+            
+            timerInt = setInterval(() => {
+                timerVal--;
+                updateTimerUI();
+                if(timerVal <= 0) {
+                    timeOut();
+                }
+            }, 1000);
+        }
+
+        function updateTimerUI() {
+            const display = document.getElementById('timerDisplay');
+            const box = document.getElementById('timerBox');
+            display.innerText = timerVal;
+            
+            if(timerVal <= 10) {
+                box.classList.add('urgent');
+            } else {
+                box.classList.remove('urgent');
+            }
+        }
+
+        function timeOut() {
+            check(-1); // -1 means no choice made (wrong)
+        }
+
+        function check(choice) {
+            if(!active) return;
+            active = false;
+            clearInterval(timerInt);
+            document.getElementById('timerBox').classList.remove('urgent');
+
+            const correctIdx = data[current].correct;
+            let isCorrect = (choice === correctIdx);
+
+            if(isCorrect) {
+                score++;
+                document.getElementById('scoreDisplay').innerText = score;
+            }
+
+            // Visual Feedback Buttons
+            const btns = document.querySelectorAll('.light-btn');
+            btns.forEach((btn, idx) => {
+                btn.classList.add('disabled'); // Disable all first
+                
+                if(idx === correctIdx) {
+                    btn.classList.remove('disabled');
+                    btn.classList.add('correct');
+                    if(idx === 1) btn.style.color = '#231A24'; 
+                    else btn.style.color = 'white';
+                } else if (idx === choice && !isCorrect) {
+                    btn.classList.remove('disabled');
+                    btn.classList.add('wrong-choice');
+                }
+            });
+
+            // Show Text Feedback
+            const fb = document.getElementById('fb');
+            const fbText = document.getElementById('fbText');
+            
+            if(choice === -1) {
+                fbText.innerHTML = `<strong>⏰ Zeit abgelaufen!</strong><br>${data[current].expl}`;
+            } else if(isCorrect) {
+                fbText.innerHTML = `<strong>✅ Richtig!</strong><br>${data[current].expl}`;
+            } else {
+                fbText.innerHTML = `<strong>❌ Leider falsch.</strong><br>${data[current].expl}`;
+            }
+            
+            fb.style.display = 'block';
+        }
+
+        function next() {
+            current++;
+            if(current >= data.length) {
+                endGame();
+            } else {
+                loadRound();
+            }
+        }
+
+        function endGame() {
+            document.getElementById('gameUI').style.display = 'none';
+            document.querySelector('.header-bar').style.display = 'none';
+            
+            const endUI = document.getElementById('endUI');
+            const badge = document.getElementById('finalBadge');
+            
+            document.getElementById('finalScoreText').innerText = `Du hast ${score} von ${data.length} Punkten erreicht.`;
+            
+            if(score === 10) {
+                badge.innerText = "🏆 Compliance-Profi (Perfekt!)";
+                badge.style.background = "#FFC107"; // Gold
+            } else if (score >= 8) {
+                badge.innerText = "🥈 Datenschutz-Kenner (Sehr gut)";
+                badge.style.background = "#C0C0C0"; // Silver
+            } else {
+                badge.innerText = "🥉 Anfänger (Übung macht den Meister)";
+                badge.style.background = "#CD7F32"; // Bronze
+            }
+
+            endUI.style.display = 'flex';
+        }
+
+        // Init
+        initGame();
+
+    </script>
+</body>
+</html>

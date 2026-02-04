@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Branchen-Check: KI & Datenschutz</title>
+    <!-- html2canvas für Screenshot -->
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #631832; --accent: #173262; --bg: #FFF; --gray: #F5F5F5; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: #231A24; display: flex; min-height: 100vh; margin: 0; }
+        
+        .main { flex: 1; padding: 40px; display: flex; flex-direction: column; align-items: center; }
+        .sidebar { width: 320px; background: var(--gray); border-left: 1px solid #ddd; padding: 30px; display: flex; flex-direction: column; }
+        
+        .logo { position: absolute; top: 20px; left: 40px; width: 80px; }
+        h1 { font-size: 36pt; color: var(--primary); font-weight: 900; margin-top: 40px; text-align: center; line-height: 1.1; }
+        .subtitle { font-size: 16pt; color: var(--accent); margin-bottom: 40px; text-align: center; max-width: 700px; }
+
+        .form-box { background: var(--gray); border: 2px solid var(--accent); border-radius: 12px; padding: 40px; width: 800px; display: flex; flex-direction: column; gap: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
+        
+        label { font-size: 14pt; font-weight: 700; margin-bottom: 8px; display: block; color: var(--primary); }
+        select, textarea { width: 100%; padding: 15px; border: 2px solid #ccc; border-radius: 8px; font-size: 13pt; font-family: inherit; transition: border 0.2s; }
+        select:focus, textarea:focus { border-color: var(--primary); outline: none; }
+        
+        button { background: var(--primary); color: white; border: none; padding: 15px; font-size: 16pt; font-weight: 700; border-radius: 8px; cursor: pointer; margin-top: 10px; transition: background 0.2s; }
+        button:hover { background: var(--accent); }
+
+        .result { display: none; margin-top: 40px; width: 800px; border: 4px solid #ccc; padding: 0; border-radius: 12px; position: relative; animation: fadeIn 0.5s; background: white; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        
+        .res-header { background: #eee; padding: 30px; text-align: center; border-bottom: 1px solid #ddd; }
+        .res-badge { font-size: 28pt; font-weight: 900; margin-bottom: 10px; display: block; }
+        .res-analysis { font-size: 14pt; color: #555; font-style: italic; }
+
+        .coach-section { padding: 30px; }
+        .coach-title { font-size: 18pt; font-weight: 700; color: var(--accent); margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+        
+        .action-plan { display: flex; flex-direction: column; gap: 15px; }
+        .action-step { display: flex; gap: 15px; background: #f9f9f9; padding: 15px; border-radius: 8px; border-left: 5px solid var(--accent); }
+        .step-num { font-weight: 900; font-size: 24pt; color: #ddd; line-height: 1; }
+        .step-content strong { display: block; color: var(--primary); margin-bottom: 5px; font-size: 13pt; }
+        .step-content { font-size: 13pt; line-height: 1.4; }
+
+        .btn-shot { position: absolute; top: 20px; right: 20px; background: white; color: var(--accent); border: 2px solid var(--accent); font-size: 12pt; width: auto; padding: 5px 15px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        .btn-shot:hover { background: #eee; }
+
+        /* Sidebar Styles */
+        .sb-header { border-bottom: 2px solid var(--primary); padding-bottom: 15px; margin-bottom: 20px; }
+        .sb-title { color: var(--primary); font-size: 18pt; font-weight: 700; margin: 0; }
+        .sb-sub { font-size: 11pt; color: #666; margin-top: 5px; }
+        .stat-group { margin-bottom: 30px; }
+        .stat-label { font-weight: 700; margin-bottom: 10px; display: block; color: var(--accent); }
+        .stat-bar { display: flex; align-items: center; margin-bottom: 8px; font-size: 11pt; }
+        .bar-fill { height: 8px; background: #ddd; border-radius: 4px; flex: 1; margin-left: 10px; position: relative; overflow: hidden; }
+        .bar-val { height: 100%; background: var(--accent); display: block; }
+
+        @keyframes fadeIn { from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)} }
+    </style>
+</head>
+<body>
+    <img src="https://as-digitalmarketing.de/img/ASS-2024-03_Logo2000x2000_black.png" class="logo">
+    
+    <div class="main">
+        <h1>🔍 KI-Compliance Coach</h1>
+        <div class="subtitle">Beschreibe dein Vorhaben – wir erstellen deinen Sicherheits-Fahrplan.</div>
+        
+        <div class="form-box">
+            <!-- Row 1 -->
+            <div style="display: flex; gap: 20px;">
+                <div style="flex: 1;">
+                    <label>Wer bist du?</label>
+                    <select id="ind">
+                        <option value="" disabled selected>Branche wählen...</option>
+                        <option value="Privat">Privatperson</option>
+                        <option value="KMU">KMU / Unternehmen</option>
+                        <option value="Marketing">Marketing / Agentur</option>
+                        <option value="HR">Personal / HR</option>
+                        <option value="Anwalt">Anwalt / Recht</option>
+                        <option value="Gesundheit">Gesundheit / Pflege</option>
+                        <option value="Verwaltung">Öffentliche Verwaltung</option>
+                        <option value="Schule">Schule / Bildung</option>
+                        <option value="Dev">Software-Entwicklung</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label>Welches Tool?</label>
+                    <select id="tool">
+                        <option value="" disabled selected>System wählen...</option>
+                        <optgroup label="Text & Chat">
+                            <option value="free_chatgpt">ChatGPT Free / Google Gemini (Privat)</option>
+                            <option value="ent_chatgpt">ChatGPT Team / Enterprise</option>
+                            <option value="ent_copilot">Microsoft Copilot (M365 / Commercial)</option>
+                            <option value="claude">Claude (Anthropic)</option>
+                            <option value="perplexity">Perplexity AI</option>
+                        </optgroup>
+                        <optgroup label="Übersetzung & Text">
+                            <option value="free_deepl">DeepL Free</option>
+                            <option value="pro_deepl">DeepL Pro</option>
+                            <option value="jasper">Jasper / Copy.ai</option>
+                        </optgroup>
+                        <optgroup label="Bild & Design">
+                            <option value="midjourney">Midjourney (Discord)</option>
+                            <option value="canva">Canva Magic Studio</option>
+                            <option value="firefly">Adobe Firefly</option>
+                        </optgroup>
+                        <optgroup label="Audio & Meeting">
+                            <option value="otter">Otter.ai / Fireflies (Meeting Bots)</option>
+                        </optgroup>
+                        <optgroup label="Sicher / Lokal">
+                            <option value="local">Lokal gehostet (Llama, Mistral)</option>
+                        </optgroup>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Row 2 -->
+            <div>
+                <label>Dein Use Case (Was hast du vor?)</label>
+                <textarea id="uc" rows="5" placeholder="Beschreibe dein Ziel so genau wie möglich.&#10;Beispiel: 'Ich möchte Meeting-Protokolle von Kundengesprächen automatisch zusammenfassen lassen.'&#10;Beispiel: 'Ich will Python-Code für unsere Datenbank optimieren.'"></textarea>
+            </div>
+            <button onclick="check()">Analyse starten</button>
+        </div>
+
+        <!-- RESULT PANEL -->
+        <div class="result" id="resPanel">
+            <button class="btn-shot" onclick="shot()">📸 Speichern</button>
+            
+            <div class="res-header" id="resHeader">
+                <span class="res-badge" id="badge"></span>
+                <span class="res-analysis" id="analysisText"></span>
+            </div>
+
+            <div class="coach-section">
+                <div class="coach-title">
+                    <span>📋 Dein Einführungs-Plan</span>
+                </div>
+                
+                <div class="action-plan">
+                    <!-- Step 1 -->
+                    <div class="action-step">
+                        <div class="step-num">1</div>
+                        <div class="step-content">
+                            <strong>Vorbereitung & Technik</strong>
+                            <span id="step1"></span>
+                        </div>
+                    </div>
+                    <!-- Step 2 -->
+                    <div class="action-step">
+                        <div class="step-num">2</div>
+                        <div class="step-content">
+                            <strong>Daten & Input</strong>
+                            <span id="step2"></span>
+                        </div>
+                    </div>
+                    <!-- Step 3 -->
+                    <div class="action-step">
+                        <div class="step-num">3</div>
+                        <div class="step-content">
+                            <strong>Nutzung & Kontrolle</strong>
+                            <span id="step3"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sb-header">
+            <h2 class="sb-title">Community Trends</h2>
+            <p class="sb-sub">Was andere Nutzer aktuell prüfen (Live-Daten aus dem Kurs).</p>
+        </div>
+
+        <div class="stat-group">
+            <span class="stat-label">🔥 Top Tools heute</span>
+            
+            <div class="stat-bar">
+                <span style="width: 100px;">ChatGPT Free</span>
+                <div class="bar-fill"><span class="bar-val" style="width: 65%;"></span></div>
+            </div>
+            <div class="stat-bar">
+                <span style="width: 100px;">MS Copilot</span>
+                <div class="bar-fill"><span class="bar-val" style="width: 45%;"></span></div>
+            </div>
+            <div class="stat-bar">
+                <span style="width: 100px;">DeepL</span>
+                <div class="bar-fill"><span class="bar-val" style="width: 30%;"></span></div>
+            </div>
+            <div class="stat-bar">
+                <span style="width: 100px;">Midjourney</span>
+                <div class="bar-fill"><span class="bar-val" style="width: 20%;"></span></div>
+            </div>
+        </div>
+
+        <div class="stat-group">
+            <span class="stat-label">🏢 Branchen-Aktivität</span>
+            <div class="stat-bar">
+                <span style="width: 100px;">KMU</span>
+                <div class="bar-fill"><span class="bar-val" style="width: 60%;"></span></div>
+            </div>
+            <div class="stat-bar">
+                <span style="width: 100px;">Marketing</span>
+                <div class="bar-fill"><span class="bar-val" style="width: 50%;"></span></div>
+            </div>
+            <div class="stat-bar">
+                <span style="width: 100px;">Schule</span>
+                <div class="bar-fill"><span class="bar-val" style="width: 35%;"></span></div>
+            </div>
+        </div>
+        
+        <div style="background: #eef2f6; padding: 15px; border-radius: 8px; font-size: 10pt; color: #666;">
+            <strong>💡 Wusstest du?</strong><br>
+            Über 60% der Nutzer prüfen zunächst kostenlose Tools, bevor sie auf Enterprise wechseln.
+        </div>
+    </div>
+
+    <script>
+        function check() {
+            const ind = document.getElementById('ind').value;
+            const tool = document.getElementById('tool').value;
+            const uc = document.getElementById('uc').value.toLowerCase();
+            
+            // DOM Elements
+            const res = document.getElementById('resPanel');
+            const header = document.getElementById('resHeader');
+            const badge = document.getElementById('badge');
+            const analysis = document.getElementById('analysisText');
+            
+            if (!ind || !tool) {
+                alert("Bitte wähle mindestens Branche und Tool aus.");
+                return;
+            }
+
+            // --- 1. KEYWORD ANALYSIS (Context Detection) ---
+            const hasPersonalData = uc.includes('name') || uc.includes('adresse') || uc.includes('geburt') || uc.includes('kunden') || uc.includes('patient') || uc.includes('schüler') || uc.includes('mitarbeiter') || uc.includes('bewerb');
+            const hasSecrets = uc.includes('code') || uc.includes('bilanz') || uc.includes('strategie') || uc.includes('patent') || uc.includes('passwort');
+            const hasMeeting = uc.includes('meeting') || uc.includes('gespräch') || uc.includes('call') || uc.includes('konferenz') || uc.includes('audio');
+            const hasImage = uc.includes('foto') || uc.includes('bild') || uc.includes('gesicht') || uc.includes('logo');
+
+            // --- 2. DEFAULT COACHING STRATEGY ---
+            let rating = {
+                color: "#FFC107", // Yellow
+                badge: "🟠 PRÜFUNG NOTWENDIG",
+                analysis: "Standard-Cloud-Tool. Hier ist Vorsicht geboten.",
+                s1: "Prüfe in den Einstellungen, ob du das KI-Training deaktivieren kannst (Opt-Out).",
+                s2: "Gib keine echten Personendaten ein. Nutze Platzhalter (z.B. 'Kunde A').",
+                s3: "Prüfe das Ergebnis auf Fehler (Human-in-the-Loop). Übernimm nichts ungeprüft."
+            };
+
+            // --- 3. RULE ENGINE ---
+
+            // A. TOOL-SPECIFIC RULES (Base Security)
+            const isFree = tool.startsWith('free') || tool === 'claude' || tool === 'perplexity';
+            const isEnt = tool.startsWith('ent') || tool === 'pro_deepl';
+            const isLocal = tool === 'local';
+            const isMeetingBot = tool === 'otter';
+
+            if (isLocal) {
+                rating.color = "#28A745";
+                rating.badge = "🟢 GRÜN (Sicher)";
+                rating.analysis = "Lokale KI. Daten verlassen dein Gerät nicht.";
+                rating.s1 = "Stelle sicher, dass dein Rechner passwortgeschützt und verschlüsselt ist.";
+                rating.s2 = "Du kannst hier auch vertrauliche Daten verarbeiten (sofern der PC sicher ist).";
+                rating.s3 = "Mache regelmäßige Backups deines Systems.";
+            } 
+            else if (isEnt) {
+                rating.color = "#28A745";
+                rating.badge = "🟢 GRÜN (Business)";
+                rating.analysis = "Enterprise-Lösung mit Datenschutz-Garantien (Kein Training).";
+                rating.s1 = "Lege den AV-Vertrag (Auftragsverarbeitung) zu deinen Akten.";
+                rating.s2 = "Sensibilisiere Mitarbeiter: Vertrauliches OK, aber 'Top Secret' lieber sparsam.";
+                rating.s3 = "Kennzeichne KI-generierte Texte intern.";
+            }
+            else if (isFree) {
+                rating.color = "#FD7E14";
+                rating.badge = "🟠 DATEN-GEGENWERT";
+                rating.analysis = "Kostenloses Tool. Du zahlst meist mit deinen Daten für das Training.";
+                rating.s1 = "Suche sofort nach dem 'Opt-Out' Formular oder Settings, um Training zu widersprechen.";
+                rating.s2 = "ABSOLUTES VERBOT für Personen-Daten und Firmengeheimnisse.";
+                rating.s3 = "Lösche den Chat-Verlauf regelmäßig.";
+            }
+
+            // B. INDUSTRY & USE CASE OVERRIDES (Specific Context)
+
+            // Case: Meeting Bots (Critical!)
+            if (isMeetingBot || hasMeeting) {
+                if (ind === 'Privat') {
+                    rating.color = "#DC3545"; rating.badge = "🔴 VORSICHT (§ 201 StGB)";
+                    rating.analysis = "Gespräche aufzuzeichnen ohne Einwilligung ist strafbar.";
+                    rating.s1 = "Hole vor JEDEM Gespräch die Erlaubnis aller Teilnehmer ein.";
+                } else {
+                    rating.color = "#DC3545"; rating.badge = "🔴 HOCHRISIKO (Audio)";
+                    rating.analysis = "Meeting-Bots senden Audio oft an Dritte zur Transkription.";
+                    rating.s1 = "Deaktiviere den 'Auto-Join' in Kalendern. Der Bot darf nicht ungefragt beitreten.";
+                    rating.s2 = "Nutze nur Bots mit AV-Vertrag und Serverstandort EU (wenn möglich).";
+                    rating.s3 = "Zu Beginn der Aufnahme: Laut und deutlich ankündigen!";
+                }
+            }
+
+            // Case: Berufsgeheimnis (Anwalt, Arzt)
+            if (ind === 'Anwalt' || ind === 'Gesundheit') {
+                if (!isEnt && !isLocal) {
+                    rating.color = "#DC3545"; rating.badge = "🔴 VERBOTEN";
+                    rating.analysis = "Verletzung der Schweigepflicht (§ 203 StGB) bei Nutzung offener Clouds.";
+                    rating.s1 = "Stopp! Nutze dieses Tool nicht für Mandanten/Patienten.";
+                    rating.s2 = "Suche nach 'On-Premise' Lösungen oder zertifizierter Branchen-Software.";
+                    rating.s3 = "Jeder Verstoß kann die Zulassung kosten.";
+                } else if (isEnt) {
+                    rating.color = "#FFC107"; rating.badge = "🟡 NUR MIT ZUSATZ";
+                    rating.analysis = "Enterprise ist gut, reicht aber bei § 203 StGB oft allein nicht.";
+                    rating.s1 = "Prüfe, ob der Anbieter eine Zusatzvereinbarung für Berufsgeheimnisträger anbietet.";
+                }
+            }
+
+            // Case: Software Dev / Code
+            if (hasSecrets && !isEnt && !isLocal) {
+                rating.color = "#DC3545"; rating.badge = "🔴 GEFAHR (IP Leak)";
+                rating.analysis = "Code oder Strategien in Free-Tools können in der öffentlichen KI landen.";
+                rating.s1 = "Wechsele auf Enterprise oder nutze lokale Modelle (z.B. Ollama).";
+                rating.s2 = "Ersetze API-Keys, Passwörter und Server-IPs durch Dummys VOR dem Senden.";
+            }
+
+            // Case: Schule / Kinder
+            if (ind === 'Schule') {
+                if (hasPersonalData) {
+                    rating.color = "#DC3545"; rating.badge = "🔴 KRITISCH (Minderjährige)";
+                    rating.analysis = "Daten von Schülern sind besonders schützenswert.";
+                    rating.s1 = "Keine Namen von Schülern in Cloud-Tools (auch nicht Enterprise ohne Prüfung).";
+                    rating.s2 = "Hole die Genehmigung der Schulleitung/Eltern ein.";
+                } else {
+                    rating.s3 = "Lehre den Schülern KI-Kompetenz: Wie promptet man sicher?";
+                }
+            }
+
+            // Case: Bilder / Midjourney
+            if (tool === 'midjourney' || tool === 'canva' || hasImage) {
+                if (ind === 'Marketing' || ind === 'KMU') {
+                    rating.analysis = "Bilder in Midjourney (Standard) sind öffentlich einsehbar!";
+                    rating.s1 = "Buche den 'Stealth Mode' (Privatmodus), damit Konkurrenten deine Entwürfe nicht sehen.";
+                    rating.s2 = "Lade keine Fotos von Mitarbeitern hoch (Recht am eigenen Bild).";
+                    rating.s3 = "Achtung: KI-Bilder sind oft nicht urheberrechtlich geschützt.";
+                }
+            }
+
+            // --- 4. RENDER UI ---
+            badge.innerText = rating.badge;
+            badge.style.color = rating.color;
+            header.style.background = rating.color + "15"; // Very light BG
+            header.style.borderBottomColor = rating.color;
+            
+            analysis.innerText = rating.analysis;
+            
+            document.getElementById('step1').innerText = rating.s1;
+            document.getElementById('step2').innerText = rating.s2;
+            document.getElementById('step3').innerText = rating.s3;
+
+            res.style.display = 'block';
+            
+            // Scroll to result smoothly
+            res.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        function shot() {
+            const btn = document.querySelector('.btn-shot');
+            btn.style.opacity = 0; 
+            html2canvas(document.getElementById('resPanel')).then(c => {
+                const a = document.createElement('a');
+                a.download = 'KI-Sicherheits-Plan.png'; a.href = c.toDataURL(); a.click();
+                btn.style.opacity = 1;
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Area 47 Opening - Rätselzahl 83 %</title>
+    <!-- 
+      README / DIDAKTIK-KOMMENTAR:
+      
+      SALA-Prinzipien (Select, Activate, Learn, Assess):
+      - ACTIVATE: Die große, kontextlose Zahl erzeugt kognitive Dissonanz ("Was bedeutet das?").
+      - LEARN: Die Auflösung verbindet die Emotion (Neugier) mit dem Lerninhalt (DSGVO-Unsicherheit).
+      
+      Anpassungsmöglichkeiten:
+      - Änderung der Zahl in .big-number
+      - Änderung der Auflösung in .resolution-text
+      - Mock-Antworten im JS-Array 'mockAnswers' anpassen
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --primary: #631832;
+            --accent: #173262;
+            --text: #231A24;
+            --bg-grad-start: #F5F5F5;
+            --bg-grad-end: #FFFFFF;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(90deg, var(--bg-grad-start), var(--bg-grad-end));
+            color: var(--text);
+            margin: 0;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        /* UI Elements */
+        .logo { position: absolute; top: 20px; right: 20px; width: 80px; z-index: 10; }
+        .timer { position: absolute; top: 20px; left: 20px; font-size: 24px; font-weight: 500; color: var(--accent); display: flex; align-items: center; gap: 10px; }
+        
+        /* Main Stage */
+        .stage { text-align: center; width: 100%; max-width: 1200px; transition: all 0.5s ease; }
+        
+        .big-number {
+            font-size: 180pt; font-weight: 900; color: var(--primary);
+            text-shadow: 0 10px 30px rgba(99, 24, 50, 0.15);
+            opacity: 0; transform: scale(0.9);
+            transition: all 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            margin: 0; line-height: 1;
+        }
+        
+        .subtitle {
+            font-size: 28pt; font-weight: 500; color: var(--accent);
+            margin-top: 20px; opacity: 0; transition: opacity 1s;
+        }
+
+        /* Interaction */
+        .input-area {
+            margin-top: 60px; display: flex; justify-content: center; gap: 20px;
+            opacity: 0; transition: opacity 0.5s;
+        }
+
+        input {
+            width: 500px; padding: 15px 25px; font-size: 18pt;
+            border: 2px solid var(--accent); border-radius: 8px;
+            font-family: inherit; outline: none;
+        }
+        
+        button {
+            padding: 15px 40px; font-size: 18pt; font-weight: 700;
+            background: var(--primary); color: white; border: none; border-radius: 8px;
+            cursor: pointer; transition: transform 0.1s, background 0.2s;
+        }
+        button:hover { background: var(--accent); }
+        button:active { transform: scale(0.95); }
+
+        /* Live Feed */
+        .feed {
+            position: absolute; right: 5%; top: 35%; width: 350px; height: 400px;
+            overflow: hidden; display: flex; flex-direction: column-reverse; gap: 15px;
+            pointer-events: none; /* Let text pass through visually */
+        }
+        
+        .bubble {
+            background: white; padding: 15px 20px; border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05); border: 1px solid #eee;
+            font-size: 14pt; opacity: 0; transform: translateY(20px);
+            animation: popIn 0.4s forwards;
+        }
+
+        /* Resolution */
+        .resolution {
+            display: none; opacity: 0; margin-top: -50px;
+            flex-direction: column; align-items: center;
+        }
+        .res-text { font-size: 36pt; font-weight: 700; color: var(--primary); max-width: 900px; line-height: 1.2; }
+        .res-sub { font-size: 24pt; color: var(--accent); margin-top: 30px; }
+
+        @keyframes popIn { to { opacity: 1; transform: translateY(0); } }
+        .zoom-out { transform: scale(0.4) translateY(-200px); opacity: 0.2; }
+    </style>
+</head>
+<body>
+    <img src="https://as-digitalmarketing.de/img/ASS-2024-03_Logo2000x2000_black.png" class="logo" alt="Logo">
+    
+    <div class="timer">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+        <span id="time">01:30</span>
+    </div>
+
+    <div class="stage" id="stage">
+        <h1 class="big-number" id="bn">83 %</h1>
+        <div class="subtitle" id="sub">Was bedeutet diese Zahl?</div>
+        
+        <div class="input-area" id="inputs">
+            <input type="text" id="guess" placeholder="Deine Vermutung..." autocomplete="off">
+            <button onclick="submitGuess()">Absenden</button>
+        </div>
+
+        <div class="resolution" id="res">
+            <p class="res-text">83 % der Unternehmen, die KI einsetzen, sind unsicher, ob sie DSGVO-konform arbeiten.</p>
+            <p class="res-sub">Das ändern wir heute.</p>
+            <button style="margin-top:40px; width:300px;" onclick="alert('Modul abgeschlossen')">Weiter zum Kurs</button>
+        </div>
+    </div>
+
+    <div class="feed" id="feed"></div>
+
+    <script>
+        // Init
+        setTimeout(() => { document.getElementById('bn').style.opacity = 1; document.getElementById('bn').style.transform = 'scale(1)'; }, 500);
+        setTimeout(() => { document.getElementById('sub').style.opacity = 1; }, 2000);
+        setTimeout(() => { document.getElementById('inputs').style.opacity = 1; }, 3000);
+
+        // Timer
+        let time = 90;
+        const timerEl = document.getElementById('time');
+        const interval = setInterval(() => {
+            time--;
+            const m = Math.floor(time/60).toString().padStart(2,'0');
+            const s = (time%60).toString().padStart(2,'0');
+            timerEl.textContent = `${m}:${s}`;
+            if(time <= 0) resolve();
+        }, 1000);
+
+        // Interaction
+        const mockAnswers = ["Erfolgsquote?", "Mitarbeiterzufriedenheit", "Marktanteil", "Absprungrate", "Gewinn"];
+        
+        function submitGuess() {
+            const input = document.getElementById('guess');
+            if(input.value.trim()) {
+                addBubble(input.value);
+                input.value = '';
+                input.focus();
+            }
+        }
+
+        function addBubble(text) {
+            const b = document.createElement('div');
+            b.className = 'bubble';
+            b.innerText = text;
+            const feed = document.getElementById('feed');
+            feed.insertBefore(b, feed.firstChild);
+            if(feed.children.length > 5) feed.lastChild.remove();
+        }
+
+        // Mock Feed
+        setInterval(() => {
+            if(Math.random() > 0.6 && time > 5) addBubble(mockAnswers[Math.floor(Math.random()*mockAnswers.length)]);
+        }, 3500);
+
+        // Resolution
+        function resolve() {
+            clearInterval(interval);
+            document.getElementById('inputs').style.display = 'none';
+            document.getElementById('sub').style.display = 'none';
+            document.getElementById('feed').style.display = 'none';
+            
+            document.getElementById('bn').classList.add('zoom-out');
+            
+            const res = document.getElementById('res');
+            res.style.display = 'flex';
+            setTimeout(() => res.style.opacity = 1, 100);
+        }
+        
+        // Manual trigger for testing
+        document.getElementById('guess').addEventListener('keypress', e => { if(e.key === 'Enter') submitGuess() });
+    </script>
+</body>
+</html>

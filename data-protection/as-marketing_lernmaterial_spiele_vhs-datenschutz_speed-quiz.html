@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Act Speed Quiz - Showmaster Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --primary: #631832; 
+            --accent: #173262; 
+            --red: #DC3545; 
+            --orange: #FD7E14; 
+            --yellow: #FFC107; 
+            --green: #28A745; 
+            --bg: #F5F5F5;
+        }
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background: var(--bg); 
+            height: 100vh; 
+            overflow: hidden; 
+            display: flex; 
+            flex-direction: column;
+            align-items: center; 
+            justify-content: center;
+            margin: 0; 
+        }
+
+        .logo { position: absolute; top: 20px; right: 20px; width: 80px; }
+        
+        /* HEADER */
+        .header {
+            position: absolute; top: 0; left: 0; width: 100%; height: 8px;
+            background: #ddd;
+        }
+        .timer-bar {
+            height: 100%; background: var(--accent); width: 100%;
+            transform-origin: left; transition: width 1s linear;
+        }
+        .timer-bar.urgent { background: var(--red); }
+
+        .status-display {
+            position: absolute; top: 30px; left: 40px;
+            font-size: 20pt; font-weight: 700; color: var(--accent);
+            background: white; padding: 10px 20px; border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            display: flex; gap: 20px;
+        }
+
+        /* MAIN STAGE */
+        .main { 
+            display: flex; flex-direction: column; align-items: center; 
+            width: 100%; max-width: 1200px; padding: 0 20px;
+        }
+        
+        .question-card { 
+            background: white; border: 4px solid var(--accent); 
+            border-radius: 16px; padding: 40px; width: 100%; 
+            text-align: center; min-height: 180px; 
+            display: flex; align-items: center; justify-content: center; 
+            box-shadow: 0 10px 30px rgba(23,50,98,0.1); margin-bottom: 40px; 
+            position: relative; overflow: hidden;
+            transition: all 0.3s;
+        }
+        .question-card h2 { font-size: 32pt; color: var(--primary); line-height: 1.2; margin: 0; z-index: 2; }
+        
+        /* Watermark-like background number */
+        .bg-number {
+            position: absolute; right: -20px; bottom: -40px;
+            font-size: 150pt; font-weight: 900; color: rgba(0,0,0,0.03);
+            z-index: 1; pointer-events: none;
+        }
+
+        /* BUTTON GRID */
+        .grid { 
+            display: grid; grid-template-columns: 1fr 1fr; gap: 30px; 
+            width: 100%; max-width: 1000px; margin-bottom: 30px;
+        }
+        
+        .risk-btn { 
+            height: 120px; border: none; border-radius: 12px; 
+            font-size: 24pt; font-weight: 800; color: white; 
+            cursor: pointer; transition: all 0.2s; 
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.15);
+            position: relative;
+        }
+        
+        .risk-btn:hover:not(:disabled) { transform: translateY(-4px); box-shadow: 0 10px 0 rgba(0,0,0,0.15); filter: brightness(1.1); }
+        .risk-btn:active:not(:disabled) { transform: translateY(0); box-shadow: 0 2px 0 rgba(0,0,0,0.15); }
+        .risk-btn:disabled { cursor: default; }
+
+        /* COLORS */
+        .b-red { background: var(--red); }
+        .b-orange { background: var(--orange); }
+        .b-yellow { background: var(--yellow); color: #231A24; }
+        .b-green { background: var(--green); }
+        
+        /* FEEDBACK STATES */
+        .risk-btn.dimmed { opacity: 0.2; transform: scale(0.95); box-shadow: none; }
+        .risk-btn.correct { 
+            opacity: 1 !important; transform: scale(1.05) !important; 
+            box-shadow: 0 0 40px currentColor !important; z-index: 10;
+            border: 5px solid white;
+        }
+        .risk-btn.wrong {
+            animation: shake 0.5s; background: #555; color: #aaa; box-shadow: none;
+        }
+
+        /* EXPLANATION BOX */
+        .explanation-box {
+            background: white; border-radius: 12px; padding: 30px;
+            width: 100%; max-width: 1000px; text-align: left;
+            border-left: 8px solid var(--accent);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            display: none; animation: slideUp 0.5s ease-out;
+            position: relative;
+        }
+        
+        .expl-title { font-size: 18pt; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+        .expl-text { font-size: 16pt; line-height: 1.5; color: #333; }
+        
+        .btn-next {
+            position: absolute; top: 30px; right: 30px;
+            padding: 15px 40px; background: var(--primary); color: white;
+            border: none; border-radius: 8px; font-size: 16pt; font-weight: 700;
+            cursor: pointer; transition: 0.2s;
+        }
+        .btn-next:hover { background: var(--accent); }
+
+        /* ANIMATIONS */
+        @keyframes shake { 0%, 100% {transform: translateX(0);} 25% {transform: translateX(-10px);} 75% {transform: translateX(10px);} }
+        @keyframes slideUp { from {opacity:0; transform:translateY(20px);} to {opacity:1; transform:translateY(0);} }
+        @keyframes fadeIn { from {opacity:0;} to {opacity:1;} }
+
+        /* END SCREEN */
+        .end-screen {
+            display: none; flex-direction: column; align-items: center;
+            animation: fadeIn 0.8s; text-align: center;
+        }
+        .end-title { font-size: 48pt; font-weight: 900; color: var(--primary); margin-bottom: 20px; }
+        .end-score { font-size: 30pt; color: var(--accent); margin-bottom: 40px; }
+
+    </style>
+</head>
+<body>
+    <img src="https://as-digitalmarketing.de/img/ASS-2024-03_Logo2000x2000_black.png" class="logo">
+    
+    <!-- Timer Bar Top -->
+    <div class="header"><div class="timer-bar" id="timerBar"></div></div>
+
+    <div class="status-display">
+        <span>Frage <span id="qIdx">1</span> / <span id="qTotal">7</span></span>
+        <span style="border-left: 2px solid #ccc; padding-left: 20px;">Punkte: <span id="score">0</span></span>
+    </div>
+
+    <!-- GAME AREA -->
+    <div class="main" id="gameArea">
+        <div class="question-card">
+            <span class="bg-number" id="bgNum">1</span>
+            <h2 id="qText">Lade...</h2>
+        </div>
+        
+        <div class="grid">
+            <button class="risk-btn b-red" id="btn-red" onclick="logIn('red')">🔴 VERBOTEN</button>
+            <button class="risk-btn b-orange" id="btn-orange" onclick="logIn('orange')">🟠 HOCHRISIKO</button>
+            <button class="risk-btn b-yellow" id="btn-yellow" onclick="logIn('yellow')">🟡 BEGRENZT</button>
+            <button class="risk-btn b-green" id="btn-green" onclick="logIn('green')">🟢 MINIMAL</button>
+        </div>
+
+        <div class="explanation-box" id="explBox">
+            <div class="expl-title" id="explTitle"></div>
+            <div class="expl-text" id="explText"></div>
+            <button class="btn-next" onclick="next()">Weiter ➡</button>
+        </div>
+    </div>
+
+    <!-- END SCREEN -->
+    <div class="end-screen" id="endScreen">
+        <div class="end-title">Quiz Beendet!</div>
+        <div class="end-score">Euer Gruppen-Ergebnis:<br><span id="finalScore" style="font-size: 60pt; font-weight: 900;">0</span> Punkte</div>
+        <button class="btn-next" style="position: static;" onclick="location.reload()">Neue Runde starten</button>
+    </div>
+
+    <script>
+        // DATA
+        const scenarios = [
+            { 
+                text: "Echtzeit-Biometrie (Gesichtserkennung) durch die Polizei im öffentlichen Raum.", 
+                correct: "red", 
+                title: "🔴 VERBOTEN (Art. 5)",
+                why: "Dies greift massiv in Grundrechte ein. Es gibt nur sehr enge Ausnahmen (z. B. Terrorabwehr mit richterlichem Beschluss)."
+            },
+            { 
+                text: "Ein Spam-Filter sortiert automatisch Junk-Mails im Email-Postfach aus.", 
+                correct: "green", 
+                title: "🟢 MINIMALES RISIKO",
+                why: "Solche Systeme sind etabliert und stellen kein signifikantes Risiko für Grundrechte dar. Keine speziellen Auflagen."
+            },
+            { 
+                text: "KI zur Bewertung der Kreditwürdigkeit (Scoring) von Privatpersonen.", 
+                correct: "orange", 
+                title: "🟠 HOCHRISIKO (Anhang III)",
+                why: "Da dies über den Zugang zu essenziellen Dienstleistungen entscheidet, gelten strenge Pflichten (Risikomanagement, Datenqualität, Aufsicht)."
+            },
+            { 
+                text: "Ein Chatbot auf der Website hilft Kunden bei einfachen Support-Fragen.", 
+                correct: "yellow", 
+                title: "🟡 BEGRENZTES RISIKO (Transparenz)",
+                why: "Hier gilt Art. 50: Der Nutzer muss wissen, dass er mit einer Maschine spricht ('Impulse zur Transparenz'). Sonst droht Täuschung."
+            },
+            { 
+                text: "KI-System analysiert Bewerbungsfotos im Video-Interview auf Emotionen.", 
+                correct: "red", 
+                title: "🔴 VERBOTEN (Emotionserkennung)",
+                why: "Emotionserkennung am Arbeitsplatz oder in Bildungseinrichtungen ist laut AI Act unzulässig, da unwissenschaftlich und diskriminierend."
+            },
+            { 
+                text: "KI steuert kritische Infrastruktur (z. B. Ampelschaltung, Wasserversorgung).", 
+                correct: "orange", 
+                title: "🟠 HOCHRISIKO",
+                why: "Ein Ausfall oder Fehler hätte drastische Folgen für viele Menschen. Daher: Hohe Sicherheitsanforderungen & Dokumentationspflicht."
+            },
+            { 
+                text: "Deepfake-Erstellung (z. B. Satire-Video) mit KI.", 
+                correct: "yellow", 
+                title: "🟡 BEGRENZTES RISIKO (Kennzeichnung)",
+                why: "KI-generierte Inhalte (Deepfakes) müssen klar als solche gekennzeichnet werden, um Manipulation zu verhindern."
+            }
+        ];
+
+        // STATE
+        let idx = 0;
+        let score = 0;
+        let timerTime = 45; // Seconds per question
+        let timerInt;
+        let active = true;
+
+        // INIT
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('qTotal').innerText = scenarios.length;
+            initRound();
+        });
+
+        function initRound() {
+            // Setup UI
+            active = true;
+            document.getElementById('qIdx').innerText = idx + 1;
+            document.getElementById('bgNum').innerText = idx + 1;
+            document.getElementById('qText').innerText = scenarios[idx].text;
+            document.getElementById('explBox').style.display = 'none';
+            
+            // Reset Buttons
+            const btns = document.querySelectorAll('.risk-btn');
+            btns.forEach(b => {
+                b.disabled = false;
+                b.className = 'risk-btn ' + b.id.replace('btn-','b-'); // Reset classes
+                b.style.transform = 'none';
+            });
+
+            startTimer();
+        }
+
+        function startTimer() {
+            clearInterval(timerInt);
+            timerTime = 45;
+            const bar = document.getElementById('timerBar');
+            bar.style.transition = 'none';
+            bar.style.width = '100%';
+            bar.className = 'timer-bar'; // remove urgent
+
+            // Force reflow
+            void bar.offsetWidth;
+
+            // Start animation
+            bar.style.transition = 'width 45s linear';
+            bar.style.width = '0%';
+            
+            // Logic Timer
+            timerInt = setInterval(() => {
+                timerTime--;
+                if(timerTime < 10) bar.classList.add('urgent');
+                if(timerTime <= 0) resolveTimeOut();
+            }, 1000);
+        }
+
+        function logIn(choice) {
+            if(!active) return;
+            active = false;
+            clearInterval(timerInt);
+            
+            // Stop Timer Visual
+            const bar = document.getElementById('timerBar');
+            const computedStyle = window.getComputedStyle(bar);
+            const w = computedStyle.getPropertyValue('width');
+            bar.style.transition = 'none';
+            bar.style.width = w;
+
+            const correctKey = scenarios[idx].correct;
+            const isCorrect = (choice === correctKey);
+
+            if(isCorrect) score++;
+            document.getElementById('score').innerText = score;
+
+            // Update Buttons Visuals
+            const btns = document.querySelectorAll('.risk-btn');
+            btns.forEach(b => {
+                b.disabled = true;
+                if(b.id === 'btn-' + correctKey) {
+                    b.classList.add('correct');
+                } else if(b.id === 'btn-' + choice && !isCorrect) {
+                    b.classList.add('wrong'); // Shake effect
+                } else {
+                    b.classList.add('dimmed');
+                }
+            });
+
+            showExplanation(isCorrect);
+        }
+
+        function resolveTimeOut() {
+            if(!active) return;
+            active = false;
+            clearInterval(timerInt);
+            
+            const correctKey = scenarios[idx].correct;
+            
+            // Dim all, highlight correct
+            const btns = document.querySelectorAll('.risk-btn');
+            btns.forEach(b => {
+                b.disabled = true;
+                if(b.id === 'btn-' + correctKey) b.classList.add('correct');
+                else b.classList.add('dimmed');
+            });
+
+            showExplanation(false, true); // false = wrong, true = timeout
+        }
+
+        function showExplanation(wasCorrect, wasTimeout = false) {
+            const data = scenarios[idx];
+            const titleEl = document.getElementById('explTitle');
+            const textEl = document.getElementById('explText');
+            const box = document.getElementById('explBox');
+
+            let icon = wasCorrect ? "✅ RICHTIG! " : "❌ FALSCH. ";
+            if(wasTimeout) icon = "⏰ ZU LANGSAM! ";
+
+            titleEl.textContent = icon + data.title;
+            titleEl.style.color = wasCorrect ? "var(--accent)" : "var(--red)";
+            
+            textEl.innerHTML = `<strong>Begründung:</strong> ${data.why}`;
+            
+            setTimeout(() => {
+                box.style.display = 'block';
+            }, 500);
+        }
+
+        function next() {
+            idx++;
+            if(idx < scenarios.length) {
+                initRound();
+            } else {
+                showEndScreen();
+            }
+        }
+
+        function showEndScreen() {
+            document.getElementById('gameArea').style.display = 'none';
+            document.querySelector('.status-display').style.display = 'none';
+            document.querySelector('.header').style.display = 'none';
+            
+            document.getElementById('finalScore').innerText = score;
+            document.getElementById('endScreen').style.display = 'flex';
+        }
+
+    </script>
+</body>
+</html>
