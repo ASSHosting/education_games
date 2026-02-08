@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VHS Ordner-Tetris (Profi-Level)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        .folder-btn {
+            transition: all 0.2s ease;
+        }
+        .folder-btn:active {
+            transform: scale(0.95);
+        }
+        
+        /* Animationen */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        .shake { animation: shake 0.4s ease-in-out; }
+
+        @keyframes pop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        .pop { animation: pop 0.3s ease-in-out; }
+
+        .file-card {
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen flex flex-col items-center justify-center p-4">
+
+    <!-- Start Screen -->
+    <div id="start-screen" class="max-w-2xl w-full bg-white rounded-2xl shadow-xl p-8 text-center">
+        <div class="text-6xl mb-4">🧠</div>
+        <h1 class="text-3xl font-bold text-slate-800 mb-4">Ordner-Tetris: Die Challenge</h1>
+        <p class="text-lg text-slate-600 mb-8">
+            Nicht alles ist so einfach, wie es aussieht!<br>
+            Achten Sie auf den <strong>Inhalt</strong>, nicht nur auf die Dateiendung.
+        </p>
+        
+        <div class="bg-blue-50 p-6 rounded-xl text-left mb-8 border border-blue-100 shadow-inner">
+            <h3 class="font-bold text-blue-800 mb-2">Die goldene Regel für dieses Spiel:</h3>
+            <p class="text-blue-900 italic">
+                "Ein Foto ist nicht immer ein Foto für das Album.<br>
+                Und alte Rechnungen gehören nicht zu den neuen."
+            </p>
+        </div>
+
+        <button onclick="startGame()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-12 rounded-full text-xl shadow-lg transition-transform transform hover:-translate-y-1">
+            Challenge starten
+        </button>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="game-screen" class="hidden max-w-4xl w-full">
+        
+        <!-- Header / Progress -->
+        <div class="flex justify-between items-center mb-6 px-2">
+            <div class="text-slate-500 font-semibold">Fall <span id="current-count">1</span> von 10</div>
+            <div class="text-slate-500 font-semibold">Fehler: <span id="error-count" class="text-red-500">0</span></div>
+        </div>
+
+        <div class="w-full bg-gray-200 rounded-full h-2.5 mb-8">
+            <div id="progress-bar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-500" style="width: 10%"></div>
+        </div>
+
+        <!-- The File to Sort -->
+        <div class="flex justify-center mb-10">
+            <div id="file-card" class="file-card bg-white border-2 border-slate-200 p-8 rounded-2xl text-center w-full max-w-md relative overflow-hidden group">
+                <div class="absolute top-0 left-0 w-full h-2 bg-slate-300"></div>
+                
+                <!-- Icon based on file type -->
+                <div id="file-icon" class="text-6xl mb-4 transition-transform group-hover:scale-110 duration-300">📄</div>
+                
+                <h2 id="file-name" class="text-2xl font-bold text-slate-800 break-words mb-2 leading-tight">
+                    Dateiname.pdf
+                </h2>
+                <div class="text-sm text-slate-500 mt-2">
+                    Dateityp: <span id="file-ext" class="font-mono bg-slate-100 px-2 py-1 rounded">.pdf</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Message Overlay (Full Screen for focus) -->
+        <div id="feedback" class="hidden fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-20 backdrop-blur-sm">
+            <div id="feedback-content" class="bg-white p-8 rounded-2xl shadow-2xl max-w-md w-full text-center transform scale-95 transition-all mx-4">
+                <div id="fb-icon" class="text-5xl mb-4">✅</div>
+                <h3 id="fb-title" class="text-2xl font-bold mb-2">Richtig!</h3>
+                <p id="fb-text" class="text-slate-600 text-lg mb-6 leading-relaxed">Erklärungstext...</p>
+                <button onclick="nextLevel()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-xl transition-colors">
+                    Weiter
+                </button>
+            </div>
+        </div>
+
+        <!-- Folders Grid -->
+        <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <button onclick="checkAnswer('dokumente')" class="folder-btn bg-yellow-100 hover:bg-yellow-200 border-2 border-yellow-300 p-2 md:p-4 rounded-xl flex flex-col items-center gap-2 h-32 justify-center shadow-sm">
+                <span class="text-3xl md:text-4xl">📄</span>
+                <span class="font-bold text-yellow-900 text-sm md:text-base">Dokumente</span>
+            </button>
+            
+            <button onclick="checkAnswer('fotos')" class="folder-btn bg-purple-100 hover:bg-purple-200 border-2 border-purple-300 p-2 md:p-4 rounded-xl flex flex-col items-center gap-2 h-32 justify-center shadow-sm">
+                <span class="text-3xl md:text-4xl">📸</span>
+                <span class="font-bold text-purple-900 text-sm md:text-base">Fotos</span>
+            </button>
+
+            <button onclick="checkAnswer('finanzen')" class="folder-btn bg-green-100 hover:bg-green-200 border-2 border-green-300 p-2 md:p-4 rounded-xl flex flex-col items-center gap-2 h-32 justify-center shadow-sm">
+                <span class="text-3xl md:text-4xl">💰</span>
+                <span class="font-bold text-green-900 text-sm md:text-base">Finanzen</span>
+            </button>
+
+            <button onclick="checkAnswer('projekte')" class="folder-btn bg-orange-100 hover:bg-orange-200 border-2 border-orange-300 p-2 md:p-4 rounded-xl flex flex-col items-center gap-2 h-32 justify-center shadow-sm">
+                <span class="text-3xl md:text-4xl">🔨</span>
+                <span class="font-bold text-orange-900 text-sm md:text-base">Projekte</span>
+            </button>
+
+            <button onclick="checkAnswer('archiv')" class="folder-btn bg-slate-200 hover:bg-slate-300 border-2 border-slate-400 p-2 md:p-4 rounded-xl flex flex-col items-center gap-2 h-32 justify-center shadow-sm">
+                <span class="text-3xl md:text-4xl">📦</span>
+                <span class="font-bold text-slate-800 text-sm md:text-base">Archiv</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- End Screen -->
+    <div id="end-screen" class="hidden max-w-2xl w-full bg-white rounded-2xl shadow-xl p-8 text-center">
+        <div class="text-6xl mb-4">🎓</div>
+        <h1 class="text-3xl font-bold text-slate-800 mb-4">Ausbildung abgeschlossen!</h1>
+        <p class="text-lg text-slate-600 mb-8">
+            Sie haben gelernt, zwischen Dateityp und Inhalt zu unterscheiden.<br>
+            Das ist der Schlüssel zur digitalen Ordnung.
+        </p>
+        
+        <div class="flex justify-center gap-8 mb-8">
+            <div class="text-center">
+                <div class="text-sm text-slate-500">Fehlerquote</div>
+                <div id="final-errors" class="text-3xl font-bold text-red-500">0</div>
+            </div>
+            <div class="text-center">
+                <div class="text-sm text-slate-500">Urteil</div>
+                <div id="final-rating" class="text-3xl font-bold text-blue-600">Digital-Experte</div>
+            </div>
+        </div>
+
+        <button onclick="location.reload()" class="bg-slate-800 hover:bg-slate-900 text-white font-bold py-3 px-8 rounded-full shadow-lg">
+            Neustart
+        </button>
+    </div>
+
+    <script>
+        // TRICKY DATA SET: Designed for learning effect
+        const levels = [
+            // 1. Warm-up (EASY)
+            { 
+                name: "Enkel_Leon_Einschulung.jpg", 
+                folder: "fotos", 
+                type: "img", 
+                ext: ".jpg",
+                reason: "Das ist eine klassische Erinnerung. Ab in den Foto-Ordner!" 
+            },
+            // 2. Standard Finance (EASY)
+            { 
+                name: "Stromrechnung_Stadtwerke_2024.pdf", 
+                folder: "finanzen", 
+                type: "pdf", 
+                ext: ".pdf",
+                reason: "Aktuelle Rechnungen gehören zu Finanzen. Nach 2-3 Jahren dann ins Archiv."
+            },
+            // 3. TRAP: Photo vs Document (HARD)
+            { 
+                name: "Foto_Zählerstand_Heizung.jpg", 
+                folder: "dokumente", 
+                type: "img", 
+                ext: ".jpg",
+                reason: "Achtung! Es ist zwar ein .jpg, aber keine Erinnerung. Es ist ein Beleg -> Dokumente (oder Finanzen)."
+            },
+            // 4. TRAP: Old stuff (HARD)
+            { 
+                name: "Steuerbescheid_Finanzamt_2012.pdf", 
+                folder: "archiv", 
+                type: "pdf", 
+                ext: ".pdf",
+                reason: "Das ist über 10 Jahre alt! Aktive Ordner nicht verstopfen -> Ab ins Archiv."
+            },
+            // 5. Context Project (MEDIUM)
+            { 
+                name: "Ideen_Garten_Umbau.docx", 
+                folder: "projekte", 
+                type: "doc", 
+                ext: ".docx",
+                reason: "Gehört zum Projekt 'Garten'. Wenn der Umbau fertig ist, kann der ganze Projektordner ins Archiv."
+            },
+            // 6. TRAP: Photo vs ID (HARD)
+            { 
+                name: "Scan_Reisepass.jpg", 
+                folder: "dokumente", 
+                type: "img", 
+                ext: ".jpg",
+                reason: "Kein Urlaubsfoto! Das ist ein wichtiges Dokument. Nicht zwischen die Strandbilder mischen."
+            },
+             // 7. Context: Instruction Manual (MEDIUM)
+            { 
+                name: "Anleitung_Waschmaschine.pdf", 
+                folder: "dokumente", 
+                type: "pdf", 
+                ext: ".pdf",
+                reason: "Gebrauchsanweisungen sind klassische Nachschlagewerke -> Dokumente."
+            },
+            // 8. TRAP: Project Invoice (HARD)
+            { 
+                name: "Rechnung_Gartenbauer_Müller.pdf", 
+                folder: "projekte", 
+                type: "pdf", 
+                ext: ".pdf",
+                reason: "Knifflig! Könnte Finanzen sein, aber besser ist: Alles zum 'Garten' in den Projektordner 'Garten'."
+            },
+            // 9. Standard Photo (EASY - Relief)
+            { 
+                name: "Video_Hochzeit_Anna.mp4", 
+                folder: "fotos", 
+                type: "vid", 
+                ext: ".mp4",
+                reason: "Ganz klar: Eine schöne Erinnerung -> Fotos."
+            },
+             // 10. TRAP: Old Contracts (MEDIUM)
+            { 
+                name: "Mietvertrag_Erste_Wohnung_1990.pdf", 
+                folder: "archiv", 
+                type: "pdf", 
+                ext: ".pdf",
+                reason: "Nostalgisch, aber rechtlich inaktiv. Ein klassischer Fall für das Archiv."
+            }
+        ];
+
+        let currentLevel = 0;
+        let errors = 0;
+
+        function startGame() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            renderLevel();
+        }
+
+        function renderLevel() {
+            if (currentLevel >= levels.length) {
+                showEndScreen();
+                return;
+            }
+
+            const file = levels[currentLevel];
+            
+            // Update Text
+            document.getElementById('current-count').innerText = currentLevel + 1;
+            document.getElementById('file-name').innerText = file.name;
+            document.getElementById('file-ext').innerText = file.ext;
+            
+            // Update Icon
+            let icon = "📄";
+            if (file.type === "img") icon = "🖼️";
+            if (file.type === "vid") icon = "🎬";
+            if (file.type === "doc") icon = "📝";
+            if (file.type === "pdf") icon = "📑";
+            document.getElementById('file-icon').innerText = icon;
+
+            // Update Progress
+            const progress = ((currentLevel) / levels.length) * 100;
+            document.getElementById('progress-bar').style.width = `${progress}%`;
+        }
+
+        function checkAnswer(selectedFolder) {
+            const currentData = levels[currentLevel];
+            const correctFolder = currentData.folder;
+            
+            const isCorrect = (selectedFolder === correctFolder);
+            
+            if (!isCorrect) errors++;
+            document.getElementById('error-count').innerText = errors;
+
+            showFeedbackOverlay(isCorrect, currentData);
+        }
+
+        function showFeedbackOverlay(isCorrect, data) {
+            const fb = document.getElementById('feedback');
+            const fbTitle = document.getElementById('fb-title');
+            const fbText = document.getElementById('fb-text');
+            const fbIcon = document.getElementById('fb-icon');
+            
+            fb.classList.remove('hidden');
+            
+            if (isCorrect) {
+                fbIcon.innerText = "✅";
+                fbTitle.innerText = "Richtig!";
+                fbTitle.className = "text-2xl font-bold mb-2 text-green-600";
+            } else {
+                fbIcon.innerText = "💡"; // Lightbulb for learning moment
+                fbTitle.innerText = "Nicht ganz...";
+                fbTitle.className = "text-2xl font-bold mb-2 text-orange-500";
+            }
+            
+            // Show the educational reason regardless of right/wrong to reinforce learning
+            fbText.innerHTML = `<strong>${isCorrect ? 'Genau!' : 'Tipp:'}</strong> ${data.reason}`;
+        }
+
+        function nextLevel() {
+            document.getElementById('feedback').classList.add('hidden');
+            currentLevel++;
+            renderLevel();
+        }
+
+        function showEndScreen() {
+            document.getElementById('game-screen').classList.add('hidden');
+            document.getElementById('end-screen').classList.remove('hidden');
+            document.getElementById('final-errors').innerText = errors;
+            
+            let rating = "Ordnungs-Profi 🏆";
+            if (errors > 2) rating = "Guter Blick für Details 👀";
+            if (errors > 5) rating = "Viel gelernt heute! 📚";
+            
+            document.getElementById('final-rating').innerText = rating;
+        }
+    </script>
+</body>
+</html>

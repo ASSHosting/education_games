@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VHS Notizen-Speedrun (Online Edition)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        .timer-circle {
+            transition: stroke-dashoffset 1s linear;
+        }
+        
+        .pulse-red {
+            animation: pulse-red 1s infinite;
+        }
+        
+        @keyframes pulse-red {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(239, 68, 68, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex flex-col items-center justify-center p-4">
+
+    <!-- 1. VORBEREITUNG (NEU) -->
+    <div id="setup-screen" class="max-w-5xl w-full text-center space-y-8">
+        <h1 class="text-4xl md:text-5xl font-black text-white mb-8">
+            📱 Vorbereitung: Handy bereit?
+        </h1>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-left max-w-4xl mx-auto">
+            
+            <!-- Schritt 1: App finden -->
+            <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="bg-blue-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl">1</div>
+                    <h3 class="text-2xl font-bold">App öffnen</h3>
+                </div>
+                <p class="text-slate-300 mb-6">Suchen Sie auf Ihrem Smartphone nach einer dieser Apps (meist vorinstalliert):</p>
+                <div class="flex gap-4 justify-center bg-slate-900 p-4 rounded-xl">
+                    <!-- Apple Notes Icon Style -->
+                    <div class="flex flex-col items-center gap-2">
+                        <div class="w-12 h-12 bg-yellow-400 rounded-xl border-t-4 border-yellow-200 shadow-lg relative flex items-center justify-center">
+                            <div class="w-8 h-1 bg-white opacity-50 absolute top-3"></div>
+                        </div>
+                        <span class="text-xs text-slate-400">Apple</span>
+                    </div>
+                    <!-- Google Keep Icon Style -->
+                    <div class="flex flex-col items-center gap-2">
+                        <div class="w-12 h-12 bg-yellow-500 rounded-xl shadow-lg flex items-center justify-center relative">
+                            <div class="w-6 h-8 bg-white rounded-sm shadow-sm flex items-center justify-center">
+                                <div class="w-4 h-4 border-2 border-slate-300 rounded-full"></div>
+                            </div>
+                            <div class="absolute -right-1 -top-1 w-4 h-4 bg-yellow-300 rounded-bl-lg"></div>
+                        </div>
+                        <span class="text-xs text-slate-400">Google</span>
+                    </div>
+                    <!-- Generic Pen -->
+                    <div class="flex flex-col items-center gap-2">
+                        <div class="w-12 h-12 bg-orange-500 rounded-xl shadow-lg flex items-center justify-center">
+                            <span class="text-2xl">✏️</span>
+                        </div>
+                        <span class="text-xs text-slate-400">Samsung</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Schritt 2: Handy-Teilnehmer -->
+            <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700">
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="bg-purple-600 text-white w-10 h-10 rounded-full flex items-center justify-center font-bold text-xl">!</div>
+                    <h3 class="text-2xl font-bold">Sie sind am Handy in der Konferenz?</h3>
+                </div>
+                <ul class="space-y-4 text-slate-300 text-sm">
+                    <li class="flex gap-3">
+                        <span class="text-xl">🔊</span>
+                        <span>Keine Sorge: Sie hören mich weiter, wenn Sie die App wechseln.</span>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-xl">🔄</span>
+                        <span>Drücken Sie kurz den <strong>Home-Button</strong> oder wischen Sie nach oben, um zu den Notizen zu wechseln.</span>
+                    </li>
+                    <li class="flex gap-3">
+                        <span class="text-xl">🔙</span>
+                        <span>Kommen Sie danach einfach wieder zurück in diesen Browser/App.</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <button onclick="showMenu()" class="mt-8 bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 px-12 rounded-full text-xl shadow-lg transition-transform transform hover:-translate-y-1">
+            Alles klar, weiter zur Auswahl! →
+        </button>
+    </div>
+
+    <!-- 2. AUSWAHL-MENÜ -->
+    <div id="menu" class="hidden max-w-4xl w-full text-center space-y-8">
+        <h1 class="text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 to-orange-500 mb-4">
+            📝 Notizen-Speedrun
+        </h1>
+        <p class="text-xl text-slate-300 mb-12">
+            Wählen Sie ein Szenario für die Live-Challenge:
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Szenario 1 -->
+            <button onclick="startScenario(0)" class="group bg-slate-800 hover:bg-slate-700 border-2 border-slate-700 hover:border-green-400 rounded-2xl p-8 transition-all hover:-translate-y-2">
+                <div class="text-4xl mb-4">🚗</div>
+                <h3 class="text-2xl font-bold text-white mb-2">Parkhaus</h3>
+                <p class="text-green-400 font-bold mb-2">Einfach (60s)</p>
+                <p class="text-slate-400 text-sm">Ort merken, bevor man es vergisst.</p>
+            </button>
+
+            <!-- Szenario 2 -->
+            <button onclick="startScenario(1)" class="group bg-slate-800 hover:bg-slate-700 border-2 border-slate-700 hover:border-yellow-400 rounded-2xl p-8 transition-all hover:-translate-y-2">
+                <div class="text-4xl mb-4">🛒</div>
+                <h3 class="text-2xl font-bold text-white mb-2">Einkauf</h3>
+                <p class="text-yellow-400 font-bold mb-2">Mittel (75s)</p>
+                <p class="text-slate-400 text-sm">Schnelle Liste auf Zuruf.</p>
+            </button>
+
+            <!-- Szenario 3 -->
+            <button onclick="startScenario(2)" class="group bg-slate-800 hover:bg-slate-700 border-2 border-slate-700 hover:border-red-400 rounded-2xl p-8 transition-all hover:-translate-y-2">
+                <div class="text-4xl mb-4">✈️</div>
+                <h3 class="text-2xl font-bold text-white mb-2">Urlaub</h3>
+                <p class="text-red-400 font-bold mb-2">Schwer (90s)</p>
+                <p class="text-slate-400 text-sm">Checkliste zum Abhaken.</p>
+            </button>
+        </div>
+    </div>
+
+    <!-- 3. GAME SCREEN -->
+    <div id="game" class="hidden max-w-5xl w-full flex flex-col md:flex-row gap-8 items-center">
+        
+        <!-- Left: Scenario Card -->
+        <div class="w-full md:w-2/3 bg-white text-slate-900 rounded-3xl p-8 md:p-12 shadow-2xl relative overflow-hidden">
+            <div id="scenario-icon" class="absolute top-0 right-0 text-9xl opacity-10 transform translate-x-1/4 -translate-y-1/4">🚗</div>
+            
+            <div class="inline-block px-4 py-1 rounded-full bg-slate-200 text-slate-700 font-bold text-sm mb-6">
+                AUFGABE
+            </div>
+            
+            <h2 id="scenario-title" class="text-3xl md:text-4xl font-black mb-6 leading-tight">
+                Der Parkplatz-Merker
+            </h2>
+            
+            <div class="space-y-6 text-lg">
+                <div class="flex gap-4">
+                    <span class="text-2xl">📍</span>
+                    <div>
+                        <strong class="block text-slate-500 text-sm uppercase tracking-wide">Situation</strong>
+                        <span id="scenario-desc">Sie parken im riesigen Parkhaus...</span>
+                    </div>
+                </div>
+
+                <div class="bg-blue-50 border-l-4 border-blue-500 p-4 rounded-r-lg">
+                    <strong class="block text-blue-800 text-sm uppercase tracking-wide mb-1">Das muss notiert werden:</strong>
+                    <span id="scenario-info" class="text-2xl font-bold text-blue-900 font-mono break-words">Ebene 4, Sektor B, Platz 128</span>
+                </div>
+
+                <div class="flex gap-4 items-center">
+                    <span class="text-2xl">📱</span>
+                    <div>
+                        <strong class="block text-slate-500 text-sm uppercase tracking-wide">Ihr Ziel</strong>
+                        <span id="scenario-task">Notiz "Auto" + Text</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Timer -->
+        <div class="w-full md:w-1/3 flex flex-col items-center justify-center">
+            <div class="relative w-48 h-48 md:w-64 md:h-64 flex items-center justify-center mb-8">
+                <!-- SVG Timer Circle -->
+                <svg class="w-full h-full transform -rotate-90">
+                    <circle cx="50%" cy="50%" r="45%" stroke="currentColor" stroke-width="8" fill="transparent" class="text-slate-800" />
+                    <circle id="timer-ring" cx="50%" cy="50%" r="45%" stroke="currentColor" stroke-width="8" fill="transparent" class="text-green-500 timer-circle" stroke-dasharray="283" stroke-dashoffset="0" stroke-linecap="round" />
+                </svg>
+                <div id="timer-text" class="absolute text-5xl md:text-6xl font-black font-mono">60</div>
+            </div>
+
+            <div id="timer-status" class="text-xl font-bold text-slate-400 mb-8 text-center">App geöffnet?</div>
+
+            <button id="action-btn" onclick="toggleTimer()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-xl text-xl shadow-lg transition-transform active:scale-95">
+                Starten
+            </button>
+            
+            <button onclick="resetGame()" class="mt-4 text-slate-500 hover:text-white underline text-sm">
+                Abbrechen
+            </button>
+        </div>
+    </div>
+
+    <!-- 4. DONE SCREEN -->
+    <div id="done-screen" class="hidden max-w-3xl w-full text-center p-4">
+        <div class="text-8xl mb-4 animate-bounce">🎉</div>
+        <h2 class="text-4xl md:text-5xl font-black text-white mb-6">Zeit abgelaufen!</h2>
+        
+        <div class="bg-slate-800 p-8 rounded-2xl border border-slate-700 mb-8 text-left">
+            <h3 class="text-2xl font-bold mb-4 text-yellow-400">Jetzt im Chat posten:</h3>
+            <ul class="space-y-4 text-xl">
+                <li class="flex items-start gap-3">
+                    <span class="text-green-400 font-bold">Variante A:</span>
+                    <span>Tippen Sie den <strong>Titel Ihrer Notiz</strong> in den Chat. (z.B. "Auto")</span>
+                </li>
+                <li class="flex items-start gap-3">
+                    <span class="text-blue-400 font-bold">Variante B:</span>
+                    <span>Einfach ein "✅" oder "Geschafft" senden.</span>
+                </li>
+            </ul>
+        </div>
+
+        <button onclick="resetGame()" class="bg-white text-slate-900 font-bold py-3 px-8 rounded-full text-xl hover:bg-slate-200 transition-colors">
+            Zurück zur Auswahl
+        </button>
+    </div>
+
+    <script>
+        const scenarios = [
+            {
+                title: "Der Parkplatz-Merker",
+                icon: "🚗",
+                desc: "Sie sind im Parkhaus. Sie wollen das Auto später wiederfinden.",
+                info: "Ebene 4, Sektor B, Platz 128 (blau)",
+                task: "Neue Notiz: 'Auto' + Standort",
+                time: 60,
+                color: "text-green-500"
+            },
+            {
+                title: "Der Diktat-Einkauf",
+                icon: "🛒",
+                desc: "Partner am Telefon: 'Bring das bitte dringend für den Kuchen mit!'",
+                info: "Mehl, Zucker, Eier, Backpulver, Vanille",
+                task: "Liste untereinander schreiben",
+                time: 75,
+                color: "text-yellow-400"
+            },
+            {
+                title: "Urlaubs-Checkliste",
+                icon: "✈️",
+                desc: "Morgen geht es los. Haus sicher machen.",
+                info: "Blumen gießen, Müll raus, Stecker ziehen, Fenster zu",
+                task: "Checkboxen (Abhaken) nutzen!",
+                time: 90,
+                color: "text-red-500"
+            }
+        ];
+
+        let currentScenarioIndex = 0;
+        let timeLeft = 0;
+        let timerInterval;
+        let isRunning = false;
+        // Circumference of circle r=45% roughly 283 units for stroke-dasharray
+        const FULL_DASH_ARRAY = 283; 
+
+        function showMenu() {
+            document.getElementById('setup-screen').classList.add('hidden');
+            document.getElementById('menu').classList.remove('hidden');
+        }
+
+        function startScenario(index) {
+            currentScenarioIndex = index;
+            const s = scenarios[index];
+            
+            document.getElementById('menu').classList.add('hidden');
+            document.getElementById('done-screen').classList.add('hidden');
+            document.getElementById('game').classList.remove('hidden');
+            
+            // Populate content
+            document.getElementById('scenario-title').innerText = s.title;
+            document.getElementById('scenario-icon').innerText = s.icon;
+            document.getElementById('scenario-desc').innerText = s.desc;
+            document.getElementById('scenario-info').innerText = s.info;
+            document.getElementById('scenario-task').innerText = s.task;
+            
+            // Setup Timer
+            timeLeft = s.time;
+            document.getElementById('timer-text').innerText = timeLeft;
+            document.getElementById('timer-ring').style.strokeDashoffset = 0;
+            document.getElementById('timer-ring').setAttribute("class", `timer-circle ${s.color}`);
+            
+            document.getElementById('action-btn').innerText = "Starten";
+            document.getElementById('action-btn').className = "w-full bg-green-500 hover:bg-green-600 text-white font-bold py-4 rounded-xl text-xl shadow-lg transition-transform active:scale-95";
+            document.getElementById('timer-status').innerText = "App geöffnet?";
+            
+            isRunning = false;
+        }
+
+        function toggleTimer() {
+            if (isRunning) return;
+            
+            isRunning = true;
+            document.getElementById('action-btn').innerText = "Läuft...";
+            document.getElementById('action-btn').classList.replace('bg-green-500', 'bg-slate-600');
+            document.getElementById('timer-status').innerText = "Zeit läuft!";
+            
+            const totalTime = scenarios[currentScenarioIndex].time;
+            
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer-text').innerText = timeLeft;
+                
+                // Update Circle
+                const offset = FULL_DASH_ARRAY - (timeLeft / totalTime) * FULL_DASH_ARRAY;
+                document.getElementById('timer-ring').style.strokeDashoffset = offset;
+
+                // Panic Mode last 10 seconds
+                if (timeLeft <= 10) {
+                    // remove specific color classes and add red
+                    const ring = document.getElementById('timer-ring');
+                    ring.setAttribute("class", "timer-circle text-red-600"); 
+                    document.getElementById('timer-text').classList.add('pulse-red');
+                }
+
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    finishGame();
+                }
+            }, 1000);
+        }
+
+        function finishGame() {
+            document.getElementById('game').classList.add('hidden');
+            document.getElementById('done-screen').classList.remove('hidden');
+            // Play sound? (Optional, kept silent for classroom safety)
+        }
+
+        function resetGame() {
+            clearInterval(timerInterval);
+            document.getElementById('timer-text').classList.remove('pulse-red');
+            document.getElementById('menu').classList.remove('hidden');
+            document.getElementById('game').classList.add('hidden');
+            document.getElementById('done-screen').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>

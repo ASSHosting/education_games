@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VHS Cloud-Rettungs-Mission</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        
+        .scenario-card {
+            transition: all 0.5s ease;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .pulse-chat {
+            animation: pulse-chat 2s infinite;
+        }
+
+        @keyframes pulse-chat {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-white min-h-screen flex flex-col items-center justify-center p-4">
+
+    <!-- START SCREEN -->
+    <div id="start-screen" class="max-w-4xl w-full text-center">
+        <div class="text-8xl mb-6">🌩️</div>
+        <h1 class="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-cyan-300 mb-6">
+            Cloud-Rettungs-Mission
+        </h1>
+        <p class="text-2xl text-slate-300 mb-12 max-w-2xl mx-auto">
+            Drei Katastrophen. Drei Schicksale.<br>
+            Entscheiden Sie im Chat: <strong>Sind die Daten sicher?</strong>
+        </p>
+        <button onclick="startMission()" class="bg-blue-600 hover:bg-blue-500 text-white font-bold py-4 px-12 rounded-full text-2xl shadow-lg transition-transform hover:-translate-y-1">
+            Mission starten
+        </button>
+    </div>
+
+    <!-- SCENARIO SCREEN -->
+    <div id="scenario-screen" class="hidden max-w-5xl w-full flex flex-col gap-8">
+        
+        <!-- Progress Header -->
+        <div class="flex justify-between items-end border-b border-slate-700 pb-4">
+            <div class="text-slate-400 text-sm font-bold tracking-widest uppercase">Fallakte <span id="current-num">1</span>/3</div>
+            <div class="flex gap-2">
+                <div id="dot-1" class="w-3 h-3 rounded-full bg-slate-600"></div>
+                <div id="dot-2" class="w-3 h-3 rounded-full bg-slate-600"></div>
+                <div id="dot-3" class="w-3 h-3 rounded-full bg-slate-600"></div>
+            </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-8">
+            <!-- Left: The Disaster Story -->
+            <div class="md:w-1/2 bg-slate-800 rounded-3xl p-8 border border-slate-700 shadow-2xl relative overflow-hidden">
+                <div id="s-icon" class="text-9xl absolute -right-4 -bottom-4 opacity-10 grayscale">☕</div>
+                
+                <h2 id="s-title" class="text-3xl font-bold text-white mb-6">Der Kaffee-Schock</h2>
+                
+                <div class="space-y-6 text-lg text-slate-300">
+                    <div>
+                        <strong class="text-blue-400 uppercase text-xs tracking-wider block mb-1">Das Opfer</strong>
+                        <span id="s-person" class="text-xl text-white font-bold">Sabine (55), Autorin</span>
+                    </div>
+                    
+                    <div>
+                        <strong class="text-red-400 uppercase text-xs tracking-wider block mb-1">Die Katastrophe</strong>
+                        <p id="s-desc">Sabine arbeitet an ihrem Roman. Sie stößt ihre volle Kaffeetasse um. Der Laptop brutzelt, Bildschirm schwarz. Festplatte zerstört.</p>
+                    </div>
+
+                    <div class="bg-slate-900/50 p-4 rounded-xl border-l-4 border-blue-500">
+                        <strong class="text-slate-400 uppercase text-xs tracking-wider block mb-1">Backup-Status</strong>
+                        <p id="s-backup" class="text-white italic">"Ich speichere alles automatisch in meinem OneDrive-Ordner."</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: The Vote & Resolution -->
+            <div class="md:w-1/2 flex flex-col justify-center">
+                
+                <!-- PHASE 1: VOTE -->
+                <div id="vote-phase" class="text-center fade-in">
+                    <h3 class="text-3xl font-bold mb-8">Sind Sabines Daten sicher?</h3>
+                    
+                    <div class="grid grid-cols-2 gap-4 mb-8">
+                        <div class="bg-slate-800 p-6 rounded-2xl border-2 border-slate-700 opacity-80">
+                            <span class="text-4xl block mb-2">😱</span>
+                            <strong class="text-xl text-red-400">A) Alles weg!</strong>
+                            <p class="text-sm text-slate-500 mt-2">Der Computer ist kaputt.</p>
+                        </div>
+                        <div class="bg-slate-800 p-6 rounded-2xl border-2 border-slate-700 opacity-80">
+                            <span class="text-4xl block mb-2">😌</span>
+                            <strong class="text-xl text-green-400">B) Alles sicher!</strong>
+                            <p class="text-sm text-slate-500 mt-2">Dank der Cloud.</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-blue-900/30 border border-blue-500/30 p-6 rounded-xl pulse-chat mb-8">
+                        <p class="text-blue-300 font-bold text-xl uppercase tracking-widest">
+                            👇 Jetzt im Chat abstimmen 👇
+                        </p>
+                        <p class="text-white text-4xl font-black mt-2">A oder B?</p>
+                    </div>
+
+                    <button onclick="revealAnswer()" class="text-slate-400 hover:text-white underline decoration-dotted">
+                        Auflösung zeigen
+                    </button>
+                </div>
+
+                <!-- PHASE 2: RESOLUTION (Hidden initially) -->
+                <div id="resolution-phase" class="hidden text-center fade-in bg-white text-slate-900 p-8 rounded-3xl shadow-2xl relative">
+                    <div id="res-badge" class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-green-500 text-white font-black py-2 px-6 rounded-full shadow-lg text-xl">
+                        ANTWORT B
+                    </div>
+
+                    <div id="res-icon" class="text-6xl mb-4 mt-4">✅</div>
+                    
+                    <h3 id="res-title" class="text-2xl font-bold mb-4">Die Daten sind sicher!</h3>
+                    
+                    <p id="res-text" class="text-lg text-slate-600 mb-8 leading-relaxed">
+                        Der Laptop ist Schrott, aber die Cloud ist ein <strong>anderer Ort</strong>. Sabine kauft einen neuen Laptop, meldet sich an, und ihr Roman ist wieder da.
+                    </p>
+
+                    <button onclick="nextScenario()" class="w-full bg-slate-900 text-white font-bold py-4 rounded-xl hover:bg-slate-700 transition-colors">
+                        Nächster Fall →
+                    </button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- END SCREEN -->
+    <div id="end-screen" class="hidden max-w-3xl w-full text-center">
+        <div class="text-8xl mb-6">🛡️</div>
+        <h1 class="text-5xl font-bold text-white mb-6">Mission Erfüllt</h1>
+        
+        <div class="bg-slate-800 p-8 rounded-3xl text-left border border-slate-700 shadow-2xl">
+            <h3 class="text-2xl font-bold text-blue-400 mb-6">Das haben wir gelernt:</h3>
+            <ul class="space-y-6 text-xl text-slate-200">
+                <li class="flex gap-4">
+                    <span class="bg-slate-700 w-12 h-12 flex items-center justify-center rounded-full text-2xl flex-shrink-0">☕</span>
+                    <span><strong>Hardware ist ersetzbar.</strong> Wenn der Laptop stirbt, lebt die Cloud weiter.</span>
+                </li>
+                <li class="flex gap-4">
+                    <span class="bg-slate-700 w-12 h-12 flex items-center justify-center rounded-full text-2xl flex-shrink-0">🚆</span>
+                    <span><strong>Diebstahl ist kein Datenverlust.</strong> Der Dieb hat das Gerät, aber nicht Ihre Erinnerungen.</span>
+                </li>
+                <li class="flex gap-4">
+                    <span class="bg-slate-700 w-12 h-12 flex items-center justify-center rounded-full text-2xl flex-shrink-0">🔥</span>
+                    <span><strong>Haus-Katastrophen</strong> (Brand/Wasser) zerstören auch Backups im Regal. Die Cloud ist der sichere Hafen extern.</span>
+                </li>
+            </ul>
+        </div>
+        
+        <button onclick="location.reload()" class="mt-8 text-slate-500 hover:text-white underline">
+            Neustart
+        </button>
+    </div>
+
+    <script>
+        const scenarios = [
+            {
+                title: "Der Kaffee-Schock",
+                icon: "☕",
+                person: "Sabine (55), Autorin",
+                desc: "Sabine kippt versehentlich eine volle Tasse heißen Kaffee über ihren laufenden Laptop. Es zischt, Rauch steigt auf. Der Computer ist mausetot.",
+                backup: "Sie nutzt OneDrive und speichert alle Dokumente dort automatisch.",
+                correct: "B",
+                resTitle: "Gerettet! ✅",
+                resText: "Hardware kann man kaufen, Daten nicht. Da Sabine in der Cloud gespeichert hat, liegen ihre Daten auf den Microsoft-Servern. Neuer Laptop, Passwort eingeben, Roman weiterschreiben.",
+                badgeColor: "bg-green-500"
+            },
+            {
+                title: "Der Diebstahl im Zug",
+                icon: "🚆",
+                person: "Jürgen (68), Hobby-Fotograf",
+                desc: "Auf der Heimreise vom Urlaub wird Jürgens Rucksack im Zug gestohlen. Darin: Seine teure Kamera, sein Tablet und alle Speicherkarten.",
+                backup: "Sein Tablet war so eingestellt, dass es Fotos nachts automatisch in die iCloud lädt.",
+                correct: "B",
+                resTitle: "Gerettet! ✅",
+                resText: "Jürgen hat zwar Kamera und Tablet verloren (teuer!), aber nicht die Erinnerungen. Er kann sich zuhause am PC einloggen und alle Fotos sind da.",
+                badgeColor: "bg-green-500"
+            },
+            {
+                title: "Der Wohnungsbrand",
+                icon: "🔥",
+                person: "Monika (62), Rentnerin",
+                desc: "Es brennt im Arbeitszimmer. Monika rettet sich ins Freie. Ihr PC und ihre externe Festplatte (mit allen Backups!) standen auf dem Schreibtisch und verbrennen.",
+                backup: "Sie hatte KEIN Cloud-Backup, hat sich nur auf die externe Festplatte verlassen.",
+                correct: "A",
+                resTitle: "Alles verloren ❌",
+                resText: "Das ist der Albtraum. Da das Backup (Festplatte) direkt neben dem Original (PC) lag, wurden BEIDE zerstört. Deshalb gilt: Ein Backup muss immer 'außer Haus' sein (Cloud).",
+                badgeColor: "bg-red-500"
+            }
+        ];
+
+        let currentIdx = 0;
+
+        function startMission() {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('scenario-screen').classList.remove('hidden');
+            renderScenario();
+        }
+
+        function renderScenario() {
+            const s = scenarios[currentIdx];
+            
+            // Reset View
+            document.getElementById('vote-phase').classList.remove('hidden');
+            document.getElementById('resolution-phase').classList.add('hidden');
+            
+            // Update Dots
+            for(let i=1; i<=3; i++) {
+                const dot = document.getElementById(`dot-${i}`);
+                if(i <= currentIdx + 1) dot.classList.replace('bg-slate-600', 'bg-blue-500');
+            }
+            document.getElementById('current-num').innerText = currentIdx + 1;
+
+            // Content
+            document.getElementById('s-title').innerText = s.title;
+            document.getElementById('s-icon').innerText = s.icon;
+            document.getElementById('s-person').innerText = s.person;
+            document.getElementById('s-desc').innerText = s.desc;
+            document.getElementById('s-backup').innerText = `"${s.backup}"`;
+
+            // Adjust Resolution content for later
+            const badge = document.getElementById('res-badge');
+            badge.innerText = `ANTWORT ${s.correct}`;
+            badge.className = `absolute -top-6 left-1/2 transform -translate-x-1/2 text-white font-black py-2 px-6 rounded-full shadow-lg text-xl ${s.badgeColor}`;
+            
+            document.getElementById('res-title').innerText = s.resTitle;
+            document.getElementById('res-icon').innerText = s.correct === 'B' ? '😌' : '😱';
+            document.getElementById('res-text').innerHTML = s.resText;
+        }
+
+        function revealAnswer() {
+            document.getElementById('vote-phase').classList.add('hidden');
+            document.getElementById('resolution-phase').classList.remove('hidden');
+        }
+
+        function nextScenario() {
+            currentIdx++;
+            if(currentIdx < scenarios.length) {
+                renderScenario();
+            } else {
+                document.getElementById('scenario-screen').classList.add('hidden');
+                document.getElementById('end-screen').classList.remove('hidden');
+            }
+        }
+    </script>
+</body>
+</html>
