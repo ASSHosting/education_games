@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cybermobbing &ndash; Was tust du zuerst? &middot; VHS Digitale Selbstverteidigung</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@300;400;500;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --weinrot: #631832;
+  --weinrot-soft: #8a3d54;
+  --weinrot-pale: #f7eef1;
+  --dunkelblau: #173262;
+  --bg: #FFFFFF;
+  --schwarz: #0A0A0A;
+  --text: #1A1A1A;
+  --muted: #6E6E6E;
+  --line: rgba(10, 10, 10, 0.1);
+  --line-strong: rgba(10, 10, 10, 0.25);
+  --gruen: #1e6e3a;
+  --gruen-pale: #e8f3ec;
+  --rot-falsch: #a12027;
+  --rot-pale: #fbeced;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+body { padding: 48px 24px 80px; display: flex; justify-content: center; }
+.stage { width: 100%; max-width: 880px; }
+.header { border-bottom: 1px solid var(--line); padding-bottom: 28px; margin-bottom: 28px; }
+.eyebrow {
+  font-family: 'Archivo', sans-serif;
+  font-size: 10px; font-weight: 700;
+  letter-spacing: 0.24em; text-transform: uppercase;
+  color: var(--weinrot);
+  display: flex; align-items: center; gap: 10px; margin-bottom: 18px;
+}
+.eyebrow::before { content: ''; width: 14px; height: 2px; background: var(--weinrot); }
+.title {
+  font-family: 'Archivo', sans-serif;
+  font-size: 52px; line-height: 0.92; letter-spacing: -0.025em;
+  font-weight: 300; color: var(--schwarz); margin-bottom: 18px;
+}
+.title strong { font-weight: 800; color: var(--weinrot); display: block; }
+.lead { font-size: 15px; color: var(--muted); max-width: 620px; line-height: 1.6; }
+
+.phases {
+  display: flex; gap: 0; margin-bottom: 36px;
+  border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+}
+.phase {
+  flex: 1; padding: 14px 12px; border-right: 1px solid var(--line);
+  font-family: 'Archivo', sans-serif;
+  font-size: 9px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--muted); opacity: 0.4;
+  transition: opacity 0.3s, color 0.3s; text-align: center;
+}
+.phase:last-child { border-right: none; }
+.phase.active { opacity: 1; color: var(--weinrot); }
+.phase .num { display: block; font-size: 14px; font-weight: 800; margin-bottom: 4px; }
+
+.progress-row {
+  display: flex; align-items: center; gap: 16px; margin-bottom: 36px;
+  font-family: 'Archivo', sans-serif;
+  font-size: 10px; font-weight: 600; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--muted);
+}
+.progress-track { flex: 1; height: 2px; background: var(--line); position: relative; }
+.progress-fill { position: absolute; inset: 0 auto 0 0; background: var(--weinrot); transition: width 0.35s ease; width: 0%; }
+
+.priming { animation: fadeIn 0.4s ease; }
+.priming-goal {
+  background: var(--weinrot-pale);
+  border-left: 3px solid var(--weinrot);
+  padding: 20px 24px; margin-bottom: 28px;
+}
+.priming-goal .label {
+  font-family: 'Archivo', sans-serif;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--weinrot); margin-bottom: 8px;
+}
+.priming-goal p { font-size: 15px; line-height: 1.55; color: var(--schwarz); font-weight: 500; }
+.priming h2 {
+  font-family: 'Archivo', sans-serif;
+  font-size: 28px; line-height: 1.2; font-weight: 800;
+  color: var(--schwarz); margin-bottom: 18px; letter-spacing: -0.015em;
+}
+.priming p.body { font-size: 15px; line-height: 1.65; color: var(--text); margin-bottom: 16px; max-width: 680px; }
+
+.scenario { animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.scenario-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; margin-bottom: 18px; }
+.scenario-label {
+  font-family: 'Archivo', sans-serif;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--weinrot);
+}
+.learning-goal {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px; color: var(--muted); text-align: right;
+  max-width: 300px; line-height: 1.45; font-style: italic;
+}
+.learning-goal b { color: var(--weinrot); font-style: normal; font-weight: 600; }
+
+.scenario-text {
+  font-family: 'Archivo', sans-serif;
+  font-size: 26px; line-height: 1.22; font-weight: 400;
+  color: var(--schwarz); letter-spacing: -0.01em; margin-bottom: 14px; max-width: 720px;
+}
+.scenario-question {
+  font-family: 'Archivo', sans-serif;
+  font-size: 20px; font-weight: 800; color: var(--weinrot);
+  letter-spacing: -0.005em; margin-bottom: 32px;
+}
+
+.options { display: flex; flex-direction: column; gap: 14px; list-style: none; margin-bottom: 28px; }
+.options li { list-style: none; }
+.option {
+  width: 100%; text-align: left;
+  background: var(--bg); border: 1.5px solid var(--line-strong);
+  padding: 22px 26px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15px; line-height: 1.5; color: var(--text);
+  cursor: pointer; display: flex; align-items: flex-start; gap: 18px;
+  transition: border-color 0.15s, background 0.15s, transform 0.1s;
+  font-weight: 500;
+}
+.option:hover:not(:disabled) { border-color: var(--weinrot); background: var(--weinrot-pale); }
+.option:active:not(:disabled) { transform: translateY(1px); }
+.option:disabled { cursor: default; }
+.option:focus-visible { outline: 3px solid var(--weinrot); outline-offset: 3px; }
+.option-letter {
+  flex-shrink: 0; width: 32px; height: 32px;
+  border: 1.5px solid var(--line-strong);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Archivo', sans-serif;
+  font-weight: 700; font-size: 13px; color: var(--weinrot);
+}
+.option.correct { border-color: var(--gruen); background: var(--gruen-pale); }
+.option.correct .option-letter { background: var(--gruen); color: #fff; border-color: var(--gruen); }
+.option.wrong { border-color: var(--rot-falsch); background: var(--rot-pale); }
+.option.wrong .option-letter { background: var(--rot-falsch); color: #fff; border-color: var(--rot-falsch); }
+.option.dim { opacity: 0.45; }
+
+.explanation {
+  background: var(--dunkelblau); color: #fff;
+  padding: 28px 32px; margin-bottom: 28px;
+  display: none; animation: fadeIn 0.3s ease;
+}
+.explanation.show { display: block; }
+.explanation-label {
+  font-family: 'Archivo', sans-serif;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
+  color: #D4A5B5; margin-bottom: 12px;
+}
+.explanation h3 {
+  font-family: 'Archivo', sans-serif;
+  font-size: 20px; font-weight: 800; letter-spacing: -0.01em;
+  margin-bottom: 14px; line-height: 1.25;
+}
+.explanation p { font-size: 14px; line-height: 1.6; color: rgba(255, 255, 255, 0.92); margin-bottom: 12px; }
+.explanation p:last-child { margin-bottom: 0; }
+.explanation b { color: #fff; font-weight: 600; }
+.explanation .rule-callout {
+  margin-top: 18px; padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  font-family: 'Archivo', sans-serif;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+  color: #D4A5B5;
+}
+
+.actions { display: flex; justify-content: flex-end; gap: 12px; }
+.btn {
+  font-family: 'Archivo', sans-serif;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase;
+  padding: 16px 28px;
+  border: 1.5px solid var(--weinrot);
+  background: var(--weinrot); color: #fff;
+  cursor: pointer; display: none;
+  transition: background 0.15s, transform 0.1s;
+}
+.btn:hover { background: var(--weinrot-soft); border-color: var(--weinrot-soft); }
+.btn:active { transform: translateY(1px); }
+.btn.show { display: inline-block; }
+.btn:focus-visible { outline: 3px solid var(--weinrot); outline-offset: 3px; }
+.btn-ghost { background: transparent; color: var(--weinrot); }
+.btn-ghost:hover { background: var(--weinrot-pale); }
+
+.result { display: none; animation: fadeIn 0.4s ease; }
+.result.show { display: block; }
+
+.schema-box {
+  border: 2px solid var(--weinrot);
+  padding: 32px 36px; margin-bottom: 36px;
+  background: var(--weinrot-pale);
+}
+.schema-box .label {
+  font-family: 'Archivo', sans-serif;
+  font-size: 10px; font-weight: 700; letter-spacing: 0.22em; text-transform: uppercase;
+  color: var(--weinrot); margin-bottom: 10px;
+}
+.schema-box .rule {
+  font-family: 'Archivo', sans-serif;
+  font-size: 36px; line-height: 1.1; font-weight: 800;
+  color: var(--schwarz); letter-spacing: -0.02em;
+}
+.schema-box .rule em { color: var(--weinrot); font-style: normal; }
+
+.result-number {
+  font-family: 'Archivo', sans-serif;
+  font-size: 110px; line-height: 0.85; font-weight: 800;
+  color: var(--weinrot); letter-spacing: -0.04em; margin-bottom: 4px;
+}
+.result-number small { font-size: 40px; color: var(--muted); font-weight: 300; }
+.result-headline {
+  font-family: 'Archivo', sans-serif;
+  font-size: 30px; font-weight: 800; color: var(--schwarz);
+  letter-spacing: -0.02em; margin-bottom: 16px; line-height: 1.15;
+}
+.result-text { font-size: 15px; line-height: 1.6; color: var(--text); max-width: 620px; margin-bottom: 32px; }
+
+.takeaway-list {
+  list-style: none;
+  border-top: 1px solid var(--line);
+  padding-top: 28px; margin-bottom: 36px;
+}
+.takeaway-list li {
+  padding: 16px 0 16px 28px; position: relative;
+  font-size: 14px; line-height: 1.55;
+  border-bottom: 1px solid var(--line);
+}
+.takeaway-list li:last-child { border-bottom: none; }
+.takeaway-list li::before {
+  content: ''; position: absolute; left: 0; top: 23px;
+  width: 14px; height: 2px; background: var(--weinrot);
+}
+.takeaway-list li b { color: var(--schwarz); font-weight: 600; }
+
+@media (max-width: 640px) {
+  body { padding: 28px 18px 60px; }
+  .title { font-size: 36px; }
+  .scenario-text { font-size: 20px; }
+  .scenario-question { font-size: 17px; }
+  .option { padding: 18px 20px; font-size: 14px; gap: 14px; }
+  .result-number { font-size: 84px; }
+  .result-headline { font-size: 22px; }
+  .schema-box .rule { font-size: 24px; }
+  .explanation { padding: 22px 24px; }
+  .actions { flex-direction: column-reverse; }
+  .btn { width: 100%; text-align: center; }
+  .scenario-header { flex-direction: column; }
+  .learning-goal { text-align: left; max-width: none; }
+  .phase { font-size: 8px; letter-spacing: 0.12em; padding: 10px 6px; }
+  .phase .num { font-size: 12px; }
+  .priming h2 { font-size: 22px; }
+}
+@media print {
+  body { background: #fff; padding: 0; }
+  .btn, .actions { display: none !important; }
+}
+</style>
+</head>
+<body>
+<main class="stage">
+  <header class="header">
+    <div class="eyebrow">Cybermobbing &middot; &Uuml;bung</div>
+    <h1 class="title">Was tust du<br><strong>zuerst?</strong></h1>
+    <p class="lead">Drei Situationen, wie sie t&auml;glich passieren. Keine davon ist ein Trick &ndash; alle drei Antwortoptionen wirken im ersten Moment vern&uuml;nftig. Das ist der Punkt der &Uuml;bung.</p>
+  </header>
+
+  <nav class="phases" aria-label="Lernphasen">
+    <div class="phase" data-phase="1"><span class="num">1</span>Aktivierung</div>
+    <div class="phase" data-phase="2"><span class="num">2</span>Entscheidung</div>
+    <div class="phase" data-phase="3"><span class="num">3</span>Elaboration</div>
+    <div class="phase" data-phase="4"><span class="num">4</span>Schema</div>
+  </nav>
+
+  <div class="progress-row" aria-hidden="true">
+    <span id="progress-label">Einstieg</span>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    <span id="score-label">0 / 3</span>
+  </div>
+
+  <section id="game-area" aria-live="polite"></section>
+</main>
+
+<script>
+'use strict';
+
+var PRIMING = {
+  headline: 'Bevor wir starten.',
+  body: [
+    'Jede der folgenden drei Situationen ist real. Sie kommen t&auml;glich vor, und sie haben alle eins gemeinsam: Der erste Impuls ist selten der richtige.',
+    'Wenn du dich f&uuml;r eine Antwort entscheidest, frage dich nicht &bdquo;Was f&uuml;hlt sich richtig an?&ldquo; &ndash; sondern &bdquo;Was davon hilft mir noch in einer Woche?&ldquo;'
+  ],
+  goal: 'Lernziel der &Uuml;bung: Du sollst am Ende eine einzige Regel kennen, die auf jede neue Cybermobbing-Situation passt &ndash; auch auf solche, die wir hier nicht behandeln.'
+};
+
+var SCENARIOS = [
+  {
+    label: 'Szenario 1 &middot; WhatsApp-Gruppe',
+    goal: 'Du lernst, den <b>Handlungsimpuls zu unterbrechen</b> und eine Reihenfolge einzuf&uuml;hren: erst sichern, dann reagieren.',
+    text: 'Jemand postet ein peinliches Foto von dir in einer WhatsApp-Gruppe mit 14 Personen. Erste Kommentare kommen schon. Du merkst es gerade.',
+    question: 'Was tust du zuerst?',
+    options: [
+      { letter: 'A', correct: false,
+        text: 'Den T&auml;ter sofort anschreiben und bitten, das Foto zu l&ouml;schen.',
+        why: 'Verst&auml;ndlicher Reflex &ndash; aber er kostet dich Beweise. Sobald der T&auml;ter merkt, dass du reagierst, l&ouml;scht er vielleicht das Foto und mit ihm jeden Kontext, den du sp&auml;ter brauchst: Chatverlauf, Zeitstempel, Profildetails. Au&szlig;erdem &ouml;ffnet die Konfrontation eine Diskussion, die dir emotional schadet. <b>Erst sichern, dann reagieren.</b>'
+      },
+      { letter: 'B', correct: true,
+        text: 'Screenshot des Fotos, des Kontexts und der Kommentare machen &ndash; dann den T&auml;ter blockieren.',
+        why: 'Die richtige Reihenfolge. Screenshots mit sichtbarem Zeitstempel, Profilnamen und Gruppenkontext z&auml;hlen als Beweismittel. Nach der Sicherung kannst du in Ruhe blockieren, melden oder anzeigen &ndash; ohne dass der T&auml;ter wei&szlig;, dass du gehandelt hast. Wichtig: Auch Instagram- und WhatsApp-Stories sichern, wenn sie auftauchen &ndash; sie verschwinden nach 24 Stunden f&uuml;r immer.'
+      },
+      { letter: 'C', correct: false,
+        text: 'Die Gruppe verlassen, damit du nichts mehr davon mitbekommst.',
+        why: 'Verst&auml;ndlicher Selbstschutz &ndash; aber er macht dich blind. Sobald du die Gruppe verl&auml;sst, siehst du nicht mehr, was weiter passiert. Du kannst sp&auml;ter schwer belegen, dass es &uuml;berhaupt stattgefunden hat. Der Instinkt ist richtig, nur die Reihenfolge stimmt nicht: <b>erst sichern, dann austreten.</b>'
+      }
+    ]
+  },
+  {
+    label: 'Szenario 2 &middot; Fake-Profil',
+    goal: 'Du lernst den Unterschied zwischen <b>Dokumentation und blo&szlig;em Screenshot</b> &ndash; und kennst den offiziellen Meldeweg.',
+    text: 'Eine Bekannte schickt dir den Link zu einem Instagram-Profil mit deinem Namen und einem alten Foto von dir. Das Profil postet seit drei Tagen falsche Aussagen in deinem Namen.',
+    question: 'Was ist der erste Schritt?',
+    options: [
+      { letter: 'A', correct: false,
+        text: 'Screenshots an Freunde schicken, damit sie Bescheid wissen und das Profil ignorieren.',
+        why: 'Das ist ein sinnvoller <em>zweiter</em> Schritt &ndash; nicht der erste. Deine Freunde k&ouml;nnen dir helfen, das Profil einzud&auml;mmen, aber sie ersetzen keine Beweissicherung. Je l&auml;nger das Profil l&auml;uft, desto wichtiger wird ein belastbarer Nachweis mit verifiziertem Zeitstempel.'
+      },
+      { letter: 'B', correct: true,
+        text: 'Das gesamte Profil samt aller Posts mit einem Zeitstempel-Tool sichern, dann bei Instagram als Identit&auml;tsmissbrauch melden.',
+        why: 'Sichern, dann melden. Ein normaler Handy-Screenshot reicht oft nicht &ndash; er enth&auml;lt keine verifizierbaren Metadaten und wird vor Gericht manchmal abgelehnt. Tools wie die Timestamp-Camera-App oder <b>archive.org/save</b> erzeugen einen belastbaren Nachweis. Danach bei Instagram den Meldeweg <em>Identit&auml;tsmissbrauch</em> nutzen (Profil &rarr; drei Punkte &rarr; Melden &rarr; Identit&auml;tsmissbrauch). Das ist der offizielle Weg, mit dem Instagram am schnellsten reagiert.'
+      },
+      { letter: 'C', correct: false,
+        text: 'Unter einem Post kommentieren: &bdquo;Das bin nicht ich&ldquo; &ndash; damit andere gewarnt sind.',
+        why: 'Das verschafft dem Profil mehr Aufmerksamkeit, nicht weniger. Und der T&auml;ter kann deinen Kommentar einfach l&ouml;schen oder dich blockieren, sobald er ihn sieht. Kommunikation geh&ouml;rt ans Ende der Kette, nicht an den Anfang.'
+      }
+    ]
+  },
+  {
+    label: 'Szenario 3 &middot; Drohnachrichten',
+    goal: 'Du lernst, dass <b>L&ouml;schen Beweise vernichtet</b> und dass die Online-Wache der richtige Anlaufpunkt ist &ndash; nicht die 110.',
+    text: 'Du bekommst seit zwei Wochen Drohnachrichten &uuml;ber mehrere Kan&auml;le &ndash; E-Mail, Instagram-DMs, zuletzt eine SMS. Die Person nennt deinen vollst&auml;ndigen Namen und deine Adresse.',
+    question: 'Was ist der richtige erste Schritt?',
+    options: [
+      { letter: 'A', correct: false,
+        text: 'Sofort die 110 anrufen und eine Anzeige aufgeben.',
+        why: 'Der Reflex stimmt &ndash; aber ohne gesicherte Beweise hat die Polizei am Telefon wenig zu arbeiten. Die 110 nimmt Cybermobbing-Anzeigen meist nicht entgegen, sondern verweist an die Online-Wache oder die &ouml;rtliche Dienststelle. <b>Erst sichern, dann anzeigen &ndash; und zwar online.</b>'
+      },
+      { letter: 'B', correct: false,
+        text: 'Die Drohnachrichten l&ouml;schen, um den psychischen Druck loszuwerden.',
+        why: 'Verst&auml;ndlich &ndash; aber es ist der gef&auml;hrlichste aller Fehler. Gel&ouml;schte Nachrichten sind f&uuml;r die Strafverfolgung meist unwiederbringlich verloren. Wenn du die Nachrichten nicht mehr sehen willst: <b>archivieren statt l&ouml;schen</b>, dann den Absender blockieren. Das schont dich und erh&auml;lt gleichzeitig die Beweislage.'
+      },
+      { letter: 'C', correct: true,
+        text: 'Alle Nachrichten forensisch sichern &ndash; mit Zeitstempel, Absenderdetails, vollst&auml;ndigen Screenshots &ndash; und bei der Online-Wache deines Bundeslandes Anzeige erstatten.',
+        why: 'Sichern, dann anzeigen &ndash; &uuml;ber die Online-Wache. Jedes Bundesland hat eine eigene (Bayern: polizei.bayern.de/internetwache), bundesweit erreichbar &uuml;ber <b>onlinewache.polizei.de</b>. Du kannst die Anzeige zu Hause ausf&uuml;llen und alle Beweise hochladen, ohne pers&ouml;nlich erscheinen zu m&uuml;ssen. Bei Angriffen &uuml;ber mehrere Kan&auml;le wichtig: alles in <em>einer</em> Anzeige zusammenf&uuml;hren &ndash; das erleichtert der Staatsanwaltschaft die Zuordnung.'
+      }
+    ]
+  }
+];
+
+var TAKEAWAYS = [
+  '<b>Beweis vor Reaktion.</b> Erst sichern, dann blockieren, melden oder anzeigen. Jede Reaktion, die den T&auml;ter warnt, gef&auml;hrdet die Beweislage.',
+  '<b>Zeitstempel z&auml;hlen.</b> Normale Handy-Screenshots reichen oft nicht. Timestamp-Tools oder <b>archive.org/save</b> erzeugen verifizierbare Nachweise.',
+  '<b>Online-Wache nutzen.</b> Jedes Bundesland hat eine eigene. Bundesweit erreichbar &uuml;ber <b>onlinewache.polizei.de</b>. Du kannst zu Hause anzeigen, ohne pers&ouml;nlich erscheinen zu m&uuml;ssen.',
+  '<b>Stories sofort sichern.</b> Instagram- und WhatsApp-Stories verschwinden nach 24 Stunden. Wenn du sie als Beweis brauchst, musst du sie innerhalb dieses Fensters sichern.',
+  '<b>Du musst das nicht alleine.</b> Nummer gegen Kummer (<b>116 111</b>, kostenlos), Verbraucherzentrale, Wei&szlig;er Ring &ndash; alle beraten auch bei Cybermobbing.'
+];
+
+var state = { stage: 'priming', currentIndex: 0, answered: false, score: 0 };
+var gameArea = document.getElementById('game-area');
+var progressLabel = document.getElementById('progress-label');
+var progressFill = document.getElementById('progress-fill');
+var scoreLabel = document.getElementById('score-label');
+var phaseNodes = document.querySelectorAll('.phase');
+
+function setActivePhase(phaseNum) {
+  phaseNodes.forEach(function(node) {
+    if (parseInt(node.getAttribute('data-phase'), 10) === phaseNum) {
+      node.classList.add('active');
+    } else {
+      node.classList.remove('active');
+    }
+  });
+}
+
+function renderPriming() {
+  state.stage = 'priming';
+  setActivePhase(1);
+  progressLabel.textContent = 'Einstieg';
+  progressFill.style.width = '0%';
+  scoreLabel.textContent = '0 / 3';
+
+  gameArea.innerHTML =
+    '<div class="priming">' +
+      '<div class="priming-goal">' +
+        '<div class="label">Lernziel der &Uuml;bung</div>' +
+        '<p>' + PRIMING.goal + '</p>' +
+      '</div>' +
+      '<h2>' + PRIMING.headline + '</h2>' +
+      PRIMING.body.map(function(p) { return '<p class="body">' + p + '</p>'; }).join('') +
+      '<div class="actions" style="margin-top: 32px;">' +
+        '<button class="btn show" id="start-btn">Starten</button>' +
+      '</div>' +
+    '</div>';
+
+  document.getElementById('start-btn').addEventListener('click', function() {
+    state.currentIndex = 0;
+    renderScenario();
+  });
+  document.getElementById('start-btn').focus();
+}
+
+function renderScenario() {
+  state.stage = 'scenario';
+  state.answered = false;
+  setActivePhase(2);
+
+  var s = SCENARIOS[state.currentIndex];
+
+  progressLabel.textContent = 'Szenario ' + (state.currentIndex + 1) + ' von ' + SCENARIOS.length;
+  progressFill.style.width = ((state.currentIndex) / SCENARIOS.length * 100) + '%';
+  scoreLabel.textContent = state.score + ' / ' + SCENARIOS.length;
+
+  var optionsHtml = s.options.map(function(opt, i) {
+    return '<li>' +
+      '<button class="option" data-index="' + i + '" aria-label="Option ' + opt.letter + '">' +
+        '<span class="option-letter" aria-hidden="true">' + opt.letter + '</span>' +
+        '<span>' + opt.text + '</span>' +
+      '</button>' +
+    '</li>';
+  }).join('');
+
+  gameArea.innerHTML =
+    '<article class="scenario">' +
+      '<div class="scenario-header">' +
+        '<div class="scenario-label">' + s.label + '</div>' +
+        '<div class="learning-goal"><b>Lernziel:</b> ' + s.goal + '</div>' +
+      '</div>' +
+      '<p class="scenario-text">' + s.text + '</p>' +
+      '<p class="scenario-question">' + s.question + '</p>' +
+      '<ul class="options" role="list">' + optionsHtml + '</ul>' +
+      '<div class="explanation" id="explanation" role="region" aria-label="Erkl&auml;rung">' +
+        '<div class="explanation-label" id="exp-label">Erkl&auml;rung</div>' +
+        '<h3 id="exp-headline"></h3>' +
+        '<div id="exp-text"></div>' +
+        '<div class="rule-callout">Regel: Beweis vor Reaktion.</div>' +
+      '</div>' +
+      '<div class="actions">' +
+        '<button class="btn" id="next-btn">Weiter</button>' +
+      '</div>' +
+    '</article>';
+
+  var buttons = gameArea.querySelectorAll('.option');
+  buttons.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      handleAnswer(parseInt(btn.getAttribute('data-index'), 10));
+    });
+  });
+  document.getElementById('next-btn').addEventListener('click', handleNext);
+}
+
+function handleAnswer(optionIndex) {
+  if (state.answered) return;
+  state.answered = true;
+  setActivePhase(3);
+
+  var s = SCENARIOS[state.currentIndex];
+  var chosen = s.options[optionIndex];
+  var buttons = gameArea.querySelectorAll('.option');
+
+  buttons.forEach(function(btn, i) {
+    btn.disabled = true;
+    var opt = s.options[i];
+    if (i === optionIndex) {
+      btn.classList.add(opt.correct ? 'correct' : 'wrong');
+    } else if (opt.correct) {
+      btn.classList.add('correct');
+    } else {
+      btn.classList.add('dim');
+    }
+  });
+
+  if (chosen.correct) { state.score++; }
+  scoreLabel.textContent = state.score + ' / ' + SCENARIOS.length;
+
+  var correctOption = s.options.filter(function(o) { return o.correct; })[0];
+  var expHeadlineEl = document.getElementById('exp-headline');
+  var expTextEl = document.getElementById('exp-text');
+  var expLabelEl = document.getElementById('exp-label');
+
+  if (chosen.correct) {
+    expLabelEl.textContent = 'Richtig.';
+    expHeadlineEl.textContent = 'Genau das ist der erste Schritt.';
+  } else {
+    expLabelEl.textContent = 'Nicht ganz.';
+    expHeadlineEl.textContent = 'Richtig w\u00e4re ' + correctOption.letter + ' gewesen.';
+  }
+  expTextEl.innerHTML = '<p>' + chosen.why + '</p>';
+
+  document.getElementById('explanation').classList.add('show');
+  var nextBtn = document.getElementById('next-btn');
+  nextBtn.textContent = state.currentIndex === SCENARIOS.length - 1 ? 'Zum Ergebnis' : 'Weiter';
+  nextBtn.classList.add('show');
+  nextBtn.focus();
+}
+
+function handleNext() {
+  if (state.currentIndex < SCENARIOS.length - 1) {
+    state.currentIndex++;
+    renderScenario();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  } else {
+    renderResult();
+  }
+}
+
+function renderResult() {
+  state.stage = 'result';
+  setActivePhase(4);
+  progressFill.style.width = '100%';
+  progressLabel.textContent = 'Abgeschlossen';
+  scoreLabel.textContent = state.score + ' / ' + SCENARIOS.length;
+
+  var takeawayHtml = TAKEAWAYS.map(function(t) { return '<li>' + t + '</li>'; }).join('');
+
+  gameArea.innerHTML =
+    '<div class="result show">' +
+      '<div class="schema-box">' +
+        '<div class="label">Die eine Regel</div>' +
+        '<div class="rule"><em>Beweis</em> vor <em>Reaktion</em>.</div>' +
+      '</div>' +
+      '<div class="result-number">' + state.score + '<small> / ' + SCENARIOS.length + '</small></div>' +
+      '<h2 class="result-headline">' + getResultHeadline(state.score) + '</h2>' +
+      '<p class="result-text">' + getResultText(state.score) + '</p>' +
+      '<ul class="takeaway-list">' + takeawayHtml + '</ul>' +
+      '<div class="actions">' +
+        '<button class="btn btn-ghost show" id="restart-btn">Nochmal &uuml;ben</button>' +
+      '</div>' +
+    '</div>';
+
+  document.getElementById('restart-btn').addEventListener('click', restart);
+}
+
+function getResultHeadline(correct) {
+  if (correct === 3) return 'Du wei\u00dft, wie es geht.';
+  if (correct === 2) return 'Fast durchgehend richtig.';
+  if (correct === 1) return 'Ein Treffer und zwei offene Stellen.';
+  return 'Jetzt wei\u00dft du es.';
+}
+
+function getResultText(correct) {
+  if (correct === 3) {
+    return 'Drei von drei. Die Reihenfolge <em>Beweis zuerst, Reaktion danach</em> ist dir in Fleisch und Blut &uuml;bergegangen. Wenn dir selbst oder jemand aus deinem Umfeld etwas passiert, wirst du ruhig bleiben und das Richtige tun.';
+  }
+  if (correct === 2) {
+    return 'Zwei von drei. Schau dir noch einmal an, wo der Impuls dich in die Irre gef&uuml;hrt hat &ndash; und behalte die eine Regel im Kopf: <em>Was auch immer passiert, zuerst wird gesichert.</em>';
+  }
+  if (correct === 1) {
+    return 'Ein Treffer von drei. Das ist kein Problem &ndash; du hast jetzt alle Erkl&auml;rungen gelesen, und genau das ist der Punkt der &Uuml;bung. Die Regel <em>Beweis vor Reaktion</em> ist die wichtigste Botschaft dieses Moduls.';
+  }
+  return 'Kein Treffer &ndash; aber du hast jetzt alle drei Erkl&auml;rungen gelesen. Das ist der eigentliche Wert der &Uuml;bung. Merk dir die eine Regel, die durch alle Szenarien l&auml;uft: <em>Beweis zuerst, Reaktion danach.</em> Alles andere l&auml;sst sich daraus ableiten.';
+}
+
+function restart() {
+  state.currentIndex = 0;
+  state.score = 0;
+  state.answered = false;
+  renderPriming();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+renderPriming();
+</script>
+</body>
+</html>

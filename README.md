@@ -27,15 +27,29 @@ http://localhost:8000/
 ## Ordnerstruktur
 
 - `ai-security/` – KI-Sicherheit und Prompting-Awareness
-- `data-science/` – Data-Science-Lernpfad (Interaktion + Code-Praxis)
-- `online_security/` – Online-Sicherheitsübungen
+  - `b2b/` – vertiefte B2B-Varianten
+  - `vhs/` – niedrigschwellige VHS-Varianten
+- `data-protection/` – Datenschutz und AI Act
+  - `b2b/` – vertiefte B2B-Varianten
+  - `vhs/` – niedrigschwellige VHS-Varianten
+- `online_security/` – Online-Sicherheit (inkl. Cybermobbing-Szenario)
 - `vhs-passworttraining/` – 4-teiliges VHS-Kursmodul zum Thema Passwortsicherheit
-- `data-protection/` – Datenschutz-Formate (u. a. VHS)
-- `cloud_data/` – Cloud-Daten-Spiele
+- `cloud_data/` – Cloud-Daten-Spiele (VHS)
+- `data-science/` – Data-Science-Lernpfad (Interaktion + Code-Praxis)
 - `sql/` – SQL-Lernspiele
 - `python/` – Python-Lernseiten
 - `logic-and-math/` – Logik/Kombinatorik
 - `media-literacy/` – Medienkompetenz
+- `grundschule/` – Grundschul-Übungen (Deutsch, Mathematik)
+
+### Schienen B2B vs. VHS
+
+In `ai-security/` und `data-protection/` gibt es zwei parallele Schienen für unterschiedliche Zielgruppen:
+
+- **B2B** (`b2b/`): vertiefte Inhalte für betriebliche Weiterbildung
+- **VHS** (`vhs/`): niedrigschwellige Inhalte für Erwachsenenbildung
+
+Themen können in beiden Schienen vorkommen (z. B. „Data Defender", „Compliance-Check", „5-Ampel-Quiz"). Sie sind didaktisch unterschiedlich, nicht redundant.
 
 ## Data Science: gepflegte Dateiliste
 
