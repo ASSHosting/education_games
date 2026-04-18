@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KI-Datenschutz-Simulator · BDS-Akademie Modul 3.1</title>
+<meta name="description" content="Entscheidungs-Simulator für KMU: Darfst du das in KI eingeben? 12 Szenarien aus dem Alltag.">
+<style>
+  :root {
+    --bds-dark:  #004059;
+    --bds-blue:  #2895D2;
+    --bds-bg:    #F7F8FB;
+    --text:      #1E2B32;
+    --muted:     #5A6B78;
+    --border:    #E2E8EE;
+    --card:      #FFFFFF;
+    --green:     #2FA04F;
+    --yellow:    #E8B923;
+    --red:       #C83C3C;
+    --shadow:    0 2px 8px rgba(0,64,89,0.08);
+    --shadow-lg: 0 8px 24px rgba(0,64,89,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    background: var(--bds-bg);
+    color: var(--text);
+    line-height: 1.5;
+    min-height: 100vh;
+    padding: 16px;
+  }
+
+  .app {
+    max-width: 780px;
+    margin: 0 auto;
+    padding-top: 8px;
+  }
+
+  /* ========= HEADER ========= */
+  .top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding: 8px 4px;
+  }
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .brand img { width: 32px; height: 32px; border-radius: 50%; }
+  .brand-text {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    font-weight: 600;
+  }
+  .brand-text strong {
+    display: block;
+    color: var(--bds-dark);
+    font-size: 13px;
+    letter-spacing: 0;
+    font-weight: 700;
+  }
+  .score-pill {
+    background: var(--bds-dark);
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    display: none;
+  }
+  .score-pill.visible { display: block; }
+  .score-pill .num { color: var(--bds-blue); }
+
+  /* ========= PROGRESS ========= */
+  .progress-wrap {
+    margin-bottom: 24px;
+    display: none;
+  }
+  .progress-wrap.visible { display: block; }
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .progress-bar {
+    height: 6px;
+    background: var(--border);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--bds-blue);
+    transition: width 0.4s ease;
+    border-radius: 3px;
+  }
+
+  /* ========= CARD / SCREEN ========= */
+  .screen {
+    background: var(--card);
+    border-radius: 12px;
+    box-shadow: var(--shadow);
+    padding: 28px;
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ========= START SCREEN ========= */
+  .start-hero { text-align: left; }
+  .start-tag {
+    display: inline-block;
+    background: var(--bds-blue);
+    color: #fff;
+    padding: 4px 12px;
+    border-radius: 3px;
+    font-size: 10px;
+    letter-spacing: 3px;
+    font-weight: 700;
+    margin-bottom: 16px;
+  }
+  .start-title {
+    font-size: 36px;
+    line-height: 1.1;
+    color: var(--bds-dark);
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .start-title .sub { font-weight: 300; display: block; }
+  .start-sub {
+    color: var(--bds-blue);
+    font-size: 16px;
+    font-style: italic;
+    margin-bottom: 24px;
+  }
+  .start-desc {
+    color: var(--text);
+    font-size: 15px;
+    margin-bottom: 8px;
+  }
+  .start-meta {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 12px;
+    margin: 24px 0;
+    padding: 16px;
+    background: var(--bds-bg);
+    border-radius: 8px;
+  }
+  .start-meta div {
+    text-align: center;
+  }
+  .start-meta strong {
+    display: block;
+    color: var(--bds-dark);
+    font-size: 20px;
+    font-weight: 700;
+  }
+  .start-meta span {
+    color: var(--muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .how-it-works {
+    background: var(--bds-dark);
+    color: #fff;
+    padding: 16px 20px;
+    border-radius: 8px;
+    margin: 20px 0 24px;
+  }
+  .how-it-works h4 {
+    color: var(--bds-blue);
+    font-size: 11px;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+  .how-it-works ul {
+    list-style: none;
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .how-it-works li::before {
+    content: "→ ";
+    color: var(--bds-blue);
+    font-weight: 700;
+  }
+
+  /* ========= BUTTONS ========= */
+  .btn {
+    display: inline-block;
+    background: var(--bds-blue);
+    color: #fff;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+    width: 100%;
+    text-align: center;
+  }
+  .btn:hover { background: #2380BC; transform: translateY(-1px); }
+  .btn:active { transform: translateY(0); }
+  .btn-secondary {
+    background: #fff;
+    color: var(--bds-dark);
+    border: 1.5px solid var(--bds-dark);
+  }
+  .btn-secondary:hover { background: var(--bds-bg); }
+
+  /* ========= SCENARIO ========= */
+  .scenario-num {
+    color: var(--bds-blue);
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+  }
+  .scenario-category {
+    display: inline-block;
+    background: var(--bds-bg);
+    color: var(--muted);
+    padding: 3px 10px;
+    border-radius: 3px;
+    font-size: 10px;
+    letter-spacing: 1px;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-left: 8px;
+  }
+  .scenario-title {
+    color: var(--bds-dark);
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 14px;
+    line-height: 1.25;
+  }
+  .scenario-situation {
+    background: var(--bds-bg);
+    padding: 16px 18px;
+    border-radius: 8px;
+    font-size: 15px;
+    color: var(--text);
+    border-left: 4px solid var(--bds-blue);
+    margin-bottom: 24px;
+    line-height: 1.5;
+  }
+  .scenario-question {
+    color: var(--bds-dark);
+    font-weight: 700;
+    font-size: 16px;
+    margin-bottom: 14px;
+  }
+
+  /* ========= OPTIONS ========= */
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .option {
+    background: #fff;
+    border: 1.5px solid var(--border);
+    padding: 14px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text);
+    text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    line-height: 1.4;
+  }
+  .option:hover {
+    border-color: var(--bds-blue);
+    background: #F0F8FC;
+    transform: translateX(2px);
+  }
+  .option:active { transform: translateX(0); }
+  .option-letter {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    background: var(--bds-dark);
+    color: #fff;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  .option:hover .option-letter { background: var(--bds-blue); }
+
+  /* ========= FEEDBACK ========= */
+  .feedback {
+    animation: fadeIn 0.3s ease;
+  }
+  .feedback-banner {
+    padding: 20px 22px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    color: #fff;
+  }
+  .feedback-banner.green  { background: var(--green); }
+  .feedback-banner.yellow { background: var(--yellow); color: #3a2b05; }
+  .feedback-banner.red    { background: var(--red); }
+  .feedback-label {
+    font-size: 11px;
+    letter-spacing: 3px;
+    font-weight: 700;
+    opacity: 0.9;
+    margin-bottom: 4px;
+  }
+  .feedback-verdict {
+    font-size: 22px;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .feedback-points {
+    font-size: 13px;
+    opacity: 0.9;
+  }
+  .feedback-body {
+    padding: 20px 22px;
+    background: var(--bds-bg);
+    border-radius: 10px;
+    margin-bottom: 20px;
+  }
+  .feedback-body h4 {
+    color: var(--bds-blue);
+    font-size: 11px;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+  .feedback-body p {
+    font-size: 14px;
+    margin-bottom: 12px;
+    line-height: 1.55;
+  }
+  .feedback-body p:last-child { margin-bottom: 0; }
+  .feedback-reference {
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+
+  /* ========= RESULT ========= */
+  .result-hero {
+    text-align: center;
+    padding: 20px 0;
+  }
+  .result-score {
+    font-size: 64px;
+    font-weight: 700;
+    color: var(--bds-blue);
+    line-height: 1;
+  }
+  .result-score .max {
+    color: var(--muted);
+    font-size: 30px;
+    font-weight: 400;
+  }
+  .result-badge {
+    display: inline-block;
+    background: var(--bds-dark);
+    color: #fff;
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    margin: 14px 0 8px;
+  }
+  .result-verdict {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--bds-dark);
+    margin-bottom: 8px;
+  }
+  .result-sub {
+    color: var(--muted);
+    font-size: 14px;
+    font-style: italic;
+    margin-bottom: 28px;
+  }
+  .profile-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .profile-item {
+    background: var(--bds-bg);
+    padding: 14px;
+    border-radius: 8px;
+    text-align: left;
+  }
+  .profile-item .label {
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .profile-item .value {
+    font-size: 20px;
+    color: var(--bds-dark);
+    font-weight: 700;
+  }
+  .profile-item .bar {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-top: 6px;
+    overflow: hidden;
+  }
+  .profile-item .bar-fill {
+    height: 100%;
+    border-radius: 2px;
+  }
+  .result-tip {
+    background: var(--bds-dark);
+    color: #fff;
+    padding: 18px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+  }
+  .result-tip h4 {
+    color: var(--bds-blue);
+    font-size: 11px;
+    letter-spacing: 2px;
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+  .result-tip p {
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  .result-actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .result-actions .btn { flex: 1; min-width: 200px; }
+
+  /* ========= FOOTER ========= */
+  footer {
+    text-align: center;
+    padding: 24px 0 8px;
+    font-size: 11px;
+    color: var(--muted);
+  }
+  footer a { color: var(--bds-blue); text-decoration: none; }
+
+  /* ========= MOBILE ========= */
+  @media (max-width: 600px) {
+    body { padding: 10px; }
+    .screen { padding: 20px; border-radius: 8px; }
+    .start-title { font-size: 28px; }
+    .start-meta { grid-template-columns: 1fr; }
+    .start-meta strong { font-size: 18px; }
+    .scenario-title { font-size: 18px; }
+    .profile-grid { grid-template-columns: 1fr; }
+    .result-score { font-size: 52px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="top-bar">
+    <div class="brand">
+      <img src="data:image/png;base64,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" alt="BDS Bayern">
+      <div class="brand-text">
+        <strong>KI-Datenschutz-Simulator</strong>
+        BDS BAYERN · KI-AKADEMIE · M3.1
+      </div>
+    </div>
+    <div class="score-pill" id="scorePill">
+      Punkte: <span class="num" id="currentScore">0</span>
+    </div>
+  </div>
+
+  <!-- PROGRESS -->
+  <div class="progress-wrap" id="progressWrap">
+    <div class="progress-label">
+      <span id="progressLabel">Szenario 1 von 12</span>
+      <span id="progressPercent">8 %</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill" style="width: 8%"></div></div>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="content"></div>
+
+  <footer>
+    © Arno Schimmelpfennig · KI-Akademie BDS Bayern · 04/2026 · Quellen: DSGVO Art. 5/6/28 · KI-VO Art. 50
+  </footer>
+
+</div>
+
+<script>
+// ============================================================
+// SZENARIEN – 12 Fälle aus dem KMU-Alltag
+// Bewertung: beste Option = 3 Pt · akzeptabel = 1 Pt · riskant = 0 Pt
+// Dimensionen:
+//   P = Personenbezug-Erkennung
+//   T = Tool-/Lizenzwahl (AVV-Bewusstsein)
+//   V = Verfahrens-Wissen (Kennzeichnung, Prozess, KI-VO)
+//   R = Risiko-Einschätzung
+// ============================================================
+
+const scenarios = [
+  {
+    num: 1,
+    category: "Marketing",
+    title: "Newsletter-Text für Weihnachten",
+    situation: "Deine Marketing-Managerin will mit ChatGPT Plus einen Weihnachts-Newsletter für den Versand an alle 2.300 Bestandskunden schreiben. Der Text selbst enthält keine Kundennamen – der E-Mail-Versand läuft über euer CRM mit Seriendruck-Feldern.",
+    question: "Was ratest du ihr?",
+    dimension: "T",
+    options: [
+      { letter: "A", text: "„Schreib den Text mit ChatGPT Plus. Keine Namen drin – alles safe.\"",
+        points: 1, color: "yellow",
+        feedback: "Inhaltlich ist das OK – im Text sind keine personenbezogenen Daten. ABER: ChatGPT Plus hat keinen AVV. Für einen gelegentlichen Text ohne Personenbezug ist das Risiko gering, aber ihr arbeitet dauerhaft mit ChatGPT und solltet unternehmensweit auf Team-Account umstellen." },
+      { letter: "B", text: "„Nimm die 50 Top-Kunden mit Namen und Umsatz rein, dann wird der Text persönlicher.\"",
+        points: 0, color: "red",
+        feedback: "Das wäre ein klarer DSGVO-Verstoß. Namen + Umsätze sind personenbezogene Daten. Ohne AVV verboten, mit ChatGPT Plus gibt es keinen AVV. Plus: Zweckbindung verletzt – Kundendaten wurden nicht erhoben, um sie an KI-Anbieter zu geben." },
+      { letter: "C", text: "„Hol dir einen ChatGPT-Team-Account – AVV aktivieren – dann ist dauerhaft alles sauber.\"",
+        points: 3, color: "green",
+        feedback: "Genau so. Ein Team-Account kostet 25 US-$ pro Nutzer und Monat, aber ihr habt den AVV und könnt auch dann KI nutzen, wenn mal ein anonymisierter Datensatz reingeht. Sauberste Lösung für eine Firma, die KI dauerhaft einsetzt." },
+      { letter: "D", text: "„Nimm lieber DeepL Write oder schreib selbst – kein Risiko.\"",
+        points: 1, color: "yellow",
+        feedback: "Sicher, aber ineffizient. DeepL Write ist auch nur für Textverbesserung – für kreatives Schreiben nicht ideal. Die ChatGPT-Team-Lösung ist der bessere Kompromiss aus Effizienz und Compliance." },
+    ],
+    reference: "Handout 2: AVV-Quickguide · Handout 4: Tool-Ampel",
+  },
+
+  {
+    num: 2,
+    category: "Personal",
+    title: "Bewerberauswahl durch KI",
+    situation: "Deine Personalabteilung hat 20 Bewerbungen für eine Stellenausschreibung. Sie will ChatGPT Team bitten, aus den Lebensläufen die 'Top 3 Kandidaten' zu identifizieren – das spart 4 Stunden Arbeit.",
+    question: "Was antwortest du?",
+    dimension: "R",
+    options: [
+      { letter: "A", text: "„Perfekt, macht es. Wir haben ja ChatGPT Team mit AVV.\"",
+        points: 0, color: "red",
+        feedback: "Gefährlich. HR-Entscheidungen durch KI sind nach KI-Verordnung ab 02.08.2026 HOCHRISIKO – da reicht ein Team-Account mit AVV nicht. Ihr bräuchtet eine Datenschutz-Folgenabschätzung, Protokollierung, menschliche Aufsicht, Transparenz gegenüber Bewerbern. ChatGPT ist nicht als HR-Hochrisiko-KI zertifiziert." },
+      { letter: "B", text: "„Erst anonymisieren – Namen, Adressen, Geburtsdatum raus. Dann KI zur Vorsortierung.\"",
+        points: 1, color: "yellow",
+        feedback: "Besser, aber nicht ausreichend. Selbst anonymisiert ist eine KI-gestützte Vorsortierung von Bewerbenden ab 08/2026 ein Hochrisiko-Anwendungsfall. Ihr müsst die KI-VO-Anforderungen erfüllen. Mehr dazu nächste Woche in M3.2." },
+      { letter: "C", text: "„Lass die KI raus. Wir screenen klassisch – oder nutzen eine zertifizierte HR-Tech-Plattform mit KI-VO-Konformität.\"",
+        points: 3, color: "green",
+        feedback: "Der sicherste Weg. Entweder klassisch ohne KI – oder eine HR-Software, die die KI-VO-Anforderungen nachweisbar erfüllt (z.B. Personio, Recruitee mit entsprechendem Modul). Ab 08/2026 kein Nice-to-have mehr, sondern Pflicht." },
+      { letter: "D", text: "„KI gibt Tipps zu Interviewfragen – Entscheidung trifft immer der Mensch.\"",
+        points: 3, color: "green",
+        feedback: "Elegante Lösung. KI als Sparringspartner für Fragen – ja. KI als Entscheider über Menschen – nein. Solange der Mensch die Bewertung vornimmt und KI nur unterstützt, bleibt ihr aus dem Hochrisiko-Bereich heraus." },
+    ],
+    reference: "KI-VO Anhang III Ziff. 4 (HR-Hochrisiko) · M3.2 (AI Act Details)",
+  },
+
+  {
+    num: 3,
+    category: "Vertrieb",
+    title: "Kundenangebot optimieren",
+    situation: "Ein Hauptkunde hat ein Angebot über 85.000 € angefragt. Du willst durch KI prüfen lassen, ob euer Preis marktüblich ist und welche Verhandlungsspielräume es gibt. Ihr habt ChatGPT Team.",
+    question: "Wie gehst du vor?",
+    dimension: "P",
+    options: [
+      { letter: "A", text: "„Komplettes Angebot mit Kundennamen, Leistungen, Preisen reinkopieren und analysieren lassen.\"",
+        points: 0, color: "red",
+        feedback: "Auch mit AVV: Kundenname + Summe + Leistungsumfang = personenbezogene Geschäftsdaten. Zweckbindung verletzt (Daten nicht für KI-Analyse erhoben). Zusätzlich: Geschäftsgeheimnis – Leistungen und Preise eures Kunden haben im KI-Anbieter nichts zu suchen, auch wenn der AVV es formal erlaubt." },
+      { letter: "B", text: "„Frage allgemein: 'Was sind marktübliche Preise für Leistung X im Bereich Y?' – ohne Kunden- oder Projektbezug.\"",
+        points: 3, color: "green",
+        feedback: "So ist's richtig. Allgemeine Branchen-Recherche ohne Personen- und Projektbezug ist unproblematisch – geht auch mit ChatGPT Plus. Euer konkreter Fall bleibt bei euch." },
+      { letter: "C", text: "„Preis und Leistungen ohne Kundennamen eingeben. Branchenkontext hinzufügen.\"",
+        points: 1, color: "yellow",
+        feedback: "Gelb – kommt drauf an. Bei einem sehr typischen Angebot (Standard-Dienstleistung) ist das OK. Bei einem spezialisierten Angebot kann auch ohne Namen ein Rückschluss möglich sein – dann wäre es wieder personenbezogen. Im Zweifel Option B." },
+      { letter: "D", text: "„Kein KI-Einsatz – rein auf eigene Erfahrung und Marktrecherche (IHK, Fachverbände) vertrauen.\"",
+        points: 1, color: "yellow",
+        feedback: "Sicher, aber ihr lasst Effizienz liegen. Option B liefert die gleiche Sicherheit und nutzt den KI-Vorteil – das ist der bessere Kompromiss." },
+    ],
+    reference: "Art. 5 Abs. 1 b DSGVO (Zweckbindung) · GeschGehG",
+  },
+
+  {
+    num: 4,
+    category: "Marketing",
+    title: "Instagram-Post mit KI-Bild",
+    situation: "Zum Tag der Handwerks wollt ihr einen Instagram-Post machen: ein KI-generiertes Bild einer Werkstatt, dazu ein KI-erstellter Begleittext. Der Post geht heute abend live.",
+    question: "Welche Vorgehensweise ist ab 02.08.2026 Pflicht?",
+    dimension: "V",
+    options: [
+      { letter: "A", text: "„Post hochladen, fertig. Ist doch nur Social Media – wen interessiert's?\"",
+        points: 0, color: "red",
+        feedback: "Ab 02.08.2026 abmahnfähig nach § 3a UWG in Verbindung mit KI-VO Art. 50. Kennzeichnungspflicht für KI-generierte oder KI-manipulierte Inhalte mit Außenwirkung. Euer Konkurrent oder ein Abmahnverein kann euch abmahnen." },
+      { letter: "B", text: "„Post + Hinweis 'Erstellt mit Unterstützung von KI' in der Bildunterschrift oder als Label.\"",
+        points: 3, color: "green",
+        feedback: "Das ist die gesetzeskonforme Umsetzung. Die Kennzeichnung muss 'klar erkennbar und unterscheidbar' sein – ein kleiner Hinweis in der Caption reicht aus. Bei Videos / Bildern auch als dezentes Wasserzeichen möglich." },
+      { letter: "C", text: "„Kennzeichnung erst ab 2. August – bis dahin brauch ich nichts zu tun.\"",
+        points: 1, color: "yellow",
+        feedback: "Formal stimmt's: Das Gesetz gilt ab 02.08.2026. Aber pragmatisch: Jetzt schon anzufangen ist gute Praxis – ihr schafft Routine, lernt was funktioniert, und müsst nicht am 2.8. unter Zeitdruck alles umstellen. Plus: Transparenz gegenüber Kunden schafft Vertrauen." },
+      { letter: "D", text: "„Nur den Text KI-erstellt, Bild selbst fotografiert + Kennzeichnung für Text.\"",
+        points: 3, color: "green",
+        feedback: "Saubere Mischform. Einzelne Elemente sauber trennen und nur die KI-Elemente kennzeichnen ist völlig legitim und oft authentischer als volle KI-Produktion." },
+    ],
+    reference: "KI-VO Art. 50 · UWG § 3a · Handout 4: Checkliste Kennzeichnung",
+  },
+
+  {
+    num: 5,
+    category: "Service",
+    title: "Chatbot auf der Website",
+    situation: "Dein Webentwickler empfiehlt, einen KI-Chatbot für Kundenanfragen einzubauen. Der Bot soll Öffnungszeiten, Leistungen und einfache Fragen beantworten – komplexe Fälle an euer Team übergeben.",
+    question: "Was muss beachtet werden?",
+    dimension: "V",
+    options: [
+      { letter: "A", text: "„Chatbot einbauen, möglichst 'menschlich' auftreten lassen – das kommt besser an.\"",
+        points: 0, color: "red",
+        feedback: "VERBOTEN. KI-VO Art. 50 Abs. 1 fordert explizit, dass Menschen informiert werden, wenn sie mit einer KI interagieren – es sei denn, das ist 'aus den Umständen offensichtlich'. Ein menschlich wirkender Chatbot wäre Irreführung. Auch UWG-relevant." },
+      { letter: "B", text: "„Chatbot mit deutlichem Hinweis 'Ich bin ein KI-Assistent' und Eskalation an Mensch bei Bedarf.\"",
+        points: 3, color: "green",
+        feedback: "So ist's richtig. Transparenz von Anfang an + klarer Übergabepfad zum Menschen. Bonuspunkt: Datenschutzerklärung anpassen (Anbieter des Chatbot nennen, Zweck der Datenverarbeitung)." },
+      { letter: "C", text: "„Kein Chatbot – zu viel Aufwand, rechtlich zu riskant.\"",
+        points: 1, color: "yellow",
+        feedback: "Übervorsichtig. Mit Option B ist das Thema rechtlich sauber zu handhaben, und Kundenservice über Chatbot kann echt entlasten. Nicht das Kind mit dem Bade ausschütten." },
+      { letter: "D", text: "„Chatbot nur mit Name + Funktion im Eröffnungstext – z.B. 'Ich bin SOPHIA, die digitale Assistentin der Firma XY'.\"",
+        points: 3, color: "green",
+        feedback: "Auch sauber. 'Digitale Assistentin' ist klar erkennbar als KI. Die Nennung eines Namens macht den Bot sympathischer, die Transparenz bleibt gewahrt." },
+    ],
+    reference: "KI-VO Art. 50 Abs. 1 · TDDDG § 19",
+  },
+
+  {
+    num: 6,
+    category: "Einkauf",
+    title: "Welche Lizenz für die Firma?",
+    situation: "Du willst KI firmenweit einführen (8 Mitarbeitende). Aktuell nutzt jeder seinen privaten ChatGPT Plus-Account. Dein Controller fragt: „Was ist die beste Lösung für uns?\"",
+    question: "Deine Empfehlung?",
+    dimension: "T",
+    options: [
+      { letter: "A", text: "„So weitermachen – jeder zahlt privat, wir sparen als Firma das Geld.\"",
+        points: 0, color: "red",
+        feedback: "Doppeltes Problem: (1) Ohne Firmen-AVV ist die Nutzung für Firmenzwecke nicht DSGVO-konform. (2) Wenn Mitarbeiter auf privaten Accounts firmenrelevante Daten eingeben, seid ihr trotzdem als Verantwortliche dran – aber ohne Kontrolle. Schlechteste aller Optionen." },
+      { letter: "B", text: "„ChatGPT Team einführen – 25 $ × 8 = 200 $ im Monat, mit AVV, zentrale Verwaltung, konform.\"",
+        points: 3, color: "green",
+        feedback: "Goldstandard. Team-Account bietet AVV, Admin-Panel, keine Nutzung von Eingaben zum Training, zentrale Rechnungsstellung. 200 $/Monat sind für eine 8er-Firma kein Thema – und die rechtliche Sicherheit unbezahlbar." },
+      { letter: "C", text: "„Gemini Business / Copilot M365 – wenn ihr eh Google oder Microsoft nutzt, dann integriert.\"",
+        points: 3, color: "green",
+        feedback: "Völlig legitime Alternative. Wenn eure IT-Landschaft schon auf Microsoft 365 oder Google Workspace basiert, ist die Integration einfacher und die AVVs sind Teil eurer bestehenden Enterprise-Verträge. Empfehlung: Mit dem Admin durchsprechen." },
+      { letter: "D", text: "„Eigenes LLM hosten – maximale Kontrolle, keine externe Abhängigkeit.\"",
+        points: 1, color: "yellow",
+        feedback: "Technisch möglich (z.B. Llama 3 auf eigenem Server), aber für eine 8er-Firma massiv überdimensioniert. IT-Aufwand, Pflege, Hardware-Kosten. Für einen Mittelständler mit <50 MA fast nie wirtschaftlich." },
+    ],
+    reference: "Handout 2: AVV-Quickguide · Handout 4: Tool-Ampel",
+  },
+
+  {
+    num: 7,
+    category: "Gesundheit",
+    title: "Patientennotizen in KI?",
+    situation: "Du bist Inhaber einer Physiotherapie-Praxis. Eine neue Mitarbeiterin will Behandlungsnotizen durch ChatGPT Team (AVV vorhanden) in Fließtext umwandeln – das spart pro Patient 3 Minuten.",
+    question: "Was antwortest du?",
+    dimension: "R",
+    options: [
+      { letter: "A", text: "„Gute Idee. AVV haben wir ja – also einfach die Notizen reinkippen.\"",
+        points: 0, color: "red",
+        feedback: "Falsch. Gesundheitsdaten sind besondere Kategorien personenbezogener Daten nach Art. 9 DSGVO – da gelten verschärfte Anforderungen. Der normale AVV reicht NICHT. Ihr braucht zusätzliche Einwilligung des Patienten oder eine medizinische Rechtsgrundlage. Plus: §203 StGB (Schweigepflicht)." },
+      { letter: "B", text: "„Erst anonymisieren – Name und Geburtsdatum raus. Dann Fließtext-Umwandlung.\"",
+        points: 1, color: "yellow",
+        feedback: "Besser, aber: Beim Praxis-Kontext (begrenzte Patientenzahl, bekannte Erkrankungen) ist Re-Identifizierung oft möglich. Faustregel: Wenn Physio + spezifische Diagnose + Datum + Geschlecht = oft reicht das für Identifikation." },
+      { letter: "C", text: "„Wir holen uns eine spezialisierte Medizin-/Physio-Software mit KI-Modul – DSGVO-konform, ärztlich geprüft.\"",
+        points: 3, color: "green",
+        feedback: "Die einzig saubere Lösung. Medizin-Software-Anbieter (z.B. Epikur, Starke Praxis) haben branchenspezifische AVVs, teils sind die Anwendungen sogar Medizinprodukte. KI-Funktionen gibt's hier zunehmend eingebaut und compliant." },
+      { letter: "D", text: "„Keine KI bei Patientendaten. Notizen selber tippen – die 3 Min. sind es wert.\"",
+        points: 3, color: "green",
+        feedback: "Sicherste Variante. Bei sensiblen Gesundheitsdaten ist der sichere Weg oft auch der pragmatische – kein Prüfaufwand, keine Compliance-Risiken. Perfekt für kleine Praxen ohne große IT." },
+    ],
+    reference: "Art. 9 DSGVO (besondere Kategorien) · § 203 StGB",
+  },
+
+  {
+    num: 8,
+    category: "Kommunikation",
+    title: "Rechnung übersetzen",
+    situation: "Ein französischer Kunde hat eine Rechnung über 4.700 € erhalten und fragt per Mail nach, weil er das deutsche Kleingedruckte nicht versteht. Du willst schnell ins Französische übersetzen.",
+    question: "Welches Tool?",
+    dimension: "T",
+    options: [
+      { letter: "A", text: "„Google Translate – kostenlos und schnell.\"",
+        points: 0, color: "red",
+        feedback: "Google Translate (kostenlose Version) ist für Firmendaten problematisch: Eingaben können zur Verbesserung verwendet werden, kein AVV für die Free-Version, Server in den USA. Eine Rechnung enthält mindestens Namen des Kunden und Rechnungsbetrag – personenbezogen." },
+      { letter: "B", text: "„DeepL (Pro-Account mit AVV) – schnell, präzise, rechtskonform.\"",
+        points: 3, color: "green",
+        feedback: "Perfekt. DeepL Pro hat Server in Deutschland und Finnland, AVV ist auf der Website abrufbar, Eingaben werden nicht zum Training verwendet. Für Übersetzungen ist das der Goldstandard im Mittelstand." },
+      { letter: "C", text: "„ChatGPT Plus – das kann doch auch Französisch.\"",
+        points: 0, color: "red",
+        feedback: "Gleicher Kern wie bei Google Translate: kein AVV, Eingaben in den USA. Plus: ChatGPT ist für Übersetzungen nicht optimiert – DeepL ist präziser und rechtskonformer." },
+      { letter: "D", text: "„Rechnungsinhalt ohne Kunden-Name und Summe übersetzen lassen, Details selber ergänzen.\"",
+        points: 1, color: "yellow",
+        feedback: "Funktioniert – aber aufwändig. Wenn ihr DeepL Pro habt, ist Option B einfacher UND rechtskonform. Nur wenn keine Pro-Lizenz: diese Entpersonalisierungs-Methode als Fallback." },
+    ],
+    reference: "Handout 4: Tool-Ampel · deepl.com/de/privacy",
+  },
+
+  {
+    num: 9,
+    category: "Intern",
+    title: "GF-Sitzungsprotokoll zusammenfassen",
+    situation: "Gestern war 3-stündige GF-Sitzung. Wortprotokoll liegt vor. Namen von 5 Teilnehmenden plus strategische Entscheidungen (Entlassung, Akquisition, neue Märkte) sind dokumentiert. Du willst eine 1-Seiten-Zusammenfassung.",
+    question: "Wie gehst du vor?",
+    dimension: "P",
+    options: [
+      { letter: "A", text: "„Komplettes Protokoll in ChatGPT Team (AVV) – der schreibt sauber zusammen.\"",
+        points: 0, color: "red",
+        feedback: "Auch mit AVV problematisch. (1) Besonders schutzwürdige Inhalte (Personalentscheidungen!) – da reicht der Standard-AVV nicht als Legitimation. (2) Geschäftsgeheimnisse (Akquisition!) haben im KI-Anbieter nichts zu suchen, selbst wenn es technisch erlaubt wäre. (3) Vorab-Info zu Entlassung an externen Anbieter – arbeitsrechtlich heikel." },
+      { letter: "B", text: "„Protokoll anonymisieren (Namen raus, Strategisches generisch formulieren) – dann KI-gestützte Struktur-Hilfe.\"",
+        points: 3, color: "green",
+        feedback: "Saubere Lösung. Anonymisierung + Generalisierung der heiklen Themen (statt 'Akquisition Firma X' → 'strategische Transaktion'). Danach kann KI bei der Struktur helfen. Details fügt ihr in der finalen Version selbst ein." },
+      { letter: "C", text: "„Selber zusammenfassen – bei strategischen Sachen verlasse ich mich nicht auf KI.\"",
+        points: 3, color: "green",
+        feedback: "Der sichere Weg. Besonders bei sensiblen internen Entscheidungen ist die manuelle Zusammenfassung oft die beste Lösung – kein Compliance-Risiko, zusätzlich eigene Reflexion der Inhalte." },
+      { letter: "D", text: "„Protokoll in eine selbst gehostete, lokale KI-Instanz (Llama) – bleibt im Haus.\"",
+        points: 3, color: "green",
+        feedback: "Hochwertige Lösung, falls IT vorhanden. Lokale Modelle verlassen nie das Firmennetz. Setzt aber IT-Infrastruktur und -Kompetenz voraus – nicht für jeden Mittelständler realistisch." },
+    ],
+    reference: "Art. 5 DSGVO · Handout 1: DSGVO-Ampel (Kategorie ROT)",
+  },
+
+  {
+    num: 10,
+    category: "Content",
+    title: "Blogartikel mit KI",
+    situation: "Dein Marketing-Team will einen Blogartikel '10 Tipps für Stressmanagement im Handwerk' mit ChatGPT Plus schreiben und ihn auf der Firmen-Website veröffentlichen.",
+    question: "Was ist bis 02.08.2026 und danach zu beachten?",
+    dimension: "V",
+    options: [
+      { letter: "A", text: "„Schreiben, veröffentlichen, fertig. Es sind keine Kundendaten drin.\"",
+        points: 1, color: "yellow",
+        feedback: "Inhaltlich stimmt's – keine Personendaten im Text. ABER: Ab 02.08.2026 muss KI-generierter Content gekennzeichnet werden, wenn er nach außen geht. Ohne Kennzeichnung: abmahnbar." },
+      { letter: "B", text: "„Mit ChatGPT Plus schreiben, am Ende Hinweis 'Erstellt mit Unterstützung von KI'.\"",
+        points: 3, color: "green",
+        feedback: "Genau richtig. Kennzeichnung erfüllt die KI-VO-Anforderung. Ob ChatGPT Plus oder Team ist bei reinen Themen ohne Personenbezug rechtlich weniger kritisch – Team ist aber dauerhaft sauberer." },
+      { letter: "C", text: "„Selber schreiben – dann bin ich auf der sicheren Seite.\"",
+        points: 1, color: "yellow",
+        feedback: "Übervorsichtig. Blog zum Stressmanagement ist der Paradefall für legitime KI-Nutzung. Option B ist der bessere Kompromiss – schnell + compliant." },
+      { letter: "D", text: "„Team-Account nutzen + klare Kennzeichnung + inhaltliche Prüfung durch Mensch.\"",
+        points: 3, color: "green",
+        feedback: "Die Musterlösung. Alle drei Ebenen abgedeckt: Tool (Team/AVV), Kennzeichnung (KI-VO), Qualität (menschliche Prüfung). So sollte euer Standard-Prozess für externe KI-Inhalte aussehen." },
+    ],
+    reference: "KI-VO Art. 50 · Handout 3: KI-Richtlinie Abschnitt 4",
+  },
+
+  {
+    num: 11,
+    category: "Personal",
+    title: "Mitarbeiter-Feedback auswerten",
+    situation: "Ihr habt anonymes Mitarbeiter-Feedback über ein Umfrage-Tool erhoben (14 MA, Freitextfelder). Du willst Kernthemen per KI herausfiltern – damit ihr sie in der Teamsitzung besprechen könnt.",
+    question: "Wie gehst du vor?",
+    dimension: "P",
+    options: [
+      { letter: "A", text: "„Feedbacks in ChatGPT Plus werfen, Zusammenfassung machen lassen.\"",
+        points: 0, color: "red",
+        feedback: "Nicht nur kein AVV – auch 'anonymes' Feedback ist in einer 14er-Firma oft de-anonymisierbar. Schreibstil, Inhaltsdetails, Themenwahl – 14 Personen sind eine kleine Gruppe. Das ist personenbezogene Verarbeitung." },
+      { letter: "B", text: "„ChatGPT Team mit AVV, Feedback reinkippen – ist ja anonym.\"",
+        points: 1, color: "yellow",
+        feedback: "AVV ist da – aber das Problem der Re-Identifizierbarkeit bleibt bei kleiner Firma. Prüffrage: Könnte ich anhand eines Feedbacks erraten, wer es geschrieben hat? Bei <20 MA oft ja. Dann ist es de facto personenbezogen." },
+      { letter: "C", text: "„Feedbacks zusammen als Gesamt-Text in KI schicken, nicht einzeln – und KI soll nur Themen extrahieren, nicht zitieren.\"",
+        points: 3, color: "green",
+        feedback: "Guter Mittelweg. Durch Verschmelzung aller Feedbacks wird Re-Identifizierung erschwert. Prompt: 'Identifiziere die 5 häufigsten Themen, ohne einzelne Aussagen zu zitieren.' Mit Team-Account ist das gut vertretbar." },
+      { letter: "D", text: "„Selbst lesen und clustern. 14 Feedbacks – 2 Stunden Arbeit, aber 100% sicher.\"",
+        points: 3, color: "green",
+        feedback: "Pragmatisch und sicher. Bei 14 Feedbacks ist manuelles Clustern absolut machbar – und ihr habt zusätzlich ein Gefühl für die Stimmung im Team, das eine KI-Zusammenfassung nicht vermittelt." },
+    ],
+    reference: "Re-Identifizierungs-Risiko · Art. 4 DSGVO (Personenbezug)",
+  },
+
+  {
+    num: 12,
+    category: "Vertrag",
+    title: "Kunde will KI-Verbot im Vertrag",
+    situation: "Ein neuer Großkunde will eine Klausel in den Dienstleistungsvertrag: „Der Auftragnehmer verzichtet auf den Einsatz jeglicher KI bei der Auftragserfüllung.\" Du nutzt aktuell DeepL und Canva AI.",
+    question: "Wie reagierst du?",
+    dimension: "V",
+    options: [
+      { letter: "A", text: "„Unterschreiben – DeepL und Canva merkt der Kunde eh nie.\"",
+        points: 0, color: "red",
+        feedback: "Vertragsbruch mit Ansage. Wenn es rauskommt (z.B. durch Insider oder KI-Detektor), könnt ihr den Auftrag verlieren und auf Schadensersatz haften. Zusätzlich: Ehrlichkeit ist die Grundlage jeder Geschäftsbeziehung." },
+      { letter: "B", text: "„Klausel komplett ablehnen – 'geht nicht' sagen und fertig.\"",
+        points: 1, color: "yellow",
+        feedback: "Handlungsorientiert, aber konfrontativ. Oft ist das Vertrauens-Problem des Kunden lösbar – durch Transparenz. Ihr verliert sonst einen Auftrag, der vielleicht vermeidbar gewesen wäre." },
+      { letter: "C", text: "„Liste aller eingesetzten KI-Tools zusammenstellen, mit Kunde offen besprechen, Klausel differenzieren.\"",
+        points: 3, color: "green",
+        feedback: "Profi-Umgang. 'Wir nutzen DeepL für Übersetzungen und Canva für Grafiken – alles mit AVV, keine Kundendaten gehen in KI-Tools. Können wir das als akzeptiert formulieren?' So entsteht eine realistische Klausel." },
+      { letter: "D", text: "„Vorschlag: 'Keine generative KI OHNE Kennzeichnung und ohne AVV' – sauber formuliert.\"",
+        points: 3, color: "green",
+        feedback: "Sehr professionell. Ihr übernehmt die Regie im Vertragsgestaltungsprozess – und die Klausel wird sogar besser als das pauschale KI-Verbot. Zeigt Kompetenz und schützt beide Seiten." },
+    ],
+    reference: "BGB §§ 241, 242 · KI-Richtlinie: Tool-Whitelist",
+  },
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let currentIdx = 0;
+let scoreTotal = 0;
+let scoreByDimension = { P: 0, T: 0, V: 0, R: 0 };
+let maxByDimension = { P: 0, T: 0, V: 0, R: 0 };
+let answers = []; // {scenarioNum, letter, points}
+
+// Dimension-Totals zählen
+scenarios.forEach(sc => { maxByDimension[sc.dimension] += 3; });
+
+// ============================================================
+// RENDERING
+// ============================================================
+
+const content = document.getElementById('content');
+const scorePill = document.getElementById('scorePill');
+const currentScoreEl = document.getElementById('currentScore');
+const progressWrap = document.getElementById('progressWrap');
+const progressLabel = document.getElementById('progressLabel');
+const progressPercent = document.getElementById('progressPercent');
+const progressFill = document.getElementById('progressFill');
+
+function updateProgress() {
+  const done = answers.length;
+  const pct = Math.round((done / scenarios.length) * 100);
+  progressLabel.textContent = `Szenario ${Math.min(currentIdx + 1, scenarios.length)} von ${scenarios.length}`;
+  progressPercent.textContent = pct + ' %';
+  progressFill.style.width = pct + '%';
+  currentScoreEl.textContent = scoreTotal;
+}
+
+function renderStart() {
+  progressWrap.classList.remove('visible');
+  scorePill.classList.remove('visible');
+  content.innerHTML = `
+    <div class="screen">
+      <div class="start-hero">
+        <span class="start-tag">KI-AKADEMIE · M3.1</span>
+        <h1 class="start-title">KI-Datenschutz<span class="sub">Entscheidungs-Simulator</span></h1>
+        <p class="start-sub">Vom Kennen zum Können – 12 Szenarien aus dem KMU-Alltag.</p>
+
+        <p class="start-desc">
+          In den nächsten 10–15 Minuten triffst du 12 Entscheidungen, wie sie in jedem Mittelstandsbetrieb
+          täglich vorkommen. Du bekommst sofort Feedback – warum eine Option richtig, akzeptabel oder riskant ist.
+        </p>
+
+        <div class="start-meta">
+          <div><strong>12</strong><span>Szenarien</span></div>
+          <div><strong>36</strong><span>Max. Punkte</span></div>
+          <div><strong>~15 Min</strong><span>Dauer</span></div>
+        </div>
+
+        <div class="how-it-works">
+          <h4>SO GEHT'S</h4>
+          <ul>
+            <li>Lies das Szenario ruhig durch.</li>
+            <li>Wähle die Antwort, die du im echten Betrieb geben würdest.</li>
+            <li>Nach jeder Antwort: Feedback mit Begründung und Quelle.</li>
+            <li>Am Ende: Auswertung deines Profils + Empfehlungen.</li>
+          </ul>
+        </div>
+
+        <button class="btn" onclick="startGame()">Jetzt starten →</button>
+      </div>
+    </div>
+  `;
+}
+
+function renderScenario() {
+  const s = scenarios[currentIdx];
+  progressWrap.classList.add('visible');
+  scorePill.classList.add('visible');
+  updateProgress();
+
+  const optionsHTML = s.options.map(o => `
+    <button class="option" onclick="selectOption('${o.letter}')">
+      <span class="option-letter">${o.letter}</span>
+      <span>${escapeHTML(o.text)}</span>
+    </button>
+  `).join('');
+
+  content.innerHTML = `
+    <div class="screen">
+      <div class="scenario-num">SZENARIO ${s.num} / 12<span class="scenario-category">${s.category}</span></div>
+      <h2 class="scenario-title">${escapeHTML(s.title)}</h2>
+      <div class="scenario-situation">${escapeHTML(s.situation)}</div>
+      <div class="scenario-question">${escapeHTML(s.question)}</div>
+      <div class="options">${optionsHTML}</div>
+    </div>
+  `;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function selectOption(letter) {
+  const s = scenarios[currentIdx];
+  const o = s.options.find(op => op.letter === letter);
+  scoreTotal += o.points;
+  scoreByDimension[s.dimension] += o.points;
+  answers.push({ num: s.num, letter, points: o.points });
+
+  const labelMap = { green: 'RICHTIG', yellow: 'AKZEPTABEL, ABER…', red: 'RISKANT' };
+  const verdictMap = {
+    green: 'Gute Entscheidung.',
+    yellow: 'Nicht falsch – aber nicht optimal.',
+    red: 'Das würde dich in Schwierigkeiten bringen.',
+  };
+
+  content.innerHTML = `
+    <div class="screen feedback">
+      <div class="feedback-banner ${o.color}">
+        <div class="feedback-label">${labelMap[o.color]}</div>
+        <div class="feedback-verdict">${verdictMap[o.color]}</div>
+        <div class="feedback-points">+${o.points} von 3 Punkten · Antwort ${letter}</div>
+      </div>
+
+      <div class="feedback-body">
+        <h4>WARUM</h4>
+        <p>${escapeHTML(o.feedback)}</p>
+        <div class="feedback-reference">Weiterlesen: ${escapeHTML(s.reference)}</div>
+      </div>
+
+      <button class="btn" onclick="nextScenario()">
+        ${currentIdx < scenarios.length - 1 ? 'Weiter zum nächsten Szenario →' : 'Zur Auswertung →'}
+      </button>
+    </div>
+  `;
+  updateProgress();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function nextScenario() {
+  currentIdx++;
+  if (currentIdx >= scenarios.length) {
+    renderResult();
+  } else {
+    renderScenario();
+  }
+}
+
+function renderResult() {
+  progressWrap.classList.remove('visible');
+  const max = scenarios.length * 3;
+  const pct = Math.round((scoreTotal / max) * 100);
+
+  let badge, verdict, sub;
+  if (scoreTotal >= 30) {
+    badge = 'KI-DATENSCHUTZ-PROFI';
+    verdict = 'Du weißt, was du tust.';
+    sub = 'Deine Einschätzung ist sicher genug, um dein Team zu leiten. Nutze die Handouts, um dein Wissen einzubetten.';
+  } else if (scoreTotal >= 22) {
+    badge = 'DSGVO-BEWUSST';
+    verdict = 'Solide Basis – mit Finetuning wirst du Profi.';
+    sub = 'Dir fehlen an ein paar Stellen die Details. Die Handouts schließen die Lücken, und in 2–3 Monaten bist du oben.';
+  } else if (scoreTotal >= 14) {
+    badge = 'IM AUFBAU';
+    verdict = 'Da ist noch Luft nach oben.';
+    sub = 'Wichtige Grundlagen sind da – aber einige Bereiche brauchen Training. Die Handouts und M3.2 helfen systematisch weiter.';
+  } else {
+    badge = 'DRINGENDER HANDLUNGSBEDARF';
+    verdict = 'Jetzt ist der richtige Moment zum Nachholen.';
+    sub = "Keine Schande – du bist nicht allein. Nimm die Handouts, mach den AVV, führe die Richtlinie ein. In 4 Wochen sieht's anders aus.";
+  }
+
+  const dimLabels = {
+    P: 'Personen­bezug erkennen',
+    T: 'Werkzeug- und Lizenzwahl',
+    V: 'Verfahrens-Wissen (Kennzeichnung, AVV, KI-VO)',
+    R: 'Risiko-Einschätzung',
+  };
+  const profileHTML = Object.keys(dimLabels).map(dim => {
+    const got = scoreByDimension[dim];
+    const total = maxByDimension[dim];
+    const p = Math.round((got / total) * 100);
+    const barColor = p >= 75 ? 'var(--green)' : p >= 50 ? 'var(--yellow)' : 'var(--red)';
+    return `
+      <div class="profile-item">
+        <div class="label">${dimLabels[dim]}</div>
+        <div class="value">${got} / ${total}</div>
+        <div class="bar"><div class="bar-fill" style="width: ${p}%; background: ${barColor};"></div></div>
+      </div>
+    `;
+  }).join('');
+
+  // Individuelle Empfehlung
+  const weakest = Object.keys(scoreByDimension).reduce((a, b) =>
+    (scoreByDimension[a] / maxByDimension[a]) < (scoreByDimension[b] / maxByDimension[b]) ? a : b
+  );
+  const tipMap = {
+    P: 'Dein Schwerpunkt sollte Personenbezug sein: Bevor du in KI eingibst – frag dich IMMER: Könnte jemand diese Daten einer Person zuordnen? Handout 1 (DSGVO-Ampel) hilft beim schnellen Einschätzen.',
+    T: 'Arbeite an deiner Werkzeug-Wahl: Welche Lizenz habe ich? Habe ich einen AVV? Handout 2 (AVV-Quickguide) und Handout 4 (Tool-Ampel) sind dein Nachschlagewerk.',
+    V: 'Vertiefe dein Verfahrens-Wissen: KI-Kennzeichnung, AVV-Prozess, KI-VO. Handout 3 (KI-Richtlinie) und Modul 3.2 (AI Act am 28.04.) decken das komplett ab.',
+    R: 'Schärfe dein Risiko-Gespür: Wo ist KI Hochrisiko (HR, Finanzen, Gesundheit)? Wo lohnt Vorsicht? Modul 3.2 behandelt Hochrisiko-Systeme im Detail.',
+  };
+
+  content.innerHTML = `
+    <div class="screen">
+      <div class="result-hero">
+        <div class="result-score">${scoreTotal}<span class="max"> / ${max}</span></div>
+        <div class="result-badge">${badge}</div>
+        <div class="result-verdict">${verdict}</div>
+        <div class="result-sub">${sub}</div>
+      </div>
+
+      <h3 style="color: var(--bds-dark); font-size: 14px; margin-bottom: 12px; letter-spacing: 1px;">DEIN PROFIL</h3>
+      <div class="profile-grid">${profileHTML}</div>
+
+      <div class="result-tip">
+        <h4>DEIN NÄCHSTER SCHRITT</h4>
+        <p>${tipMap[weakest]}</p>
+      </div>
+
+      <div class="result-actions">
+        <button class="btn" onclick="restart()">Nochmal spielen</button>
+        <button class="btn btn-secondary" onclick="window.print()">Ergebnis drucken</button>
+      </div>
+    </div>
+  `;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function startGame() {
+  currentIdx = 0;
+  scoreTotal = 0;
+  scoreByDimension = { P: 0, T: 0, V: 0, R: 0 };
+  answers = [];
+  renderScenario();
+}
+
+function restart() {
+  startGame();
+}
+
+function escapeHTML(s) {
+  return String(s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+// === INIT ===
+renderStart();
+</script>
+</body>
+</html>
