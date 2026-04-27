@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mythos-Check KI — für Entscheider:innen & Engagierte</title>
+<meta name="description" content="Interaktiver Mythos-Check zu Künstlicher Intelligenz. 6 Szenarien aus Verein, Verwaltung und Ehrenamt. Kein Login, DSGVO-konform.">
+<style>
+  :root {
+    --bg: #FFFDF7;
+    --text: #1A1A1A;
+    --accent: #6B1D3E;
+    --accent-light: #F0E5EA;
+    --accent-dark: #4B1029;
+    --muted: #7A7A7A;
+    --gruen: #2E7D32;
+    --gruen-light: #E8F5E9;
+    --rot: #C62828;
+    --rot-light: #FFEBEE;
+    --gelb: #F9A825;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    font-family: "Atkinson Hyperlegible", "Arial", sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    min-height: 100vh;
+    font-size: 18px;
+    padding: 24px 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .app {
+    width: 100%;
+    max-width: 780px;
+    margin: 0 auto;
+  }
+
+  /* HEADER */
+  header {
+    text-align: center;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--accent);
+  }
+  header h1 {
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 900;
+    color: var(--text);
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+    line-height: 1.1;
+  }
+  header .subtitle {
+    font-size: clamp(15px, 2.5vw, 18px);
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  /* SCREENS */
+  .screen {
+    background: white;
+    border: 2px solid var(--accent);
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 4px 20px rgba(107, 29, 62, 0.08);
+  }
+
+  /* WELCOME SCREEN */
+  .welcome h2 {
+    font-size: clamp(22px, 3.5vw, 28px);
+    font-weight: 900;
+    color: var(--accent);
+    margin-bottom: 16px;
+  }
+  .welcome p {
+    font-size: 18px;
+    margin-bottom: 16px;
+    color: var(--text);
+  }
+  .welcome ul {
+    margin: 16px 0 24px 24px;
+    font-size: 17px;
+  }
+  .welcome li {
+    margin-bottom: 8px;
+  }
+
+  /* PROGRESS BAR */
+  .progress {
+    margin-bottom: 24px;
+  }
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .progress-bar {
+    height: 10px;
+    background: var(--accent-light);
+    border-radius: 5px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 5px;
+    transition: width 0.4s ease;
+  }
+
+  /* QUESTION */
+  .question-context {
+    font-size: 14px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    font-weight: 600;
+    margin-bottom: 12px;
+  }
+  .question-text {
+    font-size: clamp(20px, 3vw, 26px);
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 28px;
+    line-height: 1.35;
+    padding: 16px;
+    background: var(--accent-light);
+    border-left: 4px solid var(--accent);
+    border-radius: 4px;
+  }
+
+  /* ANSWER BUTTONS */
+  .answers {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  @media (max-width: 540px) {
+    .answers { grid-template-columns: 1fr; }
+  }
+
+  .btn-answer {
+    font-family: inherit;
+    font-size: 20px;
+    font-weight: 700;
+    padding: 20px 24px;
+    border: 3px solid var(--accent);
+    background: white;
+    color: var(--accent);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 72px;
+    letter-spacing: 0.05em;
+  }
+  .btn-answer:hover:not(:disabled) {
+    background: var(--accent);
+    color: white;
+    transform: translateY(-2px);
+  }
+  .btn-answer:focus-visible {
+    outline: 3px solid var(--gelb);
+    outline-offset: 3px;
+  }
+  .btn-answer:disabled { cursor: default; opacity: 0.5; }
+  .btn-answer.selected-correct {
+    background: var(--gruen);
+    border-color: var(--gruen);
+    color: white;
+    opacity: 1;
+  }
+  .btn-answer.selected-wrong {
+    background: var(--rot);
+    border-color: var(--rot);
+    color: white;
+    opacity: 1;
+  }
+  .btn-answer.show-correct {
+    background: var(--gruen);
+    border-color: var(--gruen);
+    color: white;
+    opacity: 1;
+    position: relative;
+  }
+  .btn-answer.show-correct::after {
+    content: "← richtig";
+    position: absolute;
+    bottom: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 13px;
+    color: var(--gruen);
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  /* FEEDBACK */
+  .feedback {
+    padding: 20px 24px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 17px;
+    line-height: 1.55;
+  }
+  .feedback.correct {
+    background: var(--gruen-light);
+    border-left: 4px solid var(--gruen);
+  }
+  .feedback.wrong {
+    background: var(--rot-light);
+    border-left: 4px solid var(--rot);
+  }
+  .feedback-verdict {
+    font-weight: 900;
+    font-size: 20px;
+    margin-bottom: 8px;
+    letter-spacing: 0.05em;
+  }
+  .feedback.correct .feedback-verdict { color: var(--gruen); }
+  .feedback.wrong .feedback-verdict { color: var(--rot); }
+  .feedback-explanation {
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+  .feedback-context {
+    font-size: 14px;
+    color: var(--muted);
+    font-style: italic;
+    padding-top: 8px;
+    border-top: 1px dashed var(--muted);
+    margin-top: 12px;
+  }
+
+  /* BUTTONS (primary) */
+  .btn-primary {
+    font-family: inherit;
+    font-size: 18px;
+    font-weight: 700;
+    padding: 16px 32px;
+    border: none;
+    background: var(--accent);
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    letter-spacing: 0.05em;
+    min-height: 56px;
+    width: 100%;
+  }
+  .btn-primary:hover { background: var(--accent-dark); transform: translateY(-2px); }
+  .btn-primary:focus-visible {
+    outline: 3px solid var(--gelb);
+    outline-offset: 3px;
+  }
+
+  .btn-secondary {
+    font-family: inherit;
+    font-size: 16px;
+    font-weight: 600;
+    padding: 12px 24px;
+    border: 2px solid var(--accent);
+    background: transparent;
+    color: var(--accent);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 48px;
+  }
+  .btn-secondary:hover { background: var(--accent-light); }
+
+  /* RESULT SCREEN */
+  .result-screen {
+    text-align: center;
+  }
+  .result-score {
+    font-size: clamp(48px, 10vw, 80px);
+    font-weight: 900;
+    color: var(--accent);
+    line-height: 1;
+    margin: 16px 0 8px;
+  }
+  .result-score-sub {
+    font-size: 18px;
+    color: var(--muted);
+    margin-bottom: 24px;
+  }
+  .result-verdict {
+    font-size: clamp(20px, 3vw, 24px);
+    font-weight: 700;
+    color: var(--text);
+    padding: 20px;
+    background: var(--accent-light);
+    border-radius: 8px;
+    margin-bottom: 24px;
+  }
+  .result-cta {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 24px;
+  }
+  .result-cta > * { flex: 1; min-width: 200px; }
+
+  /* FOOTER */
+  footer {
+    text-align: center;
+    margin-top: 32px;
+    padding-top: 20px;
+    font-size: 13px;
+    color: var(--muted);
+    border-top: 1px solid var(--accent-light);
+  }
+  footer a { color: var(--accent); text-decoration: none; font-weight: 600; }
+  footer a:hover { text-decoration: underline; }
+
+  /* ANIMATIONS */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .screen, .feedback { animation: fadeIn 0.3s ease; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+
+  /* Print-Styles (falls jemand das Spiel als Handout drucken will) */
+  @media print {
+    body { background: white; }
+    .btn-primary, .btn-answer, .btn-secondary { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <header>
+    <h1>🎯 Mythos-Check KI</h1>
+    <div class="subtitle">Sechs Mythen · Sechs Entscheidungen · Zwei Minuten</div>
+  </header>
+
+  <main id="main" class="screen">
+    <!-- Wird per JS befüllt -->
+  </main>
+
+  <footer>
+    <p>
+      Interaktives Lernspiel im Kurs „KI verstehen statt nur nutzen"
+      <br>
+      Dozent: Arno Schimmelpfennig · <a href="mailto:info@arno-schimmelpfennig.de">info@arno-schimmelpfennig.de</a>
+      <br>
+      Weitere Lernspiele: <a href="https://games.ki-lernarchitekt.de" target="_blank" rel="noopener">games.ki-lernarchitekt.de</a>
+      <br>
+      <small>Kein Login · Kein Tracking · DSGVO-konform · Spiel lokal spielbar</small>
+    </p>
+  </footer>
+</div>
+
+<script>
+/* === SPIELDATEN ================================================ */
+const MYTHEN = [
+  {
+    kontext: "Führungskraft · Einschätzung",
+    aussage: `„KI denkt wie ein Mensch — nur schneller."`,
+    istFakt: false,
+    erklaerung: `KI denkt nicht. Sie berechnet statistische Wahrscheinlichkeiten auf Basis von Mustern in Trainingsdaten. Es gibt keine Intuition, kein Verständnis, kein Weltbewusstsein.`,
+    kontextInfo: `Wichtig für Entscheider:innen: KI-Ergebnisse sind Vorschläge — keine Urteile. Die Einordnung bleibt menschliche Aufgabe.`
+  },
+  {
+    kontext: "Bewerbungsverfahren · Verein/Betrieb",
+    aussage: `„KI-Systeme treffen objektive, neutrale Entscheidungen."`,
+    istFakt: false,
+    erklaerung: `Nein. KI übernimmt Vorurteile aus Trainingsdaten. Bekannte Fälle: Bewerbungssysteme haben Frauen, ältere Menschen und Migrationsbiografien systematisch benachteiligt.`,
+    kontextInfo: `Bei Bewerberauswahl gilt laut EU AI Act Hoch-Risiko-Status (Art. 6 + Anhang III) — menschliche Letztentscheidung zwingend.`
+  },
+  {
+    kontext: "Vereinsvorstand · DSGVO",
+    aussage: `„Solange ich keine Klarnamen in ChatGPT tippe, ist alles DSGVO-konform."`,
+    istFakt: false,
+    erklaerung: `Täuschung. Auch indirekte Angaben („64-jährige Schatzmeisterin unseres 200-Mitglieder-Vereins in Bamberg") können zur Identifizierung reichen. Personenbezug entsteht durch Kombination.`,
+    kontextInfo: `Regel: Im Zweifel anonymisieren oder auf datenschutzkonforme KI-Dienste mit Auftragsverarbeitungsvertrag umsteigen.`
+  },
+  {
+    kontext: "Recherche · Förderantrag",
+    aussage: `„KI kann Fakten erfinden, die plausibel klingen — aber falsch sind."`,
+    istFakt: true,
+    erklaerung: `Richtig. Das Phänomen heißt „Halluzination". KI liefert immer die wahrscheinlichste Antwort — nicht die wahre. Paragraphen, Urteilsnummern, Statistiken müssen Sie immer selbst gegenprüfen.`,
+    kontextInfo: `Beispiel: KI nennt „§ 14a BGB" — diesen Paragraphen gibt es in dieser Form nicht. Immer Originalquelle öffnen.`
+  },
+  {
+    kontext: "Ehrenamt · Grundsätzliche Frage",
+    aussage: `„KI wird das Ehrenamt kurzfristig ersetzen."`,
+    istFakt: false,
+    erklaerung: `Nein. KI kann Routineaufgaben erleichtern (Rundmail, Protokoll, Antragsstruktur) — sie ersetzt aber weder menschliche Zuwendung noch Kontextwissen noch Urteilskraft vor Ort.`,
+    kontextInfo: `KI ist Werkzeug zur Entlastung. Wer sie klug einsetzt, gewinnt Zeit für die eigentliche Vereins- und Beziehungsarbeit.`
+  },
+  {
+    kontext: "EU-Recht · Pflicht für Entscheider:innen",
+    aussage: `„Der EU AI Act schreibt eine Kompetenzpflicht für KI-Nutzende vor."`,
+    istFakt: true,
+    erklaerung: `Richtig. Artikel 4 des EU AI Act ist seit Februar 2026 in Kraft: Wer KI einsetzt, muss sicherstellen, dass Mitarbeitende KI-kompetent sind. Das gilt für Unternehmen, Vereine und Verwaltung.`,
+    kontextInfo: `Führungskräfte tragen die Verantwortung, Schulungen und Handreichungen bereitzustellen. Dokumentation empfohlen.`
+  }
+];
+
+/* === STATE ===================================================== */
+let currentIndex = 0;
+let correctCount = 0;
+let answered = false;
+
+/* === DOM REFERENZEN ============================================ */
+const main = document.getElementById("main");
+
+/* === RENDER: WELCOME ============================================ */
+function renderWelcome() {
+  main.innerHTML = `
+    <div class="welcome">
+      <h2>Willkommen beim Mythos-Check</h2>
+      <p>
+        Sechs Aussagen zu Künstlicher Intelligenz — aus dem Alltag von
+        <strong>Vereinsvorständen, Führungskräften und Engagierten</strong>.
+        Sie entscheiden: <strong>FAKT</strong> oder <strong>MYTHOS</strong>?
+      </p>
+      <p>
+        Nach jeder Antwort gibt es eine kurze Erklärung mit Praxisbezug.
+        Am Ende sehen Sie Ihren Gesamt-Score.
+      </p>
+      <ul>
+        <li><strong>Dauer:</strong> ca. 2–5 Minuten</li>
+        <li><strong>Kein Login</strong>, kein Tracking, kein Cookie</li>
+        <li><strong>Tastatur:</strong> F = Fakt · M = Mythos · Enter = Weiter</li>
+      </ul>
+      <button id="btn-start" class="btn-primary" autofocus>
+        Jetzt starten →
+      </button>
+    </div>
+  `;
+  document.getElementById("btn-start").addEventListener("click", startQuiz);
+}
+
+/* === RENDER: QUESTION =========================================== */
+function renderQuestion() {
+  answered = false;
+  const m = MYTHEN[currentIndex];
+  const progressPct = ((currentIndex) / MYTHEN.length) * 100;
+
+  main.innerHTML = `
+    <div class="progress">
+      <div class="progress-info">
+        <span>Frage ${currentIndex + 1} von ${MYTHEN.length}</span>
+        <span>${correctCount} von ${currentIndex} richtig</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" style="width: ${progressPct}%"></div>
+      </div>
+    </div>
+
+    <div class="question-context">${m.kontext}</div>
+    <div class="question-text">${m.aussage}</div>
+
+    <div class="answers" role="group" aria-label="Antwortoptionen">
+      <button class="btn-answer" data-answer="true" aria-label="Die Aussage ist ein Fakt">
+        ✓ FAKT
+      </button>
+      <button class="btn-answer" data-answer="false" aria-label="Die Aussage ist ein Mythos">
+        ✕ MYTHOS
+      </button>
+    </div>
+
+    <div id="feedback-slot"></div>
+  `;
+
+  document.querySelectorAll(".btn-answer").forEach(btn => {
+    btn.addEventListener("click", handleAnswer);
+  });
+}
+
+/* === HANDLE: ANSWER ============================================= */
+function handleAnswer(e) {
+  if (answered) return;
+  answered = true;
+
+  const userAnswer = e.currentTarget.dataset.answer === "true";
+  const m = MYTHEN[currentIndex];
+  const richtig = userAnswer === m.istFakt;
+
+  if (richtig) correctCount++;
+
+  // Buttons sperren und markieren
+  document.querySelectorAll(".btn-answer").forEach(btn => {
+    btn.disabled = true;
+    const btnAnswer = btn.dataset.answer === "true";
+    if (btnAnswer === m.istFakt) {
+      // Das ist die richtige Antwort
+      if (btnAnswer === userAnswer) {
+        btn.classList.add("selected-correct");
+      } else {
+        btn.classList.add("show-correct");
+      }
+    } else if (btnAnswer === userAnswer && !richtig) {
+      btn.classList.add("selected-wrong");
+    }
+  });
+
+  // Feedback anzeigen
+  const verdict = m.istFakt ? "FAKT" : "MYTHOS";
+  const feedbackClass = richtig ? "correct" : "wrong";
+  const heading = richtig
+    ? `✓ Richtig — es ist ein ${verdict}`
+    : `✕ Leider falsch — es ist ein ${verdict}`;
+
+  const slot = document.getElementById("feedback-slot");
+  slot.innerHTML = `
+    <div class="feedback ${feedbackClass}" role="status">
+      <div class="feedback-verdict">${heading}</div>
+      <div class="feedback-explanation">${m.erklaerung}</div>
+      <div class="feedback-context">💡 ${m.kontextInfo}</div>
+    </div>
+    <button id="btn-next" class="btn-primary" autofocus>
+      ${currentIndex < MYTHEN.length - 1 ? "Nächste Frage →" : "Ergebnis anzeigen →"}
+    </button>
+  `;
+
+  document.getElementById("btn-next").addEventListener("click", nextQuestion);
+  document.getElementById("btn-next").focus();
+}
+
+/* === NEXT QUESTION ============================================== */
+function nextQuestion() {
+  currentIndex++;
+  if (currentIndex >= MYTHEN.length) {
+    renderResult();
+  } else {
+    renderQuestion();
+  }
+}
+
+/* === RENDER: RESULT ============================================= */
+function renderResult() {
+  const pct = Math.round((correctCount / MYTHEN.length) * 100);
+  let verdict;
+  if (pct === 100) {
+    verdict = "Perfekt! Sie sind bereit, KI-Mythen in Ihrem Umfeld zu entkräften.";
+  } else if (pct >= 83) {
+    verdict = "Stark! Mit diesem Wissen können Sie sicher mit Ihrem Team über KI sprechen.";
+  } else if (pct >= 67) {
+    verdict = "Solide Basis. Ein zweiter Durchgang vertieft Ihr Urteil.";
+  } else if (pct >= 50) {
+    verdict = "Erste Grundlagen vorhanden. Nochmal spielen empfohlen — kein Login nötig.";
+  } else {
+    verdict = "Kein Problem — KI-Mythen sind hartnäckig. Ein zweiter Durchgang hilft.";
+  }
+
+  main.innerHTML = `
+    <div class="result-screen">
+      <div class="question-context">Ihr Ergebnis</div>
+      <div class="result-score">${correctCount} / ${MYTHEN.length}</div>
+      <div class="result-score-sub">${pct}% richtig beantwortet</div>
+      <div class="result-verdict">${verdict}</div>
+      <p style="margin-bottom: 20px; color: var(--muted);">
+        Sie können das Ergebnis mit Ihrem Team teilen oder den Mythos-Check im nächsten
+        Vorstands- oder Teammeeting einsetzen.
+      </p>
+      <div class="result-cta">
+        <button id="btn-retry" class="btn-primary">
+          Nochmal spielen
+        </button>
+        <a href="https://games.ki-lernarchitekt.de" class="btn-secondary" style="display:inline-flex; align-items:center; justify-content:center; text-decoration:none;">
+          Weitere Lernspiele
+        </a>
+      </div>
+    </div>
+  `;
+  document.getElementById("btn-retry").addEventListener("click", resetQuiz);
+}
+
+/* === CONTROLS =================================================== */
+function startQuiz() {
+  currentIndex = 0;
+  correctCount = 0;
+  renderQuestion();
+}
+
+function resetQuiz() {
+  currentIndex = 0;
+  correctCount = 0;
+  renderQuestion();
+}
+
+/* === KEYBOARD ==================================================== */
+document.addEventListener("keydown", (e) => {
+  // Ignore wenn Textfeld oder Modifier
+  if (e.target.tagName === "INPUT" || e.target.tagName === "TEXTAREA") return;
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+  const key = e.key.toLowerCase();
+
+  // Spielsteuerung
+  if (!answered) {
+    if (key === "f") {
+      const btn = document.querySelector('.btn-answer[data-answer="true"]');
+      if (btn) { btn.click(); e.preventDefault(); }
+    } else if (key === "m") {
+      const btn = document.querySelector('.btn-answer[data-answer="false"]');
+      if (btn) { btn.click(); e.preventDefault(); }
+    }
+  } else if (key === "enter") {
+    const btn = document.getElementById("btn-next");
+    if (btn) { btn.click(); e.preventDefault(); }
+  }
+});
+
+/* === START ======================================================= */
+renderWelcome();
+</script>
+
+</body>
+</html>
