@@ -2,3 +2,4 @@
 data-science/archive/
 data-science/notebooks/
 .DS_Store
+.claude/

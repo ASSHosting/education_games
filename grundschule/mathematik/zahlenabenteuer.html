@@ -1,0 +1,1737 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Robi & Flora – Zahlenabenteuer</title>
+<style>
+:root {
+  --bg1: #1a1a3e; --bg2: #2d1b4e; --bg3: #0f3460;
+  --accent: #ffd166; --robot: #06d6a0; --flora: #ef476f;
+  --text: #f8f9fa; --muted: #b8b8d4;
+  --card: rgba(255,255,255,0.08); --card-strong: rgba(255,255,255,0.14);
+  --correct: #06d6a0; --wrong: #ef476f;
+  --ten: #ffd166; --five: #ff9f1c; --one: #4cc9f0;
+  --highlight: #f72585;
+}
+* { box-sizing: border-box; }
+html, body {
+  margin: 0; padding: 0;
+  font-family: 'Verdana', 'Trebuchet MS', sans-serif;
+  background: linear-gradient(135deg, var(--bg1), var(--bg2) 50%, var(--bg3));
+  background-attachment: fixed; color: var(--text);
+  min-height: 100vh; font-size: 18px; line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+#app { max-width: 980px; margin: 0 auto; padding: 20px; }
+h1 { font-size: 2.4em; text-align: center; margin: 10px 0; letter-spacing: 1px; }
+h2 { font-size: 1.7em; margin: 8px 0; }
+h3 { font-size: 1.3em; margin: 6px 0; }
+p { font-size: 1.1em; }
+button {
+  font-family: inherit; font-size: 1.2em; padding: 14px 24px;
+  border: none; border-radius: 16px; background: var(--accent);
+  color: #1a1a3e; cursor: pointer; font-weight: bold; margin: 6px;
+  box-shadow: 0 5px 0 rgba(0,0,0,0.35);
+  transition: transform 0.08s, box-shadow 0.08s; min-height: 56px;
+}
+button:hover { transform: translateY(-2px); box-shadow: 0 7px 0 rgba(0,0,0,0.35); }
+button:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0,0,0,0.35); }
+button.secondary { background: var(--card-strong); color: var(--text); border: 2px solid rgba(255,255,255,0.25); }
+button.big { font-size: 1.6em; padding: 22px 40px; min-height: 76px; }
+button.small { font-size: 1em; padding: 8px 14px; min-height: 40px; }
+button.help { background: var(--flora); color: #fff; }
+button.confirm { background: var(--correct); color: #1a1a3e; font-size: 1.8em; padding: 18px 32px; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+.card {
+  background: var(--card); border-radius: 22px; padding: 26px;
+  margin: 16px 0; border: 1px solid rgba(255,255,255,0.12);
+}
+.center { text-align: center; }
+.row { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 12px; }
+.col { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.spacer { height: 20px; }
+.muted { color: var(--muted); font-size: 0.95em; }
+.big-eq { font-size: 3em; font-weight: bold; text-align: center; margin: 16px 0; letter-spacing: 4px; }
+
+.scene { display: flex; justify-content: center; gap: 30px; align-items: flex-end; margin: 12px 0; }
+.robot { width: 110px; height: 130px; position: relative; animation: bob 2.5s ease-in-out infinite; }
+.robot .head { width: 80px; height: 60px; background: var(--robot);
+  border-radius: 16px 16px 12px 12px; margin: 0 auto;
+  position: relative; border: 3px solid #034d3a; }
+.robot .eye { width: 14px; height: 14px; background: #1a1a3e; border-radius: 50%; position: absolute; top: 18px; }
+.robot .eye.l { left: 16px; } .robot .eye.r { right: 16px; }
+.robot .mouth { width: 24px; height: 4px; background: #1a1a3e; border-radius: 2px;
+  position: absolute; bottom: 12px; left: 50%; transform: translateX(-50%); }
+.robot .antenna { width: 4px; height: 14px; background: #888; margin: 0 auto; position: relative; }
+.robot .antenna::after { content: ''; width: 12px; height: 12px; background: var(--accent);
+  border-radius: 50%; position: absolute; top: -10px; left: -4px; box-shadow: 0 0 12px var(--accent); }
+.robot .body { width: 90px; height: 60px; background: var(--robot); border-radius: 12px; margin: 4px auto;
+  border: 3px solid #034d3a; display: flex; justify-content: center; align-items: center; }
+.robot .body::after { content: ''; width: 30px; height: 30px;
+  background: radial-gradient(var(--accent), #d4a017); border-radius: 50%; }
+.fairy { width: 110px; height: 140px; position: relative; animation: float 3s ease-in-out infinite; }
+.fairy .body { width: 50px; height: 60px; background: var(--flora);
+  border-radius: 25px 25px 20px 20px; margin: 30px auto 0; position: relative; }
+.fairy .head { width: 38px; height: 38px; background: #ffd9b5; border-radius: 50%;
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%); }
+.fairy .head::before, .fairy .head::after { content: ''; position: absolute;
+  width: 5px; height: 5px; background: #1a1a3e; border-radius: 50%; top: 14px; }
+.fairy .head::before { left: 9px; } .fairy .head::after { right: 9px; }
+.fairy .smile { position: absolute; bottom: 8px; left: 50%; transform: translateX(-50%);
+  width: 14px; height: 6px; border: 2px solid #1a1a3e; border-top: none; border-radius: 0 0 14px 14px; }
+.fairy .wing { width: 30px; height: 40px; background: rgba(255,255,255,0.5);
+  border-radius: 50% 0 50% 50%; position: absolute; top: 36px; border: 1px solid rgba(255,255,255,0.8); }
+.fairy .wing.l { left: -14px; transform: rotate(-20deg); animation: flap 0.4s ease-in-out infinite alternate; }
+.fairy .wing.r { right: -14px; transform: rotate(20deg) scaleX(-1); animation: flap 0.4s ease-in-out infinite alternate; }
+@keyframes bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes float { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+@keyframes flap { from { transform: rotate(-20deg) scale(1); } to { transform: rotate(-30deg) scale(1.1); } }
+
+.bubble { background: #fff; color: #1a1a3e; border-radius: 20px; padding: 18px 24px;
+  font-size: 1.25em; font-weight: 600; max-width: 680px; margin: 12px auto;
+  position: relative; line-height: 1.4; box-shadow: 0 6px 20px rgba(0,0,0,0.3); }
+.bubble::after { content: ''; position: absolute; bottom: -12px; left: 50%; transform: translateX(-50%);
+  border: 12px solid transparent; border-top-color: #fff; border-bottom: 0; }
+
+/* === Würfel === */
+.blocks-area {
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+  gap: 8px; margin: 14px 0; padding: 12px;
+  background: rgba(0,0,0,0.2); border-radius: 14px;
+  border: 2px solid rgba(255,255,255,0.1); min-height: 60px;
+}
+.block-group {
+  display: inline-flex; gap: 2px; padding: 4px;
+  border-radius: 6px; background: rgba(0,0,0,0.3);
+  border: 2px solid rgba(255,255,255,0.2);
+  transition: all 0.4s; align-items: center;
+}
+.block-group.ten { border-color: var(--ten); }
+.block-group.five { border-color: var(--five); }
+.block-group.one { border-color: var(--one); }
+.block-group.removed { opacity: 0.2; transform: scale(0.85); filter: grayscale(0.7); }
+.block-group.highlight { animation: pulse 0.9s ease-in-out infinite; }
+.block-group.clickable { cursor: pointer; }
+.block-group.clickable:hover { transform: scale(1.1); border-color: var(--accent); }
+.cube {
+  width: 26px; height: 26px; border-radius: 4px; background: var(--one);
+  box-shadow: inset -2px -2px 0 rgba(0,0,0,0.25), inset 2px 2px 0 rgba(255,255,255,0.4);
+}
+.ten .cube { background: var(--ten); }
+.five .cube { background: var(--five); }
+.one .cube { background: var(--one); }
+.plus-sign, .minus-sign, .equals-sign, .arrow-sign {
+  font-size: 2.6em; font-weight: bold; color: var(--accent); margin: 0 6px;
+}
+@keyframes pulse {
+  0%,100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,209,102,0.7); }
+  50% { transform: scale(1.08); box-shadow: 0 0 0 10px rgba(255,209,102,0); }
+}
+
+/* === Zehnerrahmen (10er-Schablone zum Auffüllen) === */
+.ten-frame-wrap {
+  display: inline-flex; flex-direction: column; align-items: center;
+  margin: 6px;
+}
+.ten-frame {
+  display: inline-flex; gap: 10px; padding: 8px;
+  border: 3px dashed rgba(255,255,255,0.45);
+  border-radius: 10px; background: rgba(0,0,0,0.25);
+}
+.ten-frame .half { display: flex; gap: 3px; }
+.ten-frame .slot {
+  width: 26px; height: 26px; border-radius: 4px;
+  border: 2px dashed rgba(255,255,255,0.35);
+  background: transparent;
+  transition: all 0.4s;
+}
+.ten-frame .slot.filled {
+  border: none; background: var(--one);
+  box-shadow: inset -2px -2px 0 rgba(0,0,0,0.25), inset 2px 2px 0 rgba(255,255,255,0.4);
+}
+.ten-frame .slot.empty-highlight {
+  border-color: var(--accent); border-style: solid;
+  background: rgba(255,209,102,0.15);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+.ten-frame .slot.just-arrived {
+  background: var(--five);
+  animation: pop 0.5s ease-out;
+}
+@keyframes pop {
+  0% { transform: scale(0.4); }
+  60% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+.frame-label {
+  font-size: 0.95em; color: var(--muted); margin-top: 4px;
+}
+.frame-label strong { color: var(--accent); font-size: 1.1em; }
+
+/* === Korb (für Subtraktion in Level 6) === */
+.cart-wrap {
+  display: inline-flex; flex-direction: column; align-items: center;
+  background: rgba(239,71,111,0.15);
+  border: 3px solid var(--flora);
+  border-radius: 16px;
+  padding: 14px 18px;
+  margin: 8px;
+  min-width: 150px;
+  vertical-align: middle;
+}
+.cart-title { font-size: 1.05em; color: #fff; margin-bottom: 6px; font-weight: bold; }
+.cart-progress { font-size: 1.4em; font-weight: bold; color: var(--accent); margin-bottom: 8px; }
+.cart-progress.done { color: var(--correct); }
+.cart-cubes {
+  display: flex; flex-wrap: wrap; gap: 3px; justify-content: center;
+  min-height: 30px; max-width: 160px;
+}
+.cart-cubes .cube { width: 22px; height: 22px; }
+.cart-empty { color: var(--muted); font-size: 0.9em; font-style: italic; }
+
+/* === Zahlenstrahl === */
+.numline { display: flex; justify-content: center; gap: 4px; margin: 30px 0 20px; flex-wrap: wrap; }
+.numline .n { width: 44px; height: 44px; background: var(--card-strong);
+  border: 2px solid rgba(255,255,255,0.3); border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.2em; font-weight: bold; cursor: pointer; transition: all 0.15s; }
+.numline .n:hover { background: var(--accent); color: #1a1a3e; transform: scale(1.1); }
+.numline .n.correct { background: var(--correct); color: #1a1a3e; }
+.numline .n.wrong { background: var(--wrong); }
+
+/* === Antwort-Buttons === */
+.answers { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; margin: 20px 0; }
+.answer-btn { font-size: 2em; padding: 18px 32px; min-width: 100px;
+  background: var(--card-strong); color: var(--text); border: 3px solid rgba(255,255,255,0.3); }
+.answer-btn:hover { background: var(--accent); color: #1a1a3e; }
+.answer-btn.correct { background: var(--correct); color: #1a1a3e; border-color: #fff; }
+.answer-btn.wrong { background: var(--wrong); color: #fff; border-color: #fff; }
+
+/* === Level Map === */
+.levelmap { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 18px; margin: 20px 0; }
+.level-card { background: var(--card-strong); border-radius: 18px; padding: 20px;
+  text-align: center; cursor: pointer; transition: transform 0.15s;
+  border: 3px solid rgba(255,255,255,0.15); position: relative; }
+.level-card:hover:not(.locked) { transform: translateY(-4px); border-color: var(--accent); }
+.level-card.locked { opacity: 0.4; cursor: not-allowed; }
+.level-card.completed { border-color: var(--correct); }
+.level-card .num { font-size: 2.4em; font-weight: bold; color: var(--accent); }
+.level-card .title { font-size: 1.05em; font-weight: bold; margin: 6px 0; }
+.level-card .desc { font-size: 0.9em; color: var(--muted); }
+.level-card .badge { position: absolute; top: 10px; right: 10px; font-size: 1.5em; }
+
+/* === Schritt-Boxen === */
+.step-box { background: rgba(0,0,0,0.3); border-left: 6px solid var(--accent);
+  padding: 14px 20px; border-radius: 12px; margin: 8px auto;
+  font-size: 1.1em; text-align: left; max-width: 540px; }
+.step-box.active { background: rgba(255,209,102,0.18); border-left-color: var(--highlight); }
+
+/* === GRID (Level 7, 8 + Hausaufgaben) === */
+.grid-table { border-collapse: separate; border-spacing: 8px; margin: 20px auto; }
+.grid-table td, .grid-table th { width: 90px; height: 90px;
+  background: var(--card-strong); border-radius: 12px;
+  text-align: center; font-size: 1.7em; font-weight: bold;
+  border: 3px solid rgba(255,255,255,0.2); padding: 0; vertical-align: middle; }
+.grid-table .op { background: var(--flora); color: #fff; font-size: 2em; }
+.grid-table .header { background: var(--accent); color: #1a1a3e; }
+.grid-table .answer-cell { cursor: pointer; transition: all 0.15s; font-size: 2em; }
+.grid-table .answer-cell:hover:not(.filled) { background: var(--accent); color: #1a1a3e; }
+.grid-table .answer-cell.filled { background: var(--correct); color: #1a1a3e; }
+.grid-table .answer-cell.selected {
+  border-color: var(--highlight); box-shadow: 0 0 14px var(--highlight);
+  background: rgba(247,37,133,0.18);
+}
+.grid-table .answer-cell.empty-marker { color: var(--muted); font-size: 1.6em; }
+
+/* Eingabe-Bereich unter dem Grid */
+.input-area {
+  background: rgba(255,209,102,0.12);
+  border: 3px solid var(--accent);
+  border-radius: 18px;
+  padding: 18px 24px;
+  margin: 18px auto;
+  max-width: 560px;
+  text-align: center;
+}
+.input-area .task-display {
+  font-size: 2.4em; font-weight: bold; color: var(--accent);
+  margin-bottom: 14px; letter-spacing: 3px;
+}
+.input-row { display: flex; justify-content: center; align-items: center; gap: 12px; flex-wrap: wrap; }
+.big-input {
+  width: 120px; height: 80px; font-size: 2.5em; text-align: center;
+  border: 4px solid var(--accent); background: rgba(0,0,0,0.4); color: var(--text);
+  border-radius: 14px; font-family: inherit; font-weight: bold;
+}
+.big-input:focus { outline: none; border-color: var(--highlight); box-shadow: 0 0 16px var(--highlight); }
+
+/* Setup-Tabelle (Hausaufgaben-Eingabe) – kleinere Inputs für die Header */
+.grid-table input.header-input {
+  width: 70px; height: 70px; font-size: 1.6em; text-align: center;
+  border: 2px solid rgba(0,0,0,0.3); background: rgba(255,255,255,0.95); color: #1a1a3e;
+  border-radius: 8px; font-family: inherit; font-weight: bold;
+}
+.grid-table input.header-input:focus { outline: 3px solid var(--highlight); }
+
+/* === Belohnung === */
+.flower-stage { width: 280px; height: 320px; margin: 20px auto; display: block; }
+.reward-banner { background: linear-gradient(135deg, var(--accent), var(--flora));
+  color: #1a1a3e; padding: 24px; border-radius: 22px; text-align: center;
+  font-size: 1.4em; font-weight: bold; margin: 20px 0; box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
+.confetti { font-size: 3em; margin: 10px; display: inline-block; animation: spin 2s linear infinite; }
+@keyframes spin { from { transform: rotate(0); } to { transform: rotate(360deg); } }
+
+/* === Legende === */
+.legend { display: flex; justify-content: center; gap: 18px; flex-wrap: wrap;
+  font-size: 0.9em; margin: 8px 0; color: var(--muted); }
+.legend-item { display: flex; align-items: center; gap: 6px; }
+.legend-swatch { width: 20px; height: 20px; border-radius: 4px;
+  box-shadow: inset -1px -1px 0 rgba(0,0,0,0.25), inset 1px 1px 0 rgba(255,255,255,0.4); }
+
+/* === Beispielwürfel im L2-Intro === */
+.example-row {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 30px;
+  margin: 18px 0; padding: 16px;
+  background: rgba(0,0,0,0.2); border-radius: 14px;
+}
+.example-item { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.example-item .label { font-size: 1.1em; font-weight: bold; }
+.example-item .label.ten-c { color: var(--ten); }
+.example-item .label.five-c { color: var(--five); }
+.example-item .label.one-c { color: var(--one); }
+
+@media (max-width: 700px) {
+  h1 { font-size: 1.8em; }
+  .big-eq { font-size: 2em; }
+  .cube { width: 20px; height: 20px; }
+  .cart-cubes .cube { width: 16px; height: 16px; }
+  .ten-frame .slot { width: 20px; height: 20px; }
+  .grid-table td, .grid-table th { width: 72px; height: 72px; font-size: 1.4em; }
+  .grid-table input.header-input { width: 56px; height: 56px; font-size: 1.3em; }
+  .answer-btn { font-size: 1.5em; padding: 14px 22px; min-width: 80px; }
+  .big-input { width: 100px; height: 70px; font-size: 2em; }
+  .input-area .task-display { font-size: 1.9em; }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+/* ====================================================================
+   ROBI & FLORA – ZAHLENABENTEUER  (Version 2)
+   Lernspiel für Kinder mit Dyskalkulie (2. Klasse)
+   Didaktik: CRA-Ansatz, Würfelmaterial (Einer/Fünfer/Zehner),
+             Zehnerrahmen, Eintauschverfahren, Robis Korb
+   ==================================================================== */
+
+const STORAGE_KEY = 'robi_flora_v2';
+const defaultState = { unlockedLevel: 1, completedLevels: [], flowerStage: 0 };
+let state = loadState();
+let view = { screen: 'start' };
+
+function loadState() {
+  try {
+    const s = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    return s ? { ...defaultState, ...s } : { ...defaultState };
+  } catch { return { ...defaultState }; }
+}
+function saveState() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {}
+}
+
+// ============ SPEECH (mit Bug-Fix) ============
+let germanVoice = null;
+let lastSpoken = '';
+
+function initVoices() {
+  if (!('speechSynthesis' in window)) return;
+  const voices = speechSynthesis.getVoices();
+  germanVoice =
+    voices.find(v => v.lang === 'de-DE' && /female|frau|anna|petra|marlene|hedda|katja/i.test(v.name)) ||
+    voices.find(v => v.lang === 'de-DE') ||
+    voices.find(v => v.lang.startsWith('de'));
+}
+if ('speechSynthesis' in window) {
+  initVoices();
+  speechSynthesis.onvoiceschanged = initVoices;
+  // Chrome bug workaround: speechSynthesis pausiert nach ~15s.
+  // Periodisch pause+resume hält es am Leben.
+  setInterval(() => {
+    if (speechSynthesis.speaking) {
+      speechSynthesis.pause();
+      speechSynthesis.resume();
+    }
+  }, 5000);
+}
+function speak(text, force = false) {
+  if (!('speechSynthesis' in window)) return;
+  if (!force && text === lastSpoken) return;
+  lastSpoken = text;
+  try {
+    speechSynthesis.cancel();
+    // Kleiner Delay damit cancel() sicher abgeschlossen ist (Chrome-Bug)
+    setTimeout(() => {
+      const u = new SpeechSynthesisUtterance(text);
+      u.lang = 'de-DE'; u.rate = 0.78; u.pitch = 1.15; u.volume = 1;
+      if (germanVoice) u.voice = germanVoice;
+      speechSynthesis.speak(u);
+    }, 80);
+  } catch (e) { console.warn('Speech error:', e); }
+}
+function resetSpeech() {
+  lastSpoken = '';
+  if ('speechSynthesis' in window) speechSynthesis.cancel();
+}
+
+// ============ DOM HELPERS ============
+const $ = (sel, p = document) => p.querySelector(sel);
+function el(tag, props = {}, ...children) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(props)) {
+    if (k === 'class') e.className = v;
+    else if (k === 'style') e.style.cssText = v;
+    else if (k === 'html') e.innerHTML = v;
+    else if (k.startsWith('on') && typeof v === 'function') {
+      e.addEventListener(k.slice(2).toLowerCase(), v);
+    } else if (v != null) {
+      e.setAttribute(k, v);
+    }
+  }
+  children.flat().forEach(c => {
+    if (c == null || c === false) return;
+    e.appendChild(typeof c === 'string' || typeof c === 'number'
+      ? document.createTextNode(String(c)) : c);
+  });
+  return e;
+}
+const rand = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+// ============ ROBI / FLORA / BUBBLE ============
+function makeRobot() {
+  return el('div', { class: 'robot' },
+    el('div', { class: 'antenna' }),
+    el('div', { class: 'head' },
+      el('div', { class: 'eye l' }), el('div', { class: 'eye r' }),
+      el('div', { class: 'mouth' })),
+    el('div', { class: 'body' }));
+}
+function makeFairy() {
+  return el('div', { class: 'fairy' },
+    el('div', { class: 'wing l' }), el('div', { class: 'wing r' }),
+    el('div', { class: 'body' },
+      el('div', { class: 'head' }, el('div', { class: 'smile' }))));
+}
+function bubble(text, speakIt = true) {
+  if (speakIt) speak(text);
+  return el('div', { class: 'bubble' }, text);
+}
+
+// ============ WÜRFEL-VISUALISIERUNG ============
+function blockify(n) {
+  const blocks = [];
+  let r = n;
+  while (r >= 10) { blocks.push({ type: 'ten' }); r -= 10; }
+  if (r >= 5) { blocks.push({ type: 'five' }); r -= 5; }
+  while (r > 0) { blocks.push({ type: 'one' }); r -= 1; }
+  return blocks;
+}
+function makeBlock(block, opts = {}) {
+  const count = block.type === 'ten' ? 10 : block.type === 'five' ? 5 : 1;
+  let cls = 'block-group ' + block.type;
+  if (opts.removed) cls += ' removed';
+  if (opts.highlight) cls += ' highlight';
+  if (opts.clickable) cls += ' clickable';
+  const props = { class: cls };
+  if (opts.onClick) props.onclick = opts.onClick;
+  const g = el('div', props);
+  for (let i = 0; i < count; i++) g.appendChild(el('div', { class: 'cube' }));
+  return g;
+}
+function renderNumber(n, opts = {}) {
+  const wrap = el('div', { class: 'blocks-area' });
+  if (n === 0) {
+    wrap.appendChild(el('div', { class: 'muted', style: 'font-size:1.2em;padding:10px' }, '(nichts)'));
+    return wrap;
+  }
+  blockify(n).forEach(b => wrap.appendChild(makeBlock(b, opts)));
+  return wrap;
+}
+function renderBlockList(blocks) {
+  const wrap = el('div', { class: 'blocks-area' });
+  if (!blocks.length) {
+    wrap.appendChild(el('div', { class: 'muted', style: 'font-size:1.2em;padding:10px' }, '(nichts)'));
+    return wrap;
+  }
+  blocks.forEach(b => wrap.appendChild(makeBlock(b, b._opts || {})));
+  return wrap;
+}
+function legend() {
+  return el('div', { class: 'legend' },
+    el('div', { class: 'legend-item' },
+      el('div', { class: 'legend-swatch', style: 'background:var(--one)' }), 'Einer'),
+    el('div', { class: 'legend-item' },
+      el('div', { class: 'legend-swatch', style: 'background:var(--five)' }), 'Fünferstange'),
+    el('div', { class: 'legend-item' },
+      el('div', { class: 'legend-swatch', style: 'background:var(--ten)' }), 'Zehnerstange'));
+}
+
+// ============ ZEHNERRAHMEN (10er-Kiste zum Auffüllen) ============
+function renderTenFrame(filled, opts = {}) {
+  // filled: wieviele Plätze sind gefüllt (0..10)
+  // opts.highlightEmpty: leere Plätze hervorheben
+  // opts.justArrived: Index ab dem Würfel "frisch" sind (für Animation)
+  const wrap = el('div', { class: 'ten-frame-wrap' });
+  const frame = el('div', { class: 'ten-frame' });
+  const half1 = el('div', { class: 'half' });
+  const half2 = el('div', { class: 'half' });
+  for (let i = 0; i < 10; i++) {
+    let cls = 'slot';
+    if (i < filled) {
+      cls += ' filled';
+      if (opts.justArrived != null && i >= opts.justArrived) cls += ' just-arrived';
+    } else if (opts.highlightEmpty) {
+      cls += ' empty-highlight';
+    }
+    const slot = el('div', { class: cls });
+    (i < 5 ? half1 : half2).appendChild(slot);
+  }
+  frame.appendChild(half1);
+  frame.appendChild(half2);
+  wrap.appendChild(frame);
+  if (opts.label) {
+    wrap.appendChild(el('div', { class: 'frame-label', html: opts.label }));
+  }
+  return wrap;
+}
+
+// ============ ROBIS KORB (für Subtraktion) ============
+function renderCart(taken, needed) {
+  // taken: wieviele schon im Korb, needed: wieviele insgesamt rein müssen
+  const wrap = el('div', { class: 'cart-wrap' });
+  wrap.appendChild(el('div', { class: 'cart-title' }, '🧺 Robis Korb'));
+  const done = taken === needed;
+  wrap.appendChild(el('div', { class: 'cart-progress' + (done ? ' done' : '') },
+    `${taken} von ${needed}`));
+  const cubes = el('div', { class: 'cart-cubes' });
+  if (taken === 0) {
+    cubes.appendChild(el('div', { class: 'cart-empty' }, 'leer'));
+  } else {
+    for (let i = 0; i < taken; i++) cubes.appendChild(el('div', { class: 'cube' }));
+  }
+  wrap.appendChild(cubes);
+  return wrap;
+}
+
+// ============ BLUME (SVG) ============
+function flowerSVG(stage) {
+  const s = Math.max(0, Math.min(8, stage));
+  const stemH = 20 + s * 22;
+  const stemY = 300 - stemH;
+  const showLeaves = s >= 2;
+  const showBud = s >= 3;
+  const budR = s >= 3 ? Math.min(8 + (s - 3) * 5, 28) : 0;
+  const showPetals = s >= 5;
+  const petalScale = s >= 5 ? Math.min((s - 4) * 0.5, 1) : 0;
+  const showSparkle = s >= 7;
+  const fullBloom = s >= 8;
+  const petals = [];
+  if (showPetals) {
+    const colors = fullBloom
+      ? ['#ef476f', '#f72585', '#ff8fa3', '#ffb3c1']
+      : ['#ef476f', '#ff8fa3'];
+    for (let i = 0; i < 6; i++) {
+      const a = (i * 60) * Math.PI / 180;
+      const cx = 140 + Math.cos(a) * 28 * petalScale;
+      const cy = stemY + Math.sin(a) * 28 * petalScale;
+      petals.push(`<ellipse cx="${cx}" cy="${cy}" rx="${22 * petalScale}" ry="${28 * petalScale}"
+        fill="${colors[i % colors.length]}" transform="rotate(${i * 60} ${cx} ${cy})" />`);
+    }
+  }
+  const sparkles = showSparkle ? `
+    <text x="60" y="80" font-size="28">✨</text>
+    <text x="220" y="100" font-size="28">✨</text>
+    <text x="40" y="180" font-size="22">⭐</text>
+    <text x="230" y="200" font-size="22">⭐</text>` : '';
+  const butterfly = fullBloom ? `
+    <text x="50" y="${stemY + 10}" font-size="32">🦋</text>
+    <text x="220" y="${stemY + 30}" font-size="32">🦋</text>` : '';
+  return `<svg class="flower-stage" viewBox="0 0 280 320" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="140" cy="305" rx="100" ry="14" fill="#3a2d5e" />
+    <ellipse cx="140" cy="302" rx="80" ry="10" fill="#5a4080" />
+    <rect x="136" y="${stemY}" width="8" height="${stemH}" fill="#06d6a0" rx="3" />
+    ${showLeaves ? `
+      <ellipse cx="115" cy="${stemY + 30}" rx="22" ry="10" fill="#06d6a0" transform="rotate(-25 115 ${stemY + 30})" />
+      <ellipse cx="165" cy="${stemY + 50}" rx="22" ry="10" fill="#06d6a0" transform="rotate(25 165 ${stemY + 50})" />` : ''}
+    ${showBud && !showPetals ? `<circle cx="140" cy="${stemY}" r="${budR}" fill="#ef476f" />` : ''}
+    ${petals.join('')}
+    ${showPetals ? `<circle cx="140" cy="${stemY}" r="${10 * petalScale}" fill="#ffd166" />` : ''}
+    ${sparkles}${butterfly}
+  </svg>`;
+}
+
+// ============ ROUTER ============
+function render() {
+  const app = $('#app');
+  app.innerHTML = '';
+  switch (view.screen) {
+    case 'start': renderStart(app); break;
+    case 'mode': renderModeSelect(app); break;
+    case 'levelMap': renderLevelMap(app); break;
+    case 'level': renderLevel(app); break;
+    case 'reward': renderReward(app); break;
+    case 'homeworkSetup': renderHomeworkSetup(app); break;
+    case 'homework': renderHomework(app); break;
+  }
+  window.scrollTo(0, 0);
+}
+function go(screen, extra = {}) {
+  resetSpeech();
+  view = { screen, ...extra };
+  render();
+}
+
+// ============ START ============
+function renderStart(app) {
+  app.appendChild(el('div', { class: 'card center' },
+    el('h1', {}, '✨ Robi & Flora ✨'),
+    el('h2', { style: 'color: var(--accent);' }, 'Das Zahlenabenteuer'),
+    el('div', { class: 'scene' }, makeRobot(), makeFairy()),
+    bubble('Hallo! Ich bin Flora und das ist Robi. Wir helfen dir beim Rechnen!', false),
+    el('div', { class: 'spacer' }),
+    el('button', { class: 'big',
+      onclick: () => { speak('Los gehts!'); go('mode'); } }, '▶ Los geht\'s!'),
+    el('div', { class: 'spacer' }),
+    state.completedLevels.length > 0
+      ? el('p', { class: 'muted' }, `Du hast schon ${state.completedLevels.length} von 8 Levels geschafft!`)
+      : null
+  ));
+}
+
+// ============ MODUS ============
+function renderModeSelect(app) {
+  app.appendChild(el('div', { class: 'card center' },
+    el('h2', {}, 'Was möchtest du machen?'),
+    el('div', { class: 'spacer' }),
+    el('div', { class: 'row' },
+      el('button', { class: 'big',
+        onclick: () => { speak('Lernreise mit Robi und Flora.'); go('levelMap'); } }, '🚀 Lernreise'),
+      el('button', { class: 'big secondary',
+        onclick: () => { speak('Hausaufgaben Modus.'); go('homeworkSetup'); } }, '📒 Hausaufgaben')
+    ),
+    el('div', { class: 'spacer' }),
+    el('p', { class: 'muted' }, 'Lernreise: Spielerisch lernen mit Robi & Flora.'),
+    el('p', { class: 'muted' }, 'Hausaufgaben: Dein eigenes Heft eintragen und üben.'),
+    el('div', { class: 'spacer' }),
+    el('button', { class: 'small secondary', onclick: () => go('start') }, '← Zurück')
+  ));
+}
+
+// ============ LEVELS ============
+const LEVELS = [
+  { id: 1, title: 'Zahlenland', desc: 'Zahlen am Strahl finden',
+    intro: 'Willkommen im Zahlenland! Hier wohnen die Zahlen von null bis zwanzig. Hilf Robi, die richtige Zahl zu finden.' },
+  { id: 2, title: 'Würfel zählen', desc: 'Einer, Fünfer, Zehner',
+    intro: 'Schau, das sind unsere Zauber-Würfel! Ein einzelner Würfel ist ein Einer. Eine kurze Stange sind fünf. Eine lange Stange sind zehn. So musst du nicht jeden Würfel einzeln zählen!' },
+  { id: 3, title: 'Plus im Zehner', desc: 'Einfache Addition',
+    intro: 'Jetzt rechnen wir Plus. Wir bleiben unter der Zehn. Robi schiebt die Würfel zusammen!' },
+  { id: 4, title: 'Der Zehner-Trick: Plus', desc: 'Plus über die Zehn',
+    intro: 'Jetzt kommt Robis Zauber-Trick! Wir füllen erst die Zehner-Kiste voll. Dann ist alles ganz einfach.' },
+  { id: 5, title: 'Minus im Zehner', desc: 'Einfache Subtraktion',
+    intro: 'Bei Minus nehmen wir Würfel weg. Wir bleiben erst mal unter der Zehn.' },
+  { id: 6, title: 'Der Zehner-Trick: Minus', desc: 'Minus über die Zehn',
+    intro: 'Das ist der wichtigste Trick! Wenn wir mehr Würfel wegnehmen müssen als wir lose Einer haben, tauschen wir die Zehnerstange ein. Robi zeigt dir wie!' },
+  { id: 7, title: 'Robo-Gitter', desc: 'Wie im Heft',
+    intro: 'Jetzt zeige ich dir ein kleines Gitter, ganz wie in deinem Heft. Du kannst jederzeit Hilfe holen.' },
+  { id: 8, title: 'Floras Blüte', desc: 'Meisterprüfung',
+    intro: 'Das ist die Meisterprüfung! Wenn du sie schaffst, blüht Floras Zauberblume in voller Pracht.' }
+];
+
+function renderLevelMap(app) {
+  app.appendChild(el('div', { class: 'card' },
+    el('h2', { class: 'center' }, '🚀 Lernreise – Wähle ein Level'),
+    el('div', { class: 'levelmap' },
+      LEVELS.map(L => {
+        const unlocked = L.id <= state.unlockedLevel;
+        const done = state.completedLevels.includes(L.id);
+        return el('div', {
+          class: 'level-card' + (unlocked ? '' : ' locked') + (done ? ' completed' : ''),
+          onclick: () => {
+            if (!unlocked) { speak('Dieses Level ist noch nicht freigeschaltet.'); return; }
+            go('level', { levelId: L.id });
+          }
+        },
+          el('div', { class: 'num' }, L.id),
+          el('div', { class: 'title' }, L.title),
+          el('div', { class: 'desc' }, L.desc),
+          !unlocked ? el('div', { class: 'badge' }, '🔒') : null,
+          done ? el('div', { class: 'badge' }, '✓') : null
+        );
+      })
+    ),
+    el('div', { class: 'center', style: 'margin-top: 20px;' },
+      el('div', { html: flowerSVG(state.flowerStage) }),
+      el('p', { class: 'muted center' },
+        state.flowerStage === 0
+          ? 'Floras Blume schläft noch. Schaffe Level um sie wachsen zu lassen!'
+          : state.flowerStage >= 8
+            ? '🌸 Floras Blume blüht in voller Pracht! Du bist eine Rechen-Meisterin! 🌸'
+            : `Floras Blume wächst! (${state.flowerStage} von 8)`
+      )
+    ),
+    el('div', { class: 'center' },
+      el('button', { class: 'small secondary', onclick: () => go('mode') }, '← Zurück')
+    )
+  ));
+}
+
+// ============ LEVEL ENGINE ============
+let lc = null;
+
+function renderLevel(app) {
+  const L = LEVELS.find(l => l.id === view.levelId);
+  if (!L) { go('levelMap'); return; }
+  lc = { level: L, taskIdx: 0, totalTasks: 5, correctCount: 0,
+         currentTask: null, guidedStep: null, showHelp: false, interactive: null };
+  showIntro(app);
+}
+function showIntro(app) {
+  const L = lc.level;
+  app.innerHTML = '';
+  resetSpeech();
+  const card = el('div', { class: 'card center' },
+    el('h2', {}, `Level ${L.id}: ${L.title}`),
+    el('div', { class: 'scene' }, makeFairy()),
+    bubble(L.intro)
+  );
+  // SPEZIAL-INTRO für Level 2: zeige Beispielwürfel
+  if (L.id === 2) {
+    card.appendChild(el('div', { class: 'example-row' },
+      el('div', { class: 'example-item' },
+        makeBlock({ type: 'one' }),
+        el('div', { class: 'label one-c' }, '1 Einer')),
+      el('div', { class: 'example-item' },
+        makeBlock({ type: 'five' }),
+        el('div', { class: 'label five-c' }, '5 = Fünferstange')),
+      el('div', { class: 'example-item' },
+        makeBlock({ type: 'ten' }),
+        el('div', { class: 'label ten-c' }, '10 = Zehnerstange'))
+    ));
+    card.appendChild(el('p', { class: 'muted' },
+      'Schau dir die Würfel gut an. Im Spiel siehst du sie immer in diesen Farben.'));
+  }
+  card.appendChild(el('button', { class: 'big', onclick: () => startTasks(app) }, '▶ Los!'));
+  card.appendChild(el('button', { class: 'small secondary', onclick: () => go('levelMap') }, '← Zurück zur Karte'));
+  app.appendChild(card);
+}
+function startTasks(app) {
+  lc.taskIdx = 0; lc.correctCount = 0; lc.guidedStep = null;
+  resetSpeech();
+  nextTask(app);
+}
+function nextTask(app) {
+  if (lc.taskIdx >= lc.totalTasks) { finishLevel(app); return; }
+  lc.guidedStep = null; lc.showHelp = false; lc.interactive = null;
+  resetSpeech();
+  switch (lc.level.id) {
+    case 1: lc.currentTask = genL1(); renderL1(app); break;
+    case 2: lc.currentTask = genL2(); renderL2(app); break;
+    case 3: lc.currentTask = genL3(); renderL3(app); break;
+    case 4: renderL4(app); break;
+    case 5: lc.currentTask = genL5(); renderL5(app); break;
+    case 6: renderL6(app); break;
+    case 7: if (!lc.currentTask) lc.currentTask = genGrid(2, 2); renderGridLevel(app, lc.currentTask); break;
+    case 8: if (!lc.currentTask) lc.currentTask = genGrid(3, 3); renderGridLevel(app, lc.currentTask); break;
+  }
+}
+function header() {
+  return el('div', { class: 'row', style: 'justify-content: space-between;' },
+    el('div', {}, `Level ${lc.level.id}: ${lc.level.title}`),
+    el('div', {}, `Aufgabe ${Math.min(lc.taskIdx + 1, lc.totalTasks)} / ${lc.totalTasks}`)
+  );
+}
+function correct(app, msg = 'Super!') {
+  speak(msg, true); lc.correctCount++;
+  setTimeout(() => { lc.taskIdx++; nextTask(app); }, 1200);
+}
+function wrong(app, msg = 'Nicht ganz. Probier nochmal!') { speak(msg, true); }
+function finishLevel(app) {
+  const id = lc.level.id;
+  if (!state.completedLevels.includes(id)) {
+    state.completedLevels.push(id);
+    state.flowerStage = Math.max(state.flowerStage, id);
+    if (state.unlockedLevel < id + 1) state.unlockedLevel = Math.min(8, id + 1);
+    saveState();
+  }
+  go('reward', { levelId: id });
+}
+
+// ============ LEVEL 1: Zahlenstrahl ============
+function genL1() { return { target: rand(0, 20) }; }
+function renderL1(app) {
+  const t = lc.currentTask;
+  app.innerHTML = '';
+  const numlineEl = el('div', { class: 'numline' },
+    Array.from({ length: 21 }, (_, i) =>
+      el('div', { class: 'n',
+        onclick: (e) => {
+          if (i === t.target) {
+            e.target.classList.add('correct');
+            correct(app, 'Richtig! Das ist die ' + i);
+          } else {
+            e.target.classList.add('wrong');
+            setTimeout(() => e.target.classList.remove('wrong'), 600);
+            wrong(app, 'Hmm, das war die ' + i + '. Such die ' + t.target);
+          }
+        }
+      }, String(i))
+    )
+  );
+  app.appendChild(el('div', { class: 'card' },
+    header(),
+    el('div', { class: 'center', style: 'margin: 14px 0;' }, makeRobot()),
+    bubble(`Klicke auf die Zahl ${t.target}!`),
+    numlineEl,
+    el('div', { class: 'center' },
+      el('button', { class: 'small secondary',
+        onclick: () => speak(`Klicke auf die Zahl ${t.target}.`, true) }, '🔊 Nochmal hören'),
+      el('button', { class: 'small secondary', onclick: () => go('levelMap') }, '← Karte')
+    )
+  ));
+}
+
+// ============ LEVEL 2: Würfel zählen ============
+function genL2() {
+  const n = rand(3, 19);
+  const w1 = n + (Math.random() < 0.5 ? 1 : -1);
+  const w2 = n + (Math.random() < 0.5 ? 2 : -2);
+  return { n, options: shuffle([n, w1, w2].map(x => Math.max(0, x))) };
+}
+function renderL2(app) {
+  const t = lc.currentTask;
+  app.innerHTML = '';
+  app.appendChild(el('div', { class: 'card center' },
+    header(),
+    bubble('Wie viele Würfel siehst du?'),
+    renderNumber(t.n),
+    legend(),
+    el('p', { class: 'muted' }, 'Tipp: Die lange Stange ist 10. Die kurze Stange ist 5. So musst du nicht alle einzeln zählen!'),
+    el('div', { class: 'answers' },
+      t.options.map(opt => el('button', { class: 'answer-btn',
+        onclick: (e) => {
+          if (opt === t.n) { e.target.classList.add('correct'); correct(app); }
+          else { e.target.classList.add('wrong');
+            setTimeout(() => e.target.classList.remove('wrong'), 600); wrong(app); }
+        }
+      }, String(opt)))
+    ),
+    el('button', { class: 'small secondary', onclick: () => go('levelMap') }, '← Karte')
+  ));
+}
+
+// ============ LEVEL 3: Plus ohne Übergang (mit Zusammenschiebe-Animation) ============
+function genL3() {
+  const a = rand(1, 5), b = rand(1, 9 - a);
+  return { a, b, c: a + b, options: shuffle([a + b, Math.max(0, a + b + 1), Math.max(0, a + b - 1)]),
+    pushed: false };
+}
+function renderL3(app) {
+  const t = lc.currentTask;
+  app.innerHTML = '';
+  const card = el('div', { class: 'card center' });
+  card.appendChild(header());
+  card.appendChild(el('div', { class: 'big-eq' }, `${t.a} + ${t.b} = ?`));
+
+  if (!t.pushed) {
+    card.appendChild(bubble(`Wir haben ${t.a} und ${t.b}. Klick auf den Knopf, dann schiebt Robi die Würfel zusammen!`));
+    card.appendChild(el('div', { class: 'row' },
+      renderNumber(t.a),
+      el('div', { class: 'plus-sign' }, '+'),
+      renderNumber(t.b)
+    ));
+    card.appendChild(el('button', { class: 'big',
+      onclick: () => {
+        speak('Robi schiebt die Würfel zusammen!', true);
+        t.pushed = true;
+        renderL3(app);
+      }
+    }, '👐 Robi schiebt zusammen'));
+  } else {
+    card.appendChild(bubble(`Schau! Jetzt sind alle Würfel zusammen. Wie viele sind es?`));
+    card.appendChild(renderNumber(t.c));
+    card.appendChild(el('div', { class: 'answers' },
+      t.options.map(opt => el('button', { class: 'answer-btn',
+        onclick: (e) => {
+          if (opt === t.c) {
+            e.target.classList.add('correct');
+            correct(app, `Richtig! ${t.a} plus ${t.b} ist ${t.c}`);
+          } else {
+            e.target.classList.add('wrong');
+            setTimeout(() => e.target.classList.remove('wrong'), 600);
+            wrong(app);
+          }
+        }
+      }, String(opt)))
+    ));
+  }
+  card.appendChild(el('button', { class: 'small secondary', onclick: () => go('levelMap') }, '← Karte'));
+  app.appendChild(card);
+}
+
+// ============ LEVEL 4: Plus mit Übergang ============
+const L4_GUIDED = [{ a: 8, b: 5 }, { a: 7, b: 6 }];
+
+function renderL4(app) {
+  if (lc.taskIdx < 2) {
+    renderL4Guided(app, L4_GUIDED[lc.taskIdx]);
+  } else if (lc.taskIdx === 2) {
+    // Erste eigene Aufgabe: Mini-Interaktion (Würfel selbst in die Kiste legen)
+    if (!lc.interactive) {
+      const a = rand(6, 9);
+      const b = rand(11 - a, 9);
+      lc.interactive = { a, b, moved: 0, c: a + b, _phase: 'moving' };
+    }
+    renderL4Interactive(app);
+  } else {
+    if (!lc.currentTask || lc.currentTask._done) {
+      const a = rand(6, 9);
+      const b = rand(11 - a, 9);
+      lc.currentTask = { a, b, c: a + b, _done: false };
+    }
+    renderL4Quiz(app);
+  }
+}
+
+// ----- L4 Geführt: 4 Schritte mit Zehnerrahmen -----
+function renderL4Guided(app, t) {
+  if (lc.guidedStep == null) lc.guidedStep = 0;
+  const fillTo10 = 10 - t.a;
+  const rest = t.b - fillTo10;
+
+  app.innerHTML = '';
+  const card = el('div', { class: 'card center' });
+  card.appendChild(header());
+  card.appendChild(el('div', { class: 'big-eq' }, `${t.a} + ${t.b} = ?`));
+
+  let stepText = '';
+  let visual = null;
+  let nextLabel = 'Weiter →';
+
+  if (lc.guidedStep === 0) {
+    // Schritt 0: Aufgabe vorstellen mit Zehnerrahmen
+    stepText = `Schau! Wir tun ${t.a} Würfel in die Zehner-Kiste. Jetzt sind noch ${fillTo10} Plätze frei. Wir wollen ${t.b} dazu zählen.`;
+    visual = el('div', { class: 'row' },
+      renderTenFrame(t.a, { highlightEmpty: true,
+        label: `<strong>${t.a}</strong> drin, <strong>${fillTo10}</strong> Plätze frei` }),
+      el('div', { class: 'plus-sign' }, '+'),
+      renderNumber(t.b)
+    );
+  } else if (lc.guidedStep === 1) {
+    // Schritt 1: Die b in fillTo10 + rest teilen
+    stepText = `Wir teilen die ${t.b} in ${fillTo10} und ${rest}. Die ersten ${fillTo10} Würfel passen genau in die freien Plätze.`;
+    const fillBlocks = [];
+    for (let i = 0; i < fillTo10; i++) fillBlocks.push({ type: 'one', _opts: { highlight: true } });
+    const restBlocks = [];
+    for (let i = 0; i < rest; i++) restBlocks.push({ type: 'one' });
+    visual = el('div', { class: 'col' },
+      el('div', { class: 'row' },
+        renderTenFrame(t.a, { highlightEmpty: true }),
+        el('div', { class: 'plus-sign' }, '+'),
+        renderBlockList(fillBlocks),
+        el('div', { class: 'plus-sign' }, '+'),
+        renderBlockList(restBlocks)
+      ),
+      el('div', { class: 'muted' }, `(diese ${fillTo10} kommen jetzt in die Kiste · die ${rest} warten noch)`)
+    );
+  } else if (lc.guidedStep === 2) {
+    // Schritt 2: Auffüllen
+    stepText = `Die Kiste ist jetzt VOLL! Das ist genau eine Zehnerstange. Aber wir haben ja noch ${rest} Würfel übrig.`;
+    const restBlocks = [];
+    for (let i = 0; i < rest; i++) restBlocks.push({ type: 'one' });
+    visual = el('div', { class: 'col' },
+      el('div', { class: 'row' },
+        renderTenFrame(10, { justArrived: t.a,
+          label: `<strong>10</strong> – Kiste voll!` }),
+        el('div', { class: 'plus-sign' }, '+'),
+        renderBlockList(restBlocks)
+      )
+    );
+  } else if (lc.guidedStep === 3) {
+    // Schritt 3: 10 + Rest = Ergebnis
+    stepText = `Eine volle Kiste ist eine Zehnerstange. ${10} plus ${rest} ist ${10 + rest}. Geschafft!`;
+    visual = el('div', { class: 'col' },
+      renderNumber(t.a + t.b),
+      el('div', { class: 'big-eq', style: 'color:var(--correct)' }, `${t.a} + ${t.b} = ${t.a + t.b}`)
+    );
+    nextLabel = 'Weiter →';
+  }
+
+  card.appendChild(bubble(stepText));
+  card.appendChild(visual);
+  card.appendChild(legend());
+  card.appendChild(el('div', { style: 'margin-top:14px' },
+    el('button', { class: 'big',
+      onclick: () => {
+        lc.guidedStep++;
+        if (lc.guidedStep > 3) {
+          lc.guidedStep = null; lc.taskIdx++; nextTask(app);
+        } else { renderL4Guided(app, t); }
+      }
+    }, nextLabel),
+    el('button', { class: 'small secondary',
+      onclick: () => speak(stepText, true) }, '🔊 Nochmal'),
+    el('button', { class: 'small secondary', onclick: () => go('levelMap') }, '← Karte')
+  ));
+  app.appendChild(card);
+}
+
+// ----- L4 Interaktiv: Kind klickt selbst Würfel in die Kiste -----
+function renderL4Interactive(app) {
+  const t = lc.interactive;
+  const fillTo10 = 10 - t.a;
+  const cubesLeftToMove = fillTo10 - t.moved;
+  const cubesStillOutside = t.b - t.moved;
+  const inFrame = t.a + t.moved;
+  const isFull = t.moved === fillTo10;
+  const rest = t.b - fillTo10;
+
+  app.innerHTML = '';
+  const card = el('div', { class: 'card center' });
+  card.appendChild(header());
+  card.appendChild(el('div', { class: 'big-eq' }, `${t.a} + ${t.b} = ?`));
+
+  if (!isFull) {
+    // Phase 1: Würfel in die Kiste klicken
+    card.appendChild(bubble(
+      t.moved === 0
+        ? `Probier den Trick selbst! Klick auf einen Würfel rechts. Robi legt ihn in die Kiste, bis sie voll ist.`
+        : `Klick noch ${cubesLeftToMove} Würfel an, bis die Kiste voll ist!`
+    ));
+    // Klickbare Würfel rechts
+    const clickableBlocks = [];
+    for (let i = 0; i < cubesStillOutside; i++) {
+      clickableBlocks.push({ type: 'one', _opts: {
+        clickable: true,
+        highlight: i < cubesLeftToMove,
+        onClick: () => {
+          t.moved++;
+          speak(t.moved === fillTo10
+            ? `Klick! Die Kiste ist voll – das sind zehn!`
+            : `Klick!`, true);
+          renderL4Interactive(app);
+        }
+      } });
+    }
+    card.appendChild(el('div', { class: 'row' },
+      renderTenFrame(inFrame, { highlightEmpty: true, justArrived: t.a,
+        label: inFrame === 10 ? '<strong>VOLL!</strong>' : `<strong>${inFrame}</strong> drin` }),
+      el('div', { class: 'plus-sign' }, '+'),
+      renderBlockList(clickableBlocks)
+    ));
+    card.appendChild(el('p', { class: 'muted' }, '👆 Klick auf die leuchtenden Würfel'));
+  } else {
+    // Phase 2: Kiste ist voll, jetzt Antwort wählen
+    card.appendChild(bubble(`Super! Die Kiste ist voll – das sind 10. Jetzt sind noch ${rest} Würfel übrig. Wie viel ist 10 plus ${rest}?`));
+    const restBlocks = [];
+    for (let i = 0; i < rest; i++) restBlocks.push({ type: 'one' });
+    card.appendChild(el('div', { class: 'row' },
+      renderTenFrame(10, { label: '<strong>10</strong>' }),
+      el('div', { class: 'plus-sign' }, '+'),
+      renderBlockList(restBlocks)
+    ));
+    const opts = shuffle([t.c, t.c + 1, t.c - 1]);
+    card.appendChild(el('div', { class: 'answers' },
+      opts.map(opt => el('button', { class: 'answer-btn',
+        onclick: (e) => {
+          if (opt === t.c) {
+            e.target.classList.add('correct');
+            correct(app, `Stark! ${t.a} plus ${t.b} ist ${t.c}`);
+          } else {
+            e.target.classList.add('wrong');
+            setTimeout(() => e.target.classList.remove('wrong'), 600);
+            wrong(app, `Schau auf die Würfel: 10 plus ${rest}.`);
+          }
+        }
+      }, String(opt)))
+    ));
+  }
+  card.appendChild(el('button', { class: 'small secondary', onclick: () => go('levelMap') }, '← Karte'));
+  app.appendChild(card);
+}
+
+// ----- L4 Quiz: klassisch mit Hilfe-Button (Aufgaben 4 + 5) -----
+function renderL4Quiz(app) {
+  const t = lc.currentTask;
+  const fillTo10 = 10 - t.a;
+  const rest = t.b - fillTo10;
+  const opts = shuffle([t.c, t.c + 1, t.c - 1]);
+  app.innerHTML = '';
+  const card = el('div', { class: 'card center' });
+  card.appendChild(header());
+  card.appendChild(bubble(`Probier selbst: ${t.a} plus ${t.b}.`));
+  card.appendChild(el('div', { class: 'big-eq' }, `${t.a} + ${t.b} = ?`));
+  card.appendChild(el('div', { class: 'row' },
+    renderTenFrame(t.a, { highlightEmpty: true,
+      label: `<strong>${t.a}</strong> drin` }),
+    el('div', { class: 'plus-sign' }, '+'),
+    renderNumber(t.b)
+  ));
+  if (lc.showHelp) {
+    card.appendChild(el('div', { class: 'step-box active' },
+      `Schritt 1: ${t.a} + ${fillTo10} = 10  (die Kiste voll machen)`));
+    card.appendChild(el('div', { class: 'step-box active' },
+      `Schritt 2: 10 + ${rest} = ${t.c}  (den Rest dazu)`));
+  }
+  card.appendChild(el('div', { class: 'answers' },
+    opts.map(opt => el('button', { class: 'answer-btn',
+      onclick: (e) => {
+        if (opt === t.c) {
+          e.target.classList.add('correct');
+          lc.currentTask._done = true;
+          correct(app, `Stark! ${t.a} plus ${t.b} ist ${t.c}`);
+        } else {
+          e.target.classList.add('wrong');
+          setTimeout(() => e.target.classList.remove('wrong'), 600);
+          wrong(app, 'Probier den Zehner-Trick. Klick auf Hilfe!');
+        }
+      }
+    }, String(opt)))
+  ));
+  card.appendChild(el('div', {},
+    el('button', { class: 'help',
+      onclick: () => {
+        lc.showHelp = !lc.showHelp;
+        if (lc.showHelp) speak(`Schritt eins: ${t.a} plus ${fillTo10} ist zehn. Schritt zwei: zehn plus ${rest} ist ${t.c}.`, true);
+        renderL4Quiz(app);
+      }
+    }, lc.showHelp ? 'Hilfe ausblenden' : '💡 Hilfe zeigen'),
+    el('button', { class: 'small secondary', onclick: () => go('levelMap') }, '← Karte')
+  ));
+  app.appendChild(card);
+}
+
+// ============ LEVEL 5: Minus ohne Übergang ============
+function genL5() {
+  const a = rand(4, 10);
+  const b = rand(1, a - 1);
+  return { a, b, c: a - b, options: shuffle([a - b, Math.max(0, a - b + 1), Math.max(0, a - b - 1)]) };
+}
+function renderL5(app) {
+  const t = lc.currentTask;
+  app.innerHTML = '';
+  const aBlocks = [];
+  for (let i = 0; i < t.a; i++) {
+    aBlocks.push({ type: 'one', _opts: i >= t.a - t.b ? { removed: true } : {} });
+  }
+  app.appendChild(el('div', { class: 'card center' },
+    header(),
+    bubble(`Wir haben ${t.a} und nehmen ${t.b} weg. Was bleibt?`),
+    el('div', { class: 'big-eq' }, `${t.a} − ${t.b} = ?`),
+    renderBlockList(aBlocks),
+    el('p', { class: 'muted' }, 'Die hellen Würfel sind weg. Zähle die leuchtenden!'),
+    el('div', { class: 'answers' },
+      t.options.map(opt => el('button', { class: 'answer-btn',
+        onclick: (e) => {
+          if (opt === t.c) {
+            e.target.classList.add('correct');
+            correct(app, `Richtig! ${t.a} minus ${t.b} ist ${t.c}`);
+          } else {
+            e.target.classList.add('wrong');
+            setTimeout(() => e.target.classList.remove('wrong'), 600);
+            wrong(app);
+          }
+        }
+      }, String(opt)))
+    ),
+    el('button', { class: 'small secondary', onclick: () => go('levelMap') }, '← Karte')
+  ));
+}
+
+// ============ LEVEL 6: Minus mit Übergang (mit Korb + Eintauschverfahren) ============
+const L6_GUIDED = [{ a: 13, b: 5 }, { a: 14, b: 7 }];
+
+function renderL6(app) {
+  if (lc.taskIdx < 2) {
+    renderL6Guided(app, L6_GUIDED[lc.taskIdx]);
+  } else {
+    if (!lc.currentTask || lc.currentTask._done) {
+      const a = rand(11, 18);
+      const ones = a - 10;
+      const b = rand(ones + 1, 9);
+      lc.currentTask = { a, b, c: a - b, _done: false };
+    }
+    renderL6Quiz(app);
+  }
+}
+
+function renderL6Guided(app, t) {
+  if (lc.guidedStep == null) lc.guidedStep = 0;
+  const ones = t.a - 10;          // lose Einer am Anfang (z.B. 13 → 3)
+  const restToTake = t.b - ones;  // wieviel nach den Einern noch in den Korb muss
+  const result = t.a - t.b;
+
+  app.innerHTML = '';
+  const card = el('div', { class: 'card center' });
+  card.appendChild(header());
+  card.appendChild(el('div', { class: 'big-eq' }, `${t.a} − ${t.b} = ?`));
+
+  let stepText = '';
+  let visual = null;
+
+  if (lc.guidedStep === 0) {
+    // SCHRITT 0: Aufgabe vorstellen mit leerem Korb
+    stepText = `Wir haben ${t.a} Würfel: eine Zehnerstange und ${ones} Einer. Wir sollen ${t.b} davon in Robis Korb legen.`;
+    visual = el('div', { class: 'row' },
+      renderNumber(t.a),
+      el('div', { class: 'arrow-sign' }, '→'),
+      renderCart(0, t.b)
+    );
+  } else if (lc.guidedStep === 1) {
+    // SCHRITT 1: Die losen Einer in den Korb legen
+    stepText = `Erst nehmen wir die ${ones} losen Einer. Die wandern in den Korb. Aber Robi braucht ${t.b} im Korb – es fehlen noch ${restToTake}!`;
+    const blocks = [{ type: 'ten' }];
+    for (let i = 0; i < ones; i++) blocks.push({ type: 'one', _opts: { removed: true } });
+    visual = el('div', { class: 'row' },
+      renderBlockList(blocks),
+      el('div', { class: 'arrow-sign' }, '→'),
+      renderCart(ones, t.b)
+    );
+  } else if (lc.guidedStep === 2) {
+    // SCHRITT 2: Eintauschen! Zehnerstange → 10 Einer
+    stepText = `Jetzt der Trick: Die Zehnerstange können wir nicht teilen. Aber Robi tauscht sie um – aus 1 Zehnerstange werden 10 lose Einer!`;
+    const blocks = [];
+    for (let i = 0; i < 10; i++) blocks.push({ type: 'one', _opts: { highlight: true } });
+    visual = el('div', { class: 'col' },
+      el('div', { class: 'row' },
+        renderBlockList(blocks),
+        el('div', { class: 'arrow-sign' }, '→'),
+        renderCart(ones, t.b)
+      ),
+      el('div', { class: 'muted' }, '↑ Die Zehnerstange ist jetzt 10 lose Würfel')
+    );
+  } else if (lc.guidedStep === 3) {
+    // SCHRITT 3: Die fehlenden Würfel auch in den Korb
+    stepText = `Jetzt nehmen wir noch ${restToTake} Würfel und legen sie in den Korb. Schon sind ${t.b} drin – Robi ist glücklich!`;
+    const blocks = [];
+    for (let i = 0; i < restToTake; i++) blocks.push({ type: 'one', _opts: { removed: true } });
+    for (let i = 0; i < 10 - restToTake; i++) blocks.push({ type: 'one' });
+    visual = el('div', { class: 'row' },
+      renderBlockList(blocks),
+      el('div', { class: 'arrow-sign' }, '→'),
+      renderCart(t.b, t.b)
+    );
+  } else {
+    // SCHRITT 4: Was bleibt übrig?
+    stepText = `Schau, was übrig bleibt: ${result} Würfel. Also ist ${t.a} minus ${t.b} gleich ${result}!`;
+    visual = el('div', { class: 'col' },
+      renderNumber(result),
+      el('div', { class: 'big-eq', style: 'color:var(--correct)' }, `${t.a} − ${t.b} = ${result}`)
+    );
+  }
+
+  card.appendChild(bubble(stepText));
+  card.appendChild(visual);
+  card.appendChild(legend());
+  card.appendChild(el('div', { style: 'margin-top:14px' },
+    el('button', { class: 'big',
+      onclick: () => {
+        lc.guidedStep++;
+        if (lc.guidedStep > 4) {
+          lc.guidedStep = null; lc.taskIdx++; nextTask(app);
+        } else { renderL6Guided(app, t); }
+      }
+    }, lc.guidedStep === 4
+      ? (lc.taskIdx === 1 ? 'Selbst probieren →' : 'Weiter →')
+      : 'Weiter →'),
+    el('button', { class: 'small secondary',
+      onclick: () => speak(stepText, true) }, '🔊 Nochmal'),
+    el('button', { class: 'small secondary', onclick: () => go('levelMap') }, '← Karte')
+  ));
+  app.appendChild(card);
+}
+
+function renderL6Quiz(app) {
+  const t = lc.currentTask;
+  const ones = t.a - 10;
+  const restToTake = t.b - ones;
+  const opts = shuffle([t.c, t.c + 1, t.c - 1].map(x => Math.max(0, x)));
+  app.innerHTML = '';
+  const card = el('div', { class: 'card center' });
+  card.appendChild(header());
+  card.appendChild(bubble(`Probier selbst: ${t.a} minus ${t.b}.`));
+  card.appendChild(el('div', { class: 'big-eq' }, `${t.a} − ${t.b} = ?`));
+  card.appendChild(el('div', { class: 'row' },
+    renderNumber(t.a),
+    el('div', { class: 'arrow-sign' }, '→'),
+    renderCart(0, t.b)
+  ));
+  if (lc.showHelp) {
+    card.appendChild(el('div', { class: 'step-box active' },
+      `Schritt 1: Die ${ones} losen Einer in den Korb → ${t.a} − ${ones} = 10`));
+    card.appendChild(el('div', { class: 'step-box active' },
+      `Schritt 2: Zehnerstange in 10 Einer eintauschen, ${restToTake} davon in den Korb → 10 − ${restToTake} = ${t.c}`));
+  }
+  card.appendChild(el('div', { class: 'answers' },
+    opts.map(opt => el('button', { class: 'answer-btn',
+      onclick: (e) => {
+        if (opt === t.c) {
+          e.target.classList.add('correct');
+          lc.currentTask._done = true;
+          correct(app, `Stark! ${t.a} minus ${t.b} ist ${t.c}`);
+        } else {
+          e.target.classList.add('wrong');
+          setTimeout(() => e.target.classList.remove('wrong'), 600);
+          wrong(app, 'Denk an Robis Korb. Klick auf Hilfe!');
+        }
+      }
+    }, String(opt)))
+  ));
+  card.appendChild(el('div', {},
+    el('button', { class: 'help',
+      onclick: () => {
+        lc.showHelp = !lc.showHelp;
+        if (lc.showHelp) speak(`Schritt eins: die ${ones} Einer in den Korb, dann ist es zehn. Schritt zwei: Zehnerstange eintauschen, ${restToTake} weiter in den Korb, übrig bleibt ${t.c}.`, true);
+        renderL6Quiz(app);
+      }
+    }, lc.showHelp ? 'Hilfe ausblenden' : '💡 Hilfe zeigen'),
+    el('button', { class: 'small secondary', onclick: () => go('levelMap') }, '← Karte')
+  ));
+  app.appendChild(card);
+}
+
+// ============ LEVEL 7 + 8: Grid mit Eingabezeile unten ============
+function genGrid(rows, cols) {
+  const op = Math.random() < 0.5 ? '+' : '−';
+  let leftCol = [], topRow = [];
+  if (op === '+') {
+    while (leftCol.length < rows) {
+      const n = rand(2, 9);
+      if (!leftCol.includes(n)) leftCol.push(n);
+    }
+    while (topRow.length < cols) {
+      const n = rand(2, 9);
+      if (!topRow.includes(n)) topRow.push(n);
+    }
+  } else {
+    while (leftCol.length < rows) {
+      const n = rand(11, 19);
+      if (!leftCol.includes(n)) leftCol.push(n);
+    }
+    while (topRow.length < cols) {
+      const n = rand(2, 9);
+      if (!topRow.includes(n)) topRow.push(n);
+    }
+  }
+  return { op, leftCol, topRow, answered: {}, currentCell: null, inputValue: '', showHelp: false };
+}
+
+function renderGridLevel(app, task) {
+  const rows = task.leftCol.length;
+  const cols = task.topRow.length;
+  const totalCells = rows * cols;
+  const allDone = Object.keys(task.answered).length === totalCells;
+
+  app.innerHTML = '';
+  const card = el('div', { class: 'card center' });
+  card.appendChild(header());
+  card.appendChild(bubble(
+    allDone ? 'Geschafft! Alle Felder sind richtig!' :
+    task.currentCell == null
+      ? 'Klick auf ein leeres Feld in der Tabelle!'
+      : 'Tipp das Ergebnis ein und drück auf den grünen Haken!',
+    false
+  ));
+  card.appendChild(el('p', { class: 'muted' },
+    `${Object.keys(task.answered).length} von ${totalCells} Feldern fertig`));
+
+  const tbl = el('table', { class: 'grid-table' });
+  const tr0 = el('tr');
+  tr0.appendChild(el('td', { class: 'op' }, task.op));
+  task.topRow.forEach(n => tr0.appendChild(el('td', { class: 'header' }, String(n))));
+  tbl.appendChild(tr0);
+  for (let r = 0; r < rows; r++) {
+    const tr = el('tr');
+    tr.appendChild(el('td', { class: 'header' }, String(task.leftCol[r])));
+    for (let c = 0; c < cols; c++) {
+      const key = `${r},${c}`;
+      const answeredVal = task.answered[key];
+      const isSelected = task.currentCell === key;
+      let cellCls = 'answer-cell';
+      if (answeredVal != null) cellCls += ' filled';
+      else cellCls += ' empty-marker';
+      if (isSelected) cellCls += ' selected';
+      const td = el('td', {
+        class: cellCls,
+        onclick: () => {
+          if (answeredVal != null) return;
+          task.currentCell = key;
+          task.inputValue = '';
+          task.showHelp = false;
+          renderGridLevel(app, task);
+        }
+      });
+      td.appendChild(document.createTextNode(answeredVal != null ? String(answeredVal) : '?'));
+      tr.appendChild(td);
+    }
+    tbl.appendChild(tr);
+  }
+  card.appendChild(tbl);
+
+  // Eingabe-Bereich unter der Tabelle
+  if (task.currentCell && !allDone) {
+    const [r, c] = task.currentCell.split(',').map(Number);
+    const a = task.leftCol[r], b = task.topRow[c];
+    const correctVal = task.op === '+' ? a + b : a - b;
+
+    const inputArea = el('div', { class: 'input-area' });
+    inputArea.appendChild(el('div', { class: 'task-display' }, `${a} ${task.op} ${b} = `));
+    const inp = el('input', { type: 'number', class: 'big-input', value: task.inputValue });
+    inp.addEventListener('input', () => { task.inputValue = inp.value; });
+    inp.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') confirmBtn.click();
+    });
+    const confirmBtn = el('button', { class: 'confirm',
+      onclick: () => {
+        const v = parseInt(inp.value, 10);
+        if (v === correctVal) {
+          task.answered[task.currentCell] = v;
+          task.currentCell = null;
+          task.inputValue = '';
+          task.showHelp = false;
+          speak('Richtig!', true);
+          renderGridLevel(app, task);
+        } else {
+          inp.value = '';
+          task.inputValue = '';
+          inp.focus();
+          speak('Hmm, das passt noch nicht. Hol dir Hilfe von Robi!', true);
+        }
+      }
+    }, '✓ Fertig');
+    inputArea.appendChild(el('div', { class: 'input-row' }, inp, confirmBtn));
+    inputArea.appendChild(el('button', { class: 'help small',
+      onclick: () => {
+        task.showHelp = !task.showHelp;
+        renderGridLevel(app, task);
+      }
+    }, task.showHelp ? 'Hilfe ausblenden' : '💡 Robi hilft mir'));
+    card.appendChild(inputArea);
+    setTimeout(() => inp.focus(), 80);
+
+    if (task.showHelp) {
+      card.appendChild(buildHelpDisplay(a, b, task.op));
+    }
+  }
+
+  if (allDone) {
+    card.appendChild(el('div', { class: 'spacer' }));
+    card.appendChild(el('button', { class: 'big',
+      onclick: () => { lc.taskIdx = lc.totalTasks; nextTask(app); }
+    }, '🎉 Level abschließen'));
+  }
+  card.appendChild(el('button', { class: 'small secondary', onclick: () => go('levelMap') }, '← Karte'));
+  app.appendChild(card);
+}
+
+// Hilfedarstellung (für Grid-Level und Hausaufgaben)
+function buildHelpDisplay(a, b, op) {
+  const c = op === '+' ? a + b : a - b;
+  const help = el('div', { class: 'card help-display',
+    style: 'background: rgba(255,209,102,0.12); margin-top:14px;' });
+  help.appendChild(el('h3', { class: 'center' }, `So rechnest du ${a} ${op} ${b}:`));
+
+  if (op === '+') {
+    if (a + b > 10 && a < 10 && b < 10) {
+      const fill = 10 - a, rest = b - fill;
+      help.appendChild(el('div', { class: 'step-box active' },
+        `Schritt 1: ${a} + ${fill} = 10  (die Kiste voll machen)`));
+      help.appendChild(el('div', { class: 'step-box active' },
+        `Schritt 2: 10 + ${rest} = ${c}  (Rest dazu)`));
+      help.appendChild(el('div', { class: 'row' },
+        renderTenFrame(a, { highlightEmpty: true,
+          label: `<strong>${a}</strong> drin, <strong>${fill}</strong> frei` }),
+        el('div', { class: 'plus-sign' }, '+'),
+        renderNumber(b)
+      ));
+      speak(`${a} plus ${fill} ist zehn. Zehn plus ${rest} ist ${c}.`, true);
+    } else {
+      help.appendChild(el('div', { class: 'step-box active' }, `${a} + ${b} = ${c}`));
+      help.appendChild(el('div', { class: 'row' },
+        renderNumber(a), el('div', { class: 'plus-sign' }, '+'), renderNumber(b)
+      ));
+      speak(`${a} plus ${b} ist ${c}.`, true);
+    }
+  } else {
+    if (a > 10 && (a - 10) < b) {
+      const ones = a - 10, restToTake = b - ones;
+      help.appendChild(el('div', { class: 'step-box active' },
+        `Schritt 1: Erst die ${ones} losen Einer in den Korb → ${a} − ${ones} = 10`));
+      help.appendChild(el('div', { class: 'step-box active' },
+        `Schritt 2: Zehnerstange eintauschen in 10 Einer, davon ${restToTake} in den Korb → bleibt ${c}`));
+      help.appendChild(el('div', { class: 'row' },
+        renderNumber(a),
+        el('div', { class: 'arrow-sign' }, '→'),
+        renderCart(0, b)
+      ));
+      speak(`Erst ${ones} Einer in den Korb. Dann Zehnerstange eintauschen und ${restToTake} dazu. Übrig bleibt ${c}.`, true);
+    } else {
+      help.appendChild(el('div', { class: 'step-box active' }, `${a} − ${b} = ${c}`));
+      help.appendChild(renderNumber(a));
+      speak(`${a} minus ${b} ist ${c}.`, true);
+    }
+  }
+  help.appendChild(legend());
+  return help;
+}
+
+// ============ BELOHNUNG ============
+function renderReward(app) {
+  const id = view.levelId;
+  const L = LEVELS.find(l => l.id === id);
+  app.appendChild(el('div', { class: 'card center' },
+    el('div', { class: 'reward-banner' },
+      el('div', {}, '🌟 Geschafft! 🌟'),
+      el('div', { style: 'font-size: 1.1em; margin-top: 8px;' }, `Level ${id}: ${L.title}`)
+    ),
+    el('div', {},
+      el('span', { class: 'confetti' }, '🎉'),
+      el('span', { class: 'confetti' }, '✨'),
+      el('span', { class: 'confetti' }, '⭐')
+    ),
+    el('div', { class: 'scene' }, makeFairy(), makeRobot()),
+    bubble(state.flowerStage >= 8
+      ? 'Wow! Floras Blume blüht in voller Pracht! Du bist eine Rechen-Meisterin!'
+      : 'Floras Blume ist gewachsen! Schau wie schön!'),
+    el('div', { html: flowerSVG(state.flowerStage) }),
+    el('div', { class: 'spacer' }),
+    el('div', { class: 'row' },
+      el('button', { class: 'big',
+        onclick: () => go('levelMap') }, '🗺 Zur Karte'),
+      el('button', { class: 'big secondary',
+        onclick: () => go('level', { levelId: id }) }, '🔁 Nochmal'),
+      id < 8 && state.unlockedLevel > id ? el('button', { class: 'big',
+        onclick: () => go('level', { levelId: id + 1 }) }, '➡ Nächstes Level') : null
+    )
+  ));
+}
+
+// ============ HAUSAUFGABEN ============
+let hwState = null;
+
+function renderHomeworkSetup(app) {
+  if (!hwState) {
+    hwState = { rows: 3, cols: 3, op: '+', leftCol: ['','',''], topRow: ['','',''], answers: {} };
+  }
+  if (hwState.leftCol.length !== hwState.rows) hwState.leftCol = Array(hwState.rows).fill('');
+  if (hwState.topRow.length !== hwState.cols) hwState.topRow = Array(hwState.cols).fill('');
+
+  app.appendChild(el('div', { class: 'card' },
+    el('h2', { class: 'center' }, '📒 Hausaufgaben-Modus'),
+    el('p', { class: 'center muted' }, 'Stelle dein Gitter so ein wie in deinem Heft. Dann trag die Zahlen aus deiner Hausaufgabe ein.'),
+
+    el('div', { class: 'row', style: 'margin-top: 20px; align-items: flex-start;' },
+      el('div', { class: 'col' },
+        el('div', {}, 'Zeilen'),
+        el('div', { class: 'row' },
+          [2, 3, 4, 5, 6].map(n => el('button', {
+            class: (n === hwState.rows ? '' : 'secondary') + ' small',
+            onclick: () => { hwState.rows = n; renderHomeworkSetup(app); }
+          }, String(n)))
+        )
+      ),
+      el('div', { class: 'col' },
+        el('div', {}, 'Spalten'),
+        el('div', { class: 'row' },
+          [2, 3, 4, 5, 6].map(n => el('button', {
+            class: (n === hwState.cols ? '' : 'secondary') + ' small',
+            onclick: () => { hwState.cols = n; renderHomeworkSetup(app); }
+          }, String(n)))
+        )
+      ),
+      el('div', { class: 'col' },
+        el('div', {}, 'Rechenart'),
+        el('div', { class: 'row' },
+          el('button', { class: hwState.op === '+' ? '' : 'secondary',
+            onclick: () => { hwState.op = '+'; renderHomeworkSetup(app); } }, '+'),
+          el('button', { class: hwState.op === '−' ? '' : 'secondary',
+            onclick: () => { hwState.op = '−'; renderHomeworkSetup(app); } }, '−')
+        )
+      )
+    ),
+
+    el('div', { class: 'spacer' }),
+    el('h3', { class: 'center' }, 'Trage die Zahlen aus deinem Heft ein:'),
+    buildSetupTable(),
+
+    el('div', { class: 'center', style: 'margin-top: 20px' },
+      el('button', { class: 'big',
+        onclick: () => {
+          const valid = hwState.leftCol.every(v => v !== '' && !isNaN(parseInt(v))) &&
+                        hwState.topRow.every(v => v !== '' && !isNaN(parseInt(v)));
+          if (!valid) { speak('Bitte trage erst alle Zahlen ein.', true); return; }
+          hwState.leftCol = hwState.leftCol.map(v => parseInt(v));
+          hwState.topRow = hwState.topRow.map(v => parseInt(v));
+          hwState.answers = {};
+          hwState.currentCell = null;
+          hwState.inputValue = '';
+          hwState.showHelp = false;
+          go('homework');
+        }
+      }, '✓ Los rechnen!'),
+      el('button', { class: 'small secondary', onclick: () => go('mode') }, '← Zurück')
+    )
+  ));
+}
+
+function buildSetupTable() {
+  const tbl = el('table', { class: 'grid-table' });
+  const tr0 = el('tr');
+  tr0.appendChild(el('td', { class: 'op' }, hwState.op));
+  for (let c = 0; c < hwState.cols; c++) {
+    const td = el('td', { class: 'header' });
+    const inp = el('input', { type: 'number', class: 'header-input',
+      value: hwState.topRow[c] || '', placeholder: '?' });
+    inp.addEventListener('input', () => { hwState.topRow[c] = inp.value; });
+    td.appendChild(inp);
+    tr0.appendChild(td);
+  }
+  tbl.appendChild(tr0);
+  for (let r = 0; r < hwState.rows; r++) {
+    const tr = el('tr');
+    const td = el('td', { class: 'header' });
+    const inp = el('input', { type: 'number', class: 'header-input',
+      value: hwState.leftCol[r] || '', placeholder: '?' });
+    inp.addEventListener('input', () => { hwState.leftCol[r] = inp.value; });
+    td.appendChild(inp);
+    tr.appendChild(td);
+    for (let c = 0; c < hwState.cols; c++) tr.appendChild(el('td', { class: 'empty-marker' }, '?'));
+    tbl.appendChild(tr);
+  }
+  const wrap = el('div', { class: 'center' });
+  wrap.appendChild(tbl);
+  return wrap;
+}
+
+function renderHomework(app) {
+  const rows = hwState.rows, cols = hwState.cols;
+  const totalCells = rows * cols;
+  const doneCells = Object.keys(hwState.answers).length;
+  const allDone = doneCells === totalCells;
+
+  app.innerHTML = '';
+  const card = el('div', { class: 'card center' });
+  card.appendChild(el('h2', {}, '📒 Deine Hausaufgabe'));
+  card.appendChild(bubble(
+    allDone ? 'Wow, alle Felder geschafft! Super Arbeit!' :
+    hwState.currentCell == null
+      ? 'Klick auf ein leeres Feld in der Tabelle!'
+      : 'Tipp das Ergebnis ein und drück auf den grünen Haken!',
+    false
+  ));
+  card.appendChild(el('p', { class: 'muted' }, `${doneCells} von ${totalCells} Feldern fertig`));
+
+  const tbl = el('table', { class: 'grid-table' });
+  const tr0 = el('tr');
+  tr0.appendChild(el('td', { class: 'op' }, hwState.op));
+  hwState.topRow.forEach(n => tr0.appendChild(el('td', { class: 'header' }, String(n))));
+  tbl.appendChild(tr0);
+  for (let r = 0; r < rows; r++) {
+    const tr = el('tr');
+    tr.appendChild(el('td', { class: 'header' }, String(hwState.leftCol[r])));
+    for (let c = 0; c < cols; c++) {
+      const key = `${r},${c}`;
+      const answeredVal = hwState.answers[key];
+      const isSelected = hwState.currentCell === key;
+      let cls = 'answer-cell';
+      if (answeredVal != null) cls += ' filled';
+      else cls += ' empty-marker';
+      if (isSelected) cls += ' selected';
+      const td = el('td', { class: cls,
+        onclick: () => {
+          if (answeredVal != null) return;
+          hwState.currentCell = key;
+          hwState.inputValue = '';
+          hwState.showHelp = false;
+          renderHomework(app);
+        }
+      });
+      td.appendChild(document.createTextNode(answeredVal != null ? String(answeredVal) : '?'));
+      tr.appendChild(td);
+    }
+    tbl.appendChild(tr);
+  }
+  card.appendChild(tbl);
+
+  if (hwState.currentCell && !allDone) {
+    const [r, c] = hwState.currentCell.split(',').map(Number);
+    const a = hwState.leftCol[r], b = hwState.topRow[c];
+    const correctVal = hwState.op === '+' ? a + b : a - b;
+
+    const inputArea = el('div', { class: 'input-area' });
+    inputArea.appendChild(el('div', { class: 'task-display' }, `${a} ${hwState.op} ${b} = `));
+    const inp = el('input', { type: 'number', class: 'big-input', value: hwState.inputValue });
+    inp.addEventListener('input', () => { hwState.inputValue = inp.value; });
+    inp.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') confirmBtn.click();
+    });
+    const confirmBtn = el('button', { class: 'confirm',
+      onclick: () => {
+        const v = parseInt(inp.value, 10);
+        if (v === correctVal) {
+          hwState.answers[hwState.currentCell] = v;
+          hwState.currentCell = null;
+          hwState.inputValue = '';
+          hwState.showHelp = false;
+          speak('Richtig!', true);
+          renderHomework(app);
+        } else {
+          inp.value = '';
+          hwState.inputValue = '';
+          inp.focus();
+          speak('Hmm, das passt noch nicht. Versuch es nochmal oder hol Robi zur Hilfe.', true);
+        }
+      }
+    }, '✓ Fertig');
+    inputArea.appendChild(el('div', { class: 'input-row' }, inp, confirmBtn));
+    inputArea.appendChild(el('button', { class: 'help small',
+      onclick: () => {
+        hwState.showHelp = !hwState.showHelp;
+        renderHomework(app);
+      }
+    }, hwState.showHelp ? 'Hilfe ausblenden' : '💡 Robi hilft mir'));
+    card.appendChild(inputArea);
+    setTimeout(() => inp.focus(), 80);
+
+    if (hwState.showHelp) {
+      card.appendChild(buildHelpDisplay(a, b, hwState.op));
+    }
+  }
+
+  if (allDone) {
+    card.appendChild(el('div', { class: 'spacer' }));
+    card.appendChild(el('div', { class: 'reward-banner' }, '🌟 Hausaufgabe geschafft! 🌟'));
+    card.appendChild(el('span', { class: 'confetti' }, '🎉'));
+  }
+
+  card.appendChild(el('div', { class: 'spacer' }));
+  card.appendChild(el('div', { class: 'row' },
+    el('button', { class: 'secondary',
+      onclick: () => { hwState = null; go('homeworkSetup'); } }, '🔄 Neue Aufgabe'),
+    el('button', { class: 'small secondary', onclick: () => go('mode') }, '← Hauptmenü')
+  ));
+  app.appendChild(card);
+}
+
+// ============ START ============
+render();
+</script>
+</body>
+</html>
