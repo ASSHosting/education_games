@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Spiel 1 — Risiko-Ampel</title>
+<style>
+  :root {
+    --bg: #f4ede0;
+    --ink: #1a1a1a;
+    --ink-soft: #4a4a4a;
+    --line: #1a1a1a;
+    --green: #2d6a4f;
+    --yellow: #b08900;
+    --red: #9d2a2a;
+    --card: #fbf6ec;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: Georgia, "Times New Roman", serif;
+    line-height: 1.55;
+    padding: 36px 48px;
+    min-height: 100vh;
+  }
+  header {
+    border-bottom: 2px solid var(--line);
+    padding-bottom: 20px;
+    margin-bottom: 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .label {
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--ink-soft);
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-weight: 600;
+  }
+  h1 {
+    font-size: 38px;
+    font-weight: 900;
+    line-height: 1.1;
+    margin-top: 6px;
+    letter-spacing: -0.5px;
+  }
+  .progress {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px;
+    letter-spacing: 1px;
+    color: var(--ink-soft);
+  }
+  .case-card {
+    background: var(--card);
+    border: 2px solid var(--line);
+    padding: 36px 40px;
+    margin-bottom: 28px;
+    position: relative;
+  }
+  .case-num {
+    position: absolute;
+    top: -18px;
+    left: 28px;
+    background: var(--bg);
+    padding: 4px 14px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+  }
+  .case-text {
+    font-size: 22px;
+    line-height: 1.5;
+    font-style: italic;
+    margin-bottom: 28px;
+  }
+  .voting-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 16px;
+    margin-bottom: 24px;
+  }
+  .vote-btn {
+    border: 2px solid var(--line);
+    background: transparent;
+    padding: 18px 12px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    color: var(--ink);
+  }
+  .vote-btn:hover { background: var(--ink); color: var(--bg); }
+  .vote-btn.selected {
+    background: var(--ink);
+    color: var(--bg);
+  }
+  .vote-btn .dot {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-right: 8px;
+    vertical-align: middle;
+  }
+  .vote-btn .dot-green { background: var(--green); }
+  .vote-btn .dot-yellow { background: var(--yellow); }
+  .vote-btn .dot-red { background: var(--red); }
+  .reveal-btn {
+    border: 2px solid var(--line);
+    background: var(--ink);
+    color: var(--bg);
+    padding: 14px 28px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
+  }
+  .reveal-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+  .solution {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px dashed var(--ink-soft);
+    display: none;
+  }
+  .solution.active { display: block; }
+  .solution-label {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+    color: var(--ink-soft);
+  }
+  .solution-color {
+    font-size: 28px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+  .solution-color.green { color: var(--green); }
+  .solution-color.yellow { color: var(--yellow); }
+  .solution-color.red { color: var(--red); }
+  .solution-text {
+    font-size: 16px;
+    color: var(--ink);
+    line-height: 1.6;
+  }
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 28px;
+  }
+  .nav-btn {
+    border: 2px solid var(--line);
+    background: transparent;
+    padding: 12px 24px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .nav-btn:hover { background: var(--ink); color: var(--bg); }
+  .nav-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+  .summary {
+    text-align: center;
+    padding: 80px 40px;
+    background: var(--card);
+    border: 2px solid var(--line);
+  }
+  .summary h2 {
+    font-size: 48px;
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  .summary p {
+    font-size: 20px;
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+  .summary .takeaway {
+    font-style: italic;
+    font-size: 18px;
+    border-top: 1px solid var(--ink-soft);
+    border-bottom: 1px solid var(--ink-soft);
+    padding: 24px 0;
+    margin-top: 32px;
+    color: var(--ink-soft);
+  }
+  footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid var(--ink-soft);
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: var(--ink-soft);
+    display: flex;
+    justify-content: space-between;
+  }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="label">Spiel 1 von 2</div>
+    <h1>Risiko-Ampel<br><span style="font-weight:400;font-style:italic;font-size:24px">— Was darf in den Prompt?</span></h1>
+  </div>
+  <div class="progress" id="progress">Fall 1 von 5</div>
+</header>
+
+<div id="game-area"></div>
+
+<div id="summary-area" class="hidden"></div>
+
+<footer>
+  <span>VHS-Webinar · KI, Datenschutz, Urheberrecht & Compliance</span>
+  <span>Arno S. Schimmelpfennig · 2026</span>
+</footer>
+
+<script>
+const cases = [
+  {
+    text: "Erkläre mir bitte den Unterschied zwischen DSGVO und KI-VO in einfacher Sprache.",
+    answer: "green",
+    explanation: "GRÜN — Allgemeine Wissensfrage ohne personenbezogene Daten. Reine Erkenntnisanfrage. Kann in jede KI gegeben werden."
+  },
+  {
+    text: "Hier ist ein Bewerbungsschreiben von Herrn Müller (m.mueller@example.de) — fasse die wichtigsten Punkte zusammen.",
+    answer: "yellow",
+    explanation: "GELB — Personenbezogene Daten ohne Sonderkategorien. Mit Auftragsverarbeitungsvertrag (AVV) und EU-Tenant (z. B. Microsoft Copilot mit Schul- oder Firmen-Tenant) ist das vertretbar. In ChatGPT Free oder Claude ohne AVV: Risiko."
+  },
+  {
+    text: "Hier ist die Diagnose-Akte unserer Patientin Frau Schmidt, geb. 1965 — schreib bitte eine verständliche Zusammenfassung für sie.",
+    answer: "red",
+    explanation: "ROT — Gesundheitsdaten sind Sonderkategorie nach Art. 9 DSGVO. Niemals in eine Standard-Cloud-KI eingeben. Lösung: lokales Modell, fachspezifische DSGVO-konforme Lösung, oder verzichten."
+  },
+  {
+    text: "Bitte überarbeite diesen Vereinsmitglieder-Newsletter — die Vornamen unserer Mitglieder sind eingebaut.",
+    answer: "yellow",
+    explanation: "GELB — Vereinsmitgliedschaft + Vorname ist personenbezogen. Mit AVV und EU-Hosting vertretbar; ohne AVV: vorher Vornamen anonymisieren (\"liebes Mitglied\")."
+  },
+  {
+    text: "Hier ist unser Verkaufsangebot an einen Großkunden inkl. Sonderkonditionen und interner Margenkalkulation — schreib mir das in marktreife Form.",
+    answer: "red",
+    explanation: "ROT — Geschäftsgeheimnis nach Geschäftsgeheimnisschutzgesetz. Eingabe in eine Standard-Cloud-KI kann den Geheimnischarakter zerstören und zu Schadenersatz führen. Lösung: Beispielzahlen einsetzen oder lokal arbeiten."
+  }
+];
+
+let currentCase = 0;
+const votes = new Array(cases.length).fill(null);
+const revealed = new Array(cases.length).fill(false);
+
+function render() {
+  const area = document.getElementById('game-area');
+  const summary = document.getElementById('summary-area');
+  document.getElementById('progress').textContent = `Fall ${currentCase + 1} von ${cases.length}`;
+
+  if (currentCase >= cases.length) {
+    area.classList.add('hidden');
+    summary.classList.remove('hidden');
+    renderSummary();
+    return;
+  }
+
+  area.classList.remove('hidden');
+  summary.classList.add('hidden');
+
+  const c = cases[currentCase];
+  const v = votes[currentCase];
+  const r = revealed[currentCase];
+
+  area.innerHTML = `
+    <div class="case-card">
+      <div class="case-num">FALL ${currentCase + 1}</div>
+      <div class="case-text">"${c.text}"</div>
+      <div class="voting-row">
+        <button class="vote-btn ${v === 'green' ? 'selected' : ''}" data-vote="green">
+          <span class="dot dot-green"></span>GRÜN
+        </button>
+        <button class="vote-btn ${v === 'yellow' ? 'selected' : ''}" data-vote="yellow">
+          <span class="dot dot-yellow"></span>GELB
+        </button>
+        <button class="vote-btn ${v === 'red' ? 'selected' : ''}" data-vote="red">
+          <span class="dot dot-red"></span>ROT
+        </button>
+      </div>
+      <button class="reveal-btn" id="reveal" ${v === null || r ? 'disabled' : ''}>
+        ${r ? 'Lösung angezeigt' : 'Lösung anzeigen'}
+      </button>
+      <div class="solution ${r ? 'active' : ''}">
+        <div class="solution-label">Lösung</div>
+        <div class="solution-color ${c.answer}">${c.answer === 'green' ? 'GRÜN' : c.answer === 'yellow' ? 'GELB' : 'ROT'}</div>
+        <div class="solution-text">${c.explanation}</div>
+      </div>
+      <div class="nav-row">
+        <button class="nav-btn" id="prev" ${currentCase === 0 ? 'disabled' : ''}>◀ Zurück</button>
+        <button class="nav-btn" id="next">${currentCase === cases.length - 1 ? 'Zusammenfassung ▶' : 'Weiter ▶'}</button>
+      </div>
+    </div>
+  `;
+
+  document.querySelectorAll('.vote-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      votes[currentCase] = btn.dataset.vote;
+      render();
+    });
+  });
+  const revealBtn = document.getElementById('reveal');
+  if (revealBtn) revealBtn.addEventListener('click', () => {
+    revealed[currentCase] = true;
+    render();
+  });
+  document.getElementById('prev').addEventListener('click', () => {
+    if (currentCase > 0) { currentCase--; render(); }
+  });
+  document.getElementById('next').addEventListener('click', () => {
+    currentCase++; render();
+  });
+}
+
+function renderSummary() {
+  const summary = document.getElementById('summary-area');
+  const correct = votes.filter((v, i) => v === cases[i].answer).length;
+  summary.innerHTML = `
+    <div class="summary">
+      <h2>Zusammenfassung</h2>
+      <p>Mehrheits-Einschätzung der Gruppe in <strong>${correct} von ${cases.length}</strong> Fällen mit der juristischen Bewertung übereinstimmend.</p>
+      <div class="takeaway">
+        Die wichtigste Erkenntnis: Die Risiko-Ampel ist kein Ersatz für eine Rechtsberatung —<br>
+        sie ist Ihr <strong>Frühwarnsystem</strong>. Was Ihnen gelb oder rot erscheint, gehört in die Hände eines Profis.
+      </div>
+      <button class="nav-btn" style="margin-top:32px" onclick="currentCase = 0; render();">▶ Spiel wiederholen</button>
+    </div>
+  `;
+}
+
+render();
+</script>
+</body>
+</html>

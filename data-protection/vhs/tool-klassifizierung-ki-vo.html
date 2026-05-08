@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Spiel 2 — Tool-Klassifizierung</title>
+<style>
+  :root {
+    --bg: #f4ede0;
+    --ink: #1a1a1a;
+    --ink-soft: #4a4a4a;
+    --line: #1a1a1a;
+    --card: #fbf6ec;
+    --green: #2d6a4f;
+    --blue: #2a4a7f;
+    --orange: #b25c1f;
+    --red: #9d2a2a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: Georgia, "Times New Roman", serif;
+    line-height: 1.55;
+    padding: 36px 48px;
+    min-height: 100vh;
+  }
+  header {
+    border-bottom: 2px solid var(--line);
+    padding-bottom: 20px;
+    margin-bottom: 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .label {
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--ink-soft);
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-weight: 600;
+  }
+  h1 {
+    font-size: 38px;
+    font-weight: 900;
+    line-height: 1.1;
+    margin-top: 6px;
+    letter-spacing: -0.5px;
+  }
+  .progress {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px;
+    letter-spacing: 1px;
+    color: var(--ink-soft);
+  }
+  .pyramid {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0 0 32px 0;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+  }
+  .pyr-row {
+    border: 1.5px solid var(--ink);
+    padding: 10px 14px;
+    margin: 2px 0;
+    text-align: center;
+    background: var(--card);
+  }
+  .pyr-1 { width: 240px; color: var(--red); }
+  .pyr-2 { width: 360px; color: var(--orange); }
+  .pyr-3 { width: 480px; color: var(--blue); }
+  .pyr-4 { width: 600px; color: var(--green); }
+  .case-card {
+    background: var(--card);
+    border: 2px solid var(--line);
+    padding: 36px 40px;
+    margin-bottom: 28px;
+    position: relative;
+  }
+  .case-num {
+    position: absolute;
+    top: -18px;
+    left: 28px;
+    background: var(--bg);
+    padding: 4px 14px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+  }
+  .case-text {
+    font-size: 22px;
+    line-height: 1.5;
+    font-style: italic;
+    margin-bottom: 28px;
+  }
+  .voting-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .vote-btn {
+    border: 2px solid var(--line);
+    background: transparent;
+    padding: 16px 8px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+  .vote-btn:hover { background: var(--ink); color: var(--bg); }
+  .vote-btn.selected {
+    background: var(--ink);
+    color: var(--bg);
+  }
+  .vote-btn .key {
+    display: block;
+    font-size: 22px;
+    font-weight: 900;
+    margin-bottom: 4px;
+  }
+  .reveal-btn {
+    border: 2px solid var(--line);
+    background: var(--ink);
+    color: var(--bg);
+    padding: 14px 28px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
+  }
+  .reveal-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .solution {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px dashed var(--ink-soft);
+    display: none;
+  }
+  .solution.active { display: block; }
+  .solution-label {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+    color: var(--ink-soft);
+  }
+  .solution-class {
+    font-size: 28px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+  .solution-class.minimal { color: var(--green); }
+  .solution-class.transparenz { color: var(--blue); }
+  .solution-class.hochrisiko { color: var(--orange); }
+  .solution-class.verboten { color: var(--red); }
+  .solution-text {
+    font-size: 16px;
+    color: var(--ink);
+    line-height: 1.6;
+  }
+  .solution-text .ref {
+    display: block;
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 28px;
+  }
+  .nav-btn {
+    border: 2px solid var(--line);
+    background: transparent;
+    padding: 12px 24px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .nav-btn:hover { background: var(--ink); color: var(--bg); }
+  .nav-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+  .summary {
+    text-align: center;
+    padding: 80px 40px;
+    background: var(--card);
+    border: 2px solid var(--line);
+  }
+  .summary h2 {
+    font-size: 48px;
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  .summary p {
+    font-size: 20px;
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+  .summary .takeaway {
+    font-style: italic;
+    font-size: 18px;
+    border-top: 1px solid var(--ink-soft);
+    border-bottom: 1px solid var(--ink-soft);
+    padding: 24px 0;
+    margin-top: 32px;
+    color: var(--ink-soft);
+  }
+  footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid var(--ink-soft);
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: var(--ink-soft);
+    display: flex;
+    justify-content: space-between;
+  }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="label">Spiel 2 von 2</div>
+    <h1>Tool-Klassifizierung<br><span style="font-weight:400;font-style:italic;font-size:24px">— in welcher Risikoklasse sind Sie?</span></h1>
+  </div>
+  <div class="progress" id="progress">Fall 1 von 8</div>
+</header>
+
+<div class="pyramid">
+  <div class="pyr-row pyr-1">VERBOTEN</div>
+  <div class="pyr-row pyr-2">HOCHRISIKO</div>
+  <div class="pyr-row pyr-3">TRANSPARENZ</div>
+  <div class="pyr-row pyr-4">MINIMAL</div>
+</div>
+
+<div id="game-area"></div>
+
+<div id="summary-area" class="hidden"></div>
+
+<footer>
+  <span>VHS-Webinar · KI, Datenschutz, Urheberrecht & Compliance</span>
+  <span>Arno S. Schimmelpfennig · 2026</span>
+</footer>
+
+<script>
+const cases = [
+  {
+    text: "Sie nutzen Grammarly, um Ihre E-Mails grammatikalisch zu prüfen.",
+    answer: "minimal",
+    explanation: "MINIMAL — Schreibassistenz ohne Risiko für Grundrechte. Keine besonderen Pflichten.",
+    ref: "Art. 5–6 KI-VO i. V. m. Anhang III"
+  },
+  {
+    text: "Ihr Verein hat einen Chatbot auf der Website, der Mitgliedschafts-Fragen beantwortet.",
+    answer: "transparenz",
+    explanation: "TRANSPARENZ — Chatbots müssen sich als KI zu erkennen geben. Eine kurze Notiz wie „Ich bin ein KI-Assistent" reicht.",
+    ref: "Art. 50 Abs. 1 KI-VO"
+  },
+  {
+    text: "Eine Personalabteilung lässt KI eingegangene Bewerbungen vorsortieren und filtern.",
+    answer: "hochrisiko",
+    explanation: "HOCHRISIKO — Personalauswahl ist im Anhang III ausdrücklich als Hochrisiko genannt. Es gelten strenge Pflichten: Risikomanagement, Datenqualität, menschliche Aufsicht, Logging.",
+    ref: "Anhang III Nr. 4 KI-VO"
+  },
+  {
+    text: "Eine Schule führt ein Punkte-System ein, das Schüler:innen aufgrund ihrer Social-Media-Aktivitäten bewertet.",
+    answer: "verboten",
+    explanation: "VERBOTEN — Klassisches Social Scoring von natürlichen Personen aufgrund ihres sozialen Verhaltens ist seit 2. Februar 2025 untersagt.",
+    ref: "Art. 5 Abs. 1 lit. c KI-VO"
+  },
+  {
+    text: "Sie verwenden Google Translate für eine Privat-E-Mail an einen Freund.",
+    answer: "minimal",
+    explanation: "MINIMAL — Übersetzungstools im privaten Kontext sind unkritisch. Im beruflichen Kontext mit personenbezogenen Daten greift wieder die DSGVO (Hosting-Frage!).",
+    ref: "Art. 5–6 KI-VO"
+  },
+  {
+    text: "Ein Kreditinstitut nutzt KI zur Bonitätsprüfung von Privatkund:innen.",
+    answer: "hochrisiko",
+    explanation: "HOCHRISIKO — Kreditwürdigkeitsbewertung ist im Anhang III gelistet. Strenge Anforderungen an Datenqualität, Transparenz, menschliche Aufsicht und Beschwerderecht der Betroffenen.",
+    ref: "Anhang III Nr. 5b KI-VO"
+  },
+  {
+    text: "Sie produzieren ein Werbevideo, in dem ein KI-generierter Avatar zur Kamera spricht.",
+    answer: "transparenz",
+    explanation: "TRANSPARENZ — Synthetische Audio- und Videoinhalte (Deepfakes inklusive nicht-täuschender Avatare) müssen als KI-generiert gekennzeichnet werden.",
+    ref: "Art. 50 Abs. 2 und 4 KI-VO"
+  },
+  {
+    text: "Ein Arbeitgeber installiert KI-Software, die per Webcam die Emotionen der Mitarbeitenden während Meetings analysiert.",
+    answer: "verboten",
+    explanation: "VERBOTEN — Emotionserkennung am Arbeitsplatz ist ausdrücklich untersagt (Ausnahme: medizinische oder Sicherheitszwecke).",
+    ref: "Art. 5 Abs. 1 lit. f KI-VO"
+  }
+];
+
+const labels = {
+  minimal: 'MINIMAL',
+  transparenz: 'TRANSPARENZ',
+  hochrisiko: 'HOCHRISIKO',
+  verboten: 'VERBOTEN'
+};
+
+let currentCase = 0;
+const votes = new Array(cases.length).fill(null);
+const revealed = new Array(cases.length).fill(false);
+
+function render() {
+  const area = document.getElementById('game-area');
+  const summary = document.getElementById('summary-area');
+  document.getElementById('progress').textContent = `Fall ${currentCase + 1} von ${cases.length}`;
+
+  if (currentCase >= cases.length) {
+    area.classList.add('hidden');
+    summary.classList.remove('hidden');
+    renderSummary();
+    return;
+  }
+
+  area.classList.remove('hidden');
+  summary.classList.add('hidden');
+
+  const c = cases[currentCase];
+  const v = votes[currentCase];
+  const r = revealed[currentCase];
+
+  area.innerHTML = `
+    <div class="case-card">
+      <div class="case-num">FALL ${currentCase + 1}</div>
+      <div class="case-text">"${c.text}"</div>
+      <div class="voting-row">
+        <button class="vote-btn ${v === 'verboten' ? 'selected' : ''}" data-vote="verboten">
+          <span class="key">V</span>VERBOTEN
+        </button>
+        <button class="vote-btn ${v === 'hochrisiko' ? 'selected' : ''}" data-vote="hochrisiko">
+          <span class="key">H</span>HOCHRISIKO
+        </button>
+        <button class="vote-btn ${v === 'transparenz' ? 'selected' : ''}" data-vote="transparenz">
+          <span class="key">T</span>TRANSPARENZ
+        </button>
+        <button class="vote-btn ${v === 'minimal' ? 'selected' : ''}" data-vote="minimal">
+          <span class="key">M</span>MINIMAL
+        </button>
+      </div>
+      <button class="reveal-btn" id="reveal" ${v === null || r ? 'disabled' : ''}>
+        ${r ? 'Lösung angezeigt' : 'Lösung anzeigen'}
+      </button>
+      <div class="solution ${r ? 'active' : ''}">
+        <div class="solution-label">Lösung</div>
+        <div class="solution-class ${c.answer}">${labels[c.answer]}</div>
+        <div class="solution-text">
+          ${c.explanation}
+          <span class="ref">Rechtsgrundlage: ${c.ref}</span>
+        </div>
+      </div>
+      <div class="nav-row">
+        <button class="nav-btn" id="prev" ${currentCase === 0 ? 'disabled' : ''}>◀ Zurück</button>
+        <button class="nav-btn" id="next">${currentCase === cases.length - 1 ? 'Zusammenfassung ▶' : 'Weiter ▶'}</button>
+      </div>
+    </div>
+  `;
+
+  document.querySelectorAll('.vote-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      votes[currentCase] = btn.dataset.vote;
+      render();
+    });
+  });
+  const revealBtn = document.getElementById('reveal');
+  if (revealBtn) revealBtn.addEventListener('click', () => {
+    revealed[currentCase] = true;
+    render();
+  });
+  document.getElementById('prev').addEventListener('click', () => {
+    if (currentCase > 0) { currentCase--; render(); }
+  });
+  document.getElementById('next').addEventListener('click', () => {
+    currentCase++; render();
+  });
+}
+
+function renderSummary() {
+  const summary = document.getElementById('summary-area');
+  const correct = votes.filter((v, i) => v === cases[i].answer).length;
+  summary.innerHTML = `
+    <div class="summary">
+      <h2>Zusammenfassung</h2>
+      <p>Mehrheits-Einschätzung der Gruppe in <strong>${correct} von ${cases.length}</strong> Fällen mit der Bewertung der KI-Verordnung übereinstimmend.</p>
+      <div class="takeaway">
+        Wichtig: Die meisten Anwendungsfälle der TN landen in <strong>MINIMAL</strong> oder <strong>TRANSPARENZ</strong>.<br>
+        Wer in <strong>HOCHRISIKO</strong> arbeitet, braucht professionelle Begleitung.<br>
+        <strong>VERBOTEN</strong> ist immer ein Stop-Signal.
+      </div>
+      <button class="nav-btn" style="margin-top:32px" onclick="currentCase = 0; render();">▶ Spiel wiederholen</button>
+    </div>
+  `;
+}
+
+render();
+</script>
+</body>
+</html>

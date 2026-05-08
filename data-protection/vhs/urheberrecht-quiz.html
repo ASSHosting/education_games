@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<title>Spiel 3 — Urheberrecht & Kennzeichnung</title>
+<style>
+  :root {
+    --bg: #f4ede0;
+    --ink: #1a1a1a;
+    --ink-soft: #4a4a4a;
+    --line: #1a1a1a;
+    --card: #fbf6ec;
+    --green: #2d6a4f;
+    --blue: #2a4a7f;
+    --orange: #b25c1f;
+    --red: #9d2a2a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: Georgia, "Times New Roman", serif;
+    line-height: 1.55;
+    padding: 36px 48px;
+    min-height: 100vh;
+  }
+  header {
+    border-bottom: 2px solid var(--line);
+    padding-bottom: 20px;
+    margin-bottom: 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  .label {
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--ink-soft);
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-weight: 600;
+  }
+  h1 {
+    font-size: 38px;
+    font-weight: 900;
+    line-height: 1.1;
+    margin-top: 6px;
+    letter-spacing: -0.5px;
+  }
+  .progress {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 13px;
+    letter-spacing: 1px;
+    color: var(--ink-soft);
+  }
+  .legend {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 32px;
+    border: 2px solid var(--line);
+    padding: 18px 20px;
+    background: var(--card);
+  }
+  .legend-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .legend-key {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 2px;
+    color: var(--ink);
+  }
+  .legend-key .badge {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    line-height: 20px;
+    margin-right: 8px;
+    border: 2px solid var(--line);
+    font-size: 11px;
+    font-weight: 900;
+    background: var(--bg);
+  }
+  .legend-key .badge.frei { background: var(--green); color: #fff; border-color: var(--green); }
+  .legend-key .badge.schutz { background: var(--blue); color: #fff; border-color: var(--blue); }
+  .legend-key .badge.kenn { background: var(--orange); color: #fff; border-color: var(--orange); }
+  .legend-key .badge.verb { background: var(--red); color: #fff; border-color: var(--red); }
+  .legend-desc {
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1.4;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+  }
+  .case-card {
+    background: var(--card);
+    border: 2px solid var(--line);
+    padding: 36px 40px;
+    margin-bottom: 28px;
+    position: relative;
+  }
+  .case-num {
+    position: absolute;
+    top: -18px;
+    left: 28px;
+    background: var(--bg);
+    padding: 4px 14px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+  }
+  .case-tag {
+    position: absolute;
+    top: -14px;
+    right: 28px;
+    background: var(--bg);
+    padding: 4px 14px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--ink-soft);
+    border: 1px solid var(--ink-soft);
+  }
+  .case-text {
+    font-size: 22px;
+    line-height: 1.5;
+    font-style: italic;
+    margin-bottom: 28px;
+  }
+  .voting-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-bottom: 24px;
+  }
+  .vote-btn {
+    border: 2px solid var(--line);
+    background: transparent;
+    padding: 14px 8px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+    color: var(--ink);
+  }
+  .vote-btn:hover { background: var(--ink); color: var(--bg); }
+  .vote-btn.selected { background: var(--ink); color: var(--bg); }
+  .vote-btn .key {
+    display: inline-block;
+    background: var(--ink);
+    color: var(--bg);
+    padding: 2px 8px;
+    margin-right: 8px;
+    font-weight: 900;
+  }
+  .vote-btn.selected .key {
+    background: var(--bg);
+    color: var(--ink);
+  }
+  .reveal-btn {
+    border: 2px solid var(--line);
+    background: var(--ink);
+    color: var(--bg);
+    padding: 14px 28px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
+  }
+  .reveal-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .solution {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px dashed var(--ink-soft);
+    display: none;
+  }
+  .solution.active { display: block; }
+  .solution-label {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    margin-bottom: 8px;
+    color: var(--ink-soft);
+  }
+  .solution-headline {
+    font-size: 26px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    margin-bottom: 12px;
+  }
+  .solution-headline.frei { color: var(--green); }
+  .solution-headline.schutz { color: var(--blue); }
+  .solution-headline.kenn { color: var(--orange); }
+  .solution-headline.verb { color: var(--red); }
+  .solution-text {
+    font-size: 16px;
+    color: var(--ink);
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+  .solution-ref {
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 1px;
+    color: var(--ink-soft);
+    border-left: 3px solid var(--ink);
+    padding-left: 12px;
+  }
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 28px;
+  }
+  .nav-btn {
+    border: 2px solid var(--line);
+    background: transparent;
+    padding: 12px 24px;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    cursor: pointer;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .nav-btn:hover { background: var(--ink); color: var(--bg); }
+  .nav-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+  .summary {
+    text-align: center;
+    padding: 80px 40px;
+    background: var(--card);
+    border: 2px solid var(--line);
+  }
+  .summary h2 {
+    font-size: 44px;
+    font-weight: 900;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+  .summary p {
+    font-size: 18px;
+    margin-bottom: 18px;
+    line-height: 1.6;
+  }
+  .summary .takeaway-list {
+    text-align: left;
+    max-width: 620px;
+    margin: 32px auto 0;
+    border-top: 1px solid var(--ink-soft);
+    border-bottom: 1px solid var(--ink-soft);
+    padding: 28px 0;
+  }
+  .summary .takeaway-list li {
+    font-size: 16px;
+    margin-bottom: 14px;
+    line-height: 1.5;
+    list-style: none;
+    padding-left: 24px;
+    position: relative;
+  }
+  .summary .takeaway-list li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    font-weight: 900;
+  }
+  .summary .takeaway-list li:last-child { margin-bottom: 0; }
+  footer {
+    margin-top: 40px;
+    padding-top: 16px;
+    border-top: 1px solid var(--ink-soft);
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    font-size: 11px;
+    letter-spacing: 1.5px;
+    color: var(--ink-soft);
+    display: flex;
+    justify-content: space-between;
+  }
+  .hidden { display: none; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <div class="label">Spiel 3 von 3</div>
+    <h1>Urheberrecht & Kennzeichnung<br><span style="font-weight:400;font-style:italic;font-size:22px">— darf ich das veröffentlichen, und wie?</span></h1>
+  </div>
+  <div class="progress" id="progress">Fall 1 von 8</div>
+</header>
+
+<div class="legend">
+  <div class="legend-item">
+    <div class="legend-key"><span class="badge frei">F</span>FREI</div>
+    <div class="legend-desc">Nutzung unproblematisch — kein Schutz, kein Drittrecht, keine Pflicht.</div>
+  </div>
+  <div class="legend-item">
+    <div class="legend-key"><span class="badge schutz">S</span>SCHUTZ DRITTER</div>
+    <div class="legend-desc">Drittrechte greifen (UrhG, KUG, Markenrecht) — Risiko bei Veröffentlichung.</div>
+  </div>
+  <div class="legend-item">
+    <div class="legend-key"><span class="badge kenn">K</span>KENNZEICHNEN</div>
+    <div class="legend-desc">Transparenz-Pflicht nach Art. 50 KI-VO oder gute Praxis.</div>
+  </div>
+  <div class="legend-item">
+    <div class="legend-key"><span class="badge verb">V</span>VERBOTEN</div>
+    <div class="legend-desc">Strafrechtlich oder zivilrechtlich klar unzulässig.</div>
+  </div>
+</div>
+
+<div id="game-area"></div>
+<div id="summary-area" class="hidden"></div>
+
+<footer>
+  <span>VHS-Webinar · KI, Datenschutz, Urheberrecht & Compliance</span>
+  <span>Arno S. Schimmelpfennig · 2026</span>
+</footer>
+
+<script>
+const cases = [
+  {
+    tag: "Schöpfungshöhe",
+    text: "Sie lassen ChatGPT einen Werbetext für Ihren Online-Shop generieren und veröffentlichen ihn unverändert auf Ihrer Website.",
+    answer: "frei",
+    headline: "FREI — aber Vorsicht beim Schutz",
+    explanation: "KI-Output hat in Deutschland keine „Schöpfungshöhe“ und ist nicht urheberrechtlich geschützt. Sie dürfen ihn nutzen, verändern, verkaufen — aber Mitbewerber:innen dürfen denselben Output ebenfalls nutzen. Wer Schutz möchte, muss den Text persönlich substanziell überarbeiten.",
+    ref: "§ 2 Abs. 2 UrhG (persönliche geistige Schöpfung erforderlich)"
+  },
+  {
+    tag: "Trainingsdaten",
+    text: "Sie generieren mit Midjourney ein Bild „im Stil von Studio Ghibli“ für die Werbeanzeige Ihres Cafés.",
+    answer: "schutz",
+    headline: "SCHUTZ DRITTER — riskant",
+    explanation: "Der Output selbst ist nicht urheberrechtlich geschützt, aber: Studio Ghibli kann Ansprüche geltend machen, wenn die Trainingsdaten urheberrechtlich geschützte Werke enthielten. Bei kommerzieller Nutzung mit Stil-Hinweis steigt das Risiko. Empfehlung: keinen Künstler:innen-Namen prompten, generische Beschreibungen nutzen.",
+    ref: "§§ 23, 51 UrhG; EuGH-Rechtsprechung zu KI-Trainingsdaten"
+  },
+  {
+    tag: "Kennzeichnung Art. 50",
+    text: "Sie verschicken einen Vereins-Newsletter mit einem Midjourney-Bild als Header.",
+    answer: "kenn",
+    headline: "KENNZEICHNEN — Pflicht ab August 2026",
+    explanation: "Nach Art. 50 Abs. 4 KI-VO müssen synthetisch erzeugte Bilder als „KI-generiert“ markiert werden — Anwender-Pflicht, nicht nur Anbieter. Im Vereins-Newsletter reicht ein dezenter Bildunterschrift-Hinweis: „Bild: KI-generiert (Midjourney)“. Schon heute gute Praxis, ab 2.8.2026 verbindlich.",
+    ref: "Art. 50 Abs. 4 KI-VO (Verordnung 2024/1689)"
+  },
+  {
+    tag: "Deepfake",
+    text: "Sie erstellen ein KI-Video, in dem ein bekannter Politiker etwas sagt, was er nie gesagt hat — als Satire ohne Hinweis.",
+    answer: "verb",
+    headline: "VERBOTEN — gleich auf mehreren Ebenen",
+    explanation: "Drei Probleme zugleich: (1) Persönlichkeitsrechtsverletzung nach §§ 22, 23 KUG; (2) Kennzeichnungspflicht nach Art. 50 Abs. 4 KI-VO als Deepfake; (3) je nach Inhalt §§ 186, 187 StGB (üble Nachrede / Verleumdung). Selbst Satire braucht klare Kennzeichnung. Ohne Hinweis: klar unzulässig.",
+    ref: "§§ 22, 23 KUG · Art. 50 Abs. 4 KI-VO · §§ 186 f. StGB"
+  },
+  {
+    tag: "Eigene Bearbeitung",
+    text: "Sie lassen ChatGPT einen Blog-Entwurf erstellen, schreiben ihn zu 70 % um und ergänzen eigene Beispiele und Argumente.",
+    answer: "frei",
+    headline: "FREI — und Ihr Werk",
+    explanation: "Durch substanzielle Eigenleistung entsteht Schöpfungshöhe. Der Blogartikel ist Ihr Werk und urheberrechtlich geschützt. Eine KI-Kennzeichnung ist nicht gesetzlich vorgeschrieben — aber als gute wissenschaftliche / journalistische Praxis empfohlen: „Erstellt mit Unterstützung von ChatGPT“.",
+    ref: "§ 2 Abs. 2 UrhG · DVV-Handlungsempfehlungen 2024 (Empfehlung, keine Pflicht)"
+  },
+  {
+    tag: "Personenfoto",
+    text: "Sie erstellen mit DALL·E ein Werbebild, in dem ein KI-generiertes Gesicht zufällig einem prominenten Schauspieler ähnelt — und nutzen es kommerziell.",
+    answer: "schutz",
+    headline: "SCHUTZ DRITTER — Persönlichkeitsrecht",
+    explanation: "Auch KI-erzeugte Gesichter können das Recht am eigenen Bild (KUG) verletzen, wenn sie eine real existierende Person erkennbar abbilden — egal ob „zufällig“. Bei kommerzieller Nutzung sind die Hürden besonders hoch. Lösung: Vor Veröffentlichung prüfen, ob der Eindruck einer realen Person entsteht — im Zweifel neu generieren.",
+    ref: "§§ 22, 23 KUG · Art. 6 Abs. 1 lit. f DSGVO (Abwägung)"
+  },
+  {
+    tag: "Chatbot",
+    text: "Sie betreiben auf Ihrer Vereinswebsite einen KI-Chatbot, der Mitglieder-Fragen beantwortet — ohne erkennbaren Hinweis, dass es eine KI ist.",
+    answer: "kenn",
+    headline: "KENNZEICHNEN — Pflicht",
+    explanation: "Chatbots, die mit Menschen interagieren, müssen sich nach Art. 50 Abs. 1 KI-VO als KI zu erkennen geben. Es reicht ein einleitender Satz: „Hallo, ich bin ein KI-Assistent und beantworte Ihre Fragen.“ Versteckte oder als menschlich getarnte KI-Bots sind nicht zulässig.",
+    ref: "Art. 50 Abs. 1 KI-VO (Transparenz-Pflicht für KI-Systeme im Personenkontakt)"
+  },
+  {
+    tag: "Musik & Lyrics",
+    text: "Sie generieren mit Suno einen Song, der einer bestehenden Hit-Single auffallend ähnlich klingt, und veröffentlichen ihn auf Spotify als eigenes Werk.",
+    answer: "verb",
+    headline: "VERBOTEN — mehrfache Verstöße",
+    explanation: "Mehrfaches Risiko: (1) Bei erkennbarer Ähnlichkeit zu einem geschützten Werk droht Plagiats- bzw. Bearbeitungsklage nach § 23 UrhG; (2) Spotify verlangt Eigenständigkeit der Werke — Veröffentlichung als „eigenes Werk“ ist Täuschung; (3) GEMA-Anmeldung mit KI-Output ohne Eigenleistung ist nicht zulässig. Zusätzlich: Kennzeichnungspflicht nach Art. 50 KI-VO.",
+    ref: "§ 23 UrhG · Art. 50 Abs. 4 KI-VO · GEMA-Verteilungsplan"
+  }
+];
+
+let currentIdx = 0;
+const userVotes = [];
+
+const labelMap = {
+  frei: { short: "FREI", key: "F", cls: "frei" },
+  schutz: { short: "SCHUTZ", key: "S", cls: "schutz" },
+  kenn: { short: "KENNZEICHN.", key: "K", cls: "kenn" },
+  verb: { short: "VERBOTEN", key: "V", cls: "verb" }
+};
+
+function renderCase(idx) {
+  const c = cases[idx];
+  document.getElementById("progress").textContent = `Fall ${idx + 1} von ${cases.length}`;
+
+  const html = `
+    <div class="case-card">
+      <span class="case-num">FALL ${String(idx + 1).padStart(2, "0")}</span>
+      <span class="case-tag">${c.tag}</span>
+      <div class="case-text">${c.text}</div>
+      <div class="voting-row">
+        ${Object.entries(labelMap).map(([k, v]) =>
+          `<button class="vote-btn" data-vote="${k}"><span class="key">${v.key}</span>${v.short}</button>`
+        ).join("")}
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <span class="label" id="vote-status">Mehrheit aus dem Chat eintragen</span>
+        <button class="reveal-btn" id="reveal-btn" disabled>Lösung anzeigen</button>
+      </div>
+      <div class="solution" id="solution">
+        <div class="solution-label">Lösung</div>
+        <div class="solution-headline ${labelMap[c.answer].cls}">${c.headline}</div>
+        <div class="solution-text">${c.explanation}</div>
+        <div class="solution-ref">Rechtsgrundlage: ${c.ref}</div>
+      </div>
+      <div class="nav-row">
+        <button class="nav-btn" id="prev-btn" ${idx === 0 ? "disabled" : ""}>← Zurück</button>
+        <button class="nav-btn" id="next-btn">${idx === cases.length - 1 ? "Zusammenfassung →" : "Nächster Fall →"}</button>
+      </div>
+    </div>
+  `;
+  document.getElementById("game-area").innerHTML = html;
+
+  // Buttons
+  document.querySelectorAll(".vote-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll(".vote-btn").forEach(b => b.classList.remove("selected"));
+      btn.classList.add("selected");
+      userVotes[idx] = btn.dataset.vote;
+      document.getElementById("reveal-btn").disabled = false;
+      document.getElementById("vote-status").textContent = `Eingetragen: ${labelMap[btn.dataset.vote].short}`;
+    });
+  });
+
+  if (userVotes[idx]) {
+    const sel = document.querySelector(`.vote-btn[data-vote="${userVotes[idx]}"]`);
+    if (sel) sel.classList.add("selected");
+    document.getElementById("reveal-btn").disabled = false;
+    document.getElementById("vote-status").textContent = `Eingetragen: ${labelMap[userVotes[idx]].short}`;
+  }
+
+  document.getElementById("reveal-btn").addEventListener("click", () => {
+    document.getElementById("solution").classList.add("active");
+    document.getElementById("reveal-btn").disabled = true;
+  });
+
+  document.getElementById("prev-btn").addEventListener("click", () => {
+    if (currentIdx > 0) { currentIdx--; renderCase(currentIdx); }
+  });
+
+  document.getElementById("next-btn").addEventListener("click", () => {
+    if (currentIdx < cases.length - 1) { currentIdx++; renderCase(currentIdx); }
+    else { renderSummary(); }
+  });
+}
+
+function renderSummary() {
+  document.getElementById("game-area").classList.add("hidden");
+  document.getElementById("progress").textContent = "Zusammenfassung";
+
+  const matrix = cases.map((c, i) => {
+    const u = userVotes[i];
+    const correct = u === c.answer;
+    return { num: i + 1, tag: c.tag, your: u ? labelMap[u].short : "—", correct: labelMap[c.answer].short, ok: correct };
+  });
+  const score = matrix.filter(m => m.ok).length;
+
+  const summary = `
+    <div class="summary">
+      <h2>Drei Praxisregeln aus diesen 8 Fällen</h2>
+      <p>Sie haben ${score} von ${cases.length} Fällen richtig eingeordnet.<br><span style="font-style:italic;color:var(--ink-soft)">Die Mehrheits-Antwort ist nicht immer die juristisch korrekte — genau das ist der Lerneffekt.</span></p>
+      <ul class="takeaway-list">
+        <li><strong>Schöpfungshöhe-Regel:</strong> KI-Output ist nicht geschützt — wenn Sie Schutz wollen, müssen Sie selbst substanziell bearbeiten.</li>
+        <li><strong>Drittrecht-Regel:</strong> Trainingsdaten, Stilrichtungen, Personen-Bildnisse und Markenrechte greifen unabhängig vom KI-Output. Im Zweifel: vor Veröffentlichung prüfen.</li>
+        <li><strong>Kennzeichnungs-Regel:</strong> Chatbots (Art. 50 Abs. 1) und synthetische Audio-/Bild-/Videoinhalte (Art. 50 Abs. 4) ab 2.8.2026 Pflicht. Heute schon gute Praxis.</li>
+      </ul>
+      <div style="margin-top:32px">
+        <button class="nav-btn" onclick="document.getElementById('summary-area').classList.add('hidden'); document.getElementById('game-area').classList.remove('hidden'); currentIdx=0; renderCase(0);">← Zurück zum Spiel</button>
+      </div>
+    </div>
+  `;
+  const sa = document.getElementById("summary-area");
+  sa.innerHTML = summary;
+  sa.classList.remove("hidden");
+}
+
+renderCase(0);
+</script>
+</body>
+</html>
