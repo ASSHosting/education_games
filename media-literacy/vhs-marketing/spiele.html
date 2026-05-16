@@ -1,0 +1,858 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>VHS Hof — Spiele zum Workshop "KI im Marketing"</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400;1,9..144,600&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1A1A1A;
+    --paper:#FAFAF7;
+    --parchment:#EFEAE0;
+    --frankenrot:#C5462E;
+    --senf:#D4A017;
+    --moss:#5A6D4C;
+    --mute:#8A8377;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{height:100%;background:var(--paper);color:var(--ink);
+    font-family:"Bricolage Grotesque",system-ui,sans-serif;font-optical-sizing:auto;
+    overflow:hidden}
+  body{display:flex;flex-direction:column;align-items:stretch;justify-content:center;
+    padding:2rem 3.5rem;position:relative}
+
+  body::before{content:"";position:fixed;inset:0;
+    background-image:
+      linear-gradient(var(--parchment) 1px,transparent 1px),
+      linear-gradient(90deg,var(--parchment) 1px,transparent 1px);
+    background-size:48px 48px;opacity:.5;pointer-events:none;z-index:0}
+
+  .stage{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;
+    min-height:0;max-width:1280px;width:100%;margin:0 auto}
+
+  .top{display:flex;justify-content:space-between;align-items:baseline;
+    border-bottom:2px solid var(--ink);padding-bottom:.75rem;margin-bottom:1.25rem;
+    font-size:.8rem;letter-spacing:.18em;text-transform:uppercase}
+  .top .brand{font-family:"Fraunces",serif;font-style:italic;font-weight:600;
+    letter-spacing:0;text-transform:none;font-size:1.05rem}
+  .top .brand b{font-style:normal;font-weight:800;color:var(--frankenrot)}
+  .crumb{color:var(--mute);font-weight:500}
+  .crumb .num{color:var(--ink);font-weight:700}
+
+  .screen{display:none;flex:1;min-height:0;animation:fade .5s ease both}
+  .screen.active{display:flex;flex-direction:column}
+  @keyframes fade{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+  .cover{justify-content:center;align-items:flex-start}
+  .cover .eyebrow{font-size:.85rem;letter-spacing:.3em;text-transform:uppercase;
+    color:var(--frankenrot);font-weight:700;margin-bottom:1rem}
+  .cover h1{font-family:"Fraunces",serif;font-weight:400;font-size:clamp(3rem,6.5vw,6rem);
+    line-height:.95;letter-spacing:-.02em;max-width:14ch}
+  .cover h1 em{font-style:italic;color:var(--frankenrot);font-weight:600}
+  .cover h1 .alt{display:block;color:var(--mute);font-weight:300;font-style:italic;
+    font-size:.45em;margin-top:.5em;letter-spacing:0}
+  .cover .meta{margin-top:2.5rem;display:grid;grid-template-columns:repeat(4,auto);
+    gap:2.5rem;font-size:.95rem}
+  .cover .meta div span{display:block;font-size:.7rem;letter-spacing:.2em;
+    text-transform:uppercase;color:var(--mute);margin-bottom:.3rem}
+  .cover .meta div b{font-family:"Fraunces",serif;font-weight:600;font-size:1.15rem}
+  .cover .hint{margin-top:auto;font-size:.85rem;color:var(--mute);font-style:italic;
+    padding-top:1.25rem;border-top:1px solid var(--parchment)}
+  .cover .hint kbd{font-family:ui-monospace,monospace;background:var(--ink);
+    color:var(--paper);padding:.15rem .4rem;border-radius:3px;font-size:.75rem;
+    margin:0 .2em;font-weight:500}
+
+  .chapter{justify-content:center;align-items:center;text-align:center}
+  .chapter .roman{font-family:"Fraunces",serif;font-style:italic;font-weight:400;
+    font-size:1.5rem;color:var(--frankenrot);letter-spacing:.15em;margin-bottom:1rem}
+  .chapter h2{font-family:"Fraunces",serif;font-weight:400;
+    font-size:clamp(2.5rem,6vw,5rem);line-height:1;letter-spacing:-.02em;max-width:18ch}
+  .chapter h2 em{font-style:italic;color:var(--frankenrot)}
+  .chapter .lead{margin-top:1.5rem;max-width:55ch;font-size:1.1rem;line-height:1.5;
+    color:var(--mute)}
+  .chapter .rules{margin-top:2rem;display:flex;gap:.7rem;flex-wrap:wrap;justify-content:center}
+  .chapter .rules span{background:var(--ink);color:var(--paper);padding:.5rem 1rem;
+    border-radius:3px;font-size:.85rem;letter-spacing:.05em}
+
+  .qhead{display:flex;justify-content:space-between;align-items:flex-end;
+    margin-bottom:1.25rem;gap:2rem;flex-wrap:wrap}
+  .qhead .label{font-size:.75rem;letter-spacing:.25em;text-transform:uppercase;
+    color:var(--frankenrot);font-weight:700;margin-bottom:.3rem}
+  .qhead h3{font-family:"Fraunces",serif;font-weight:400;
+    font-size:clamp(1.5rem,3vw,2.2rem);line-height:1.1;letter-spacing:-.01em;
+    max-width:24ch}
+  .qhead h3 em{font-style:italic;color:var(--frankenrot)}
+  .qhead .pollhint{font-size:.85rem;color:var(--mute);font-style:italic;
+    background:var(--parchment);padding:.5rem .9rem;border-left:3px solid var(--senf)}
+
+  .battle{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;flex:1;min-height:0;
+    overflow:hidden}
+  .card{background:#fff;border:1px solid var(--ink);padding:1.25rem;display:flex;
+    flex-direction:column;position:relative;overflow:hidden;min-height:0}
+  .card .vote{position:absolute;top:0;right:0;background:var(--ink);color:var(--paper);
+    font-family:"Fraunces",serif;font-style:italic;font-weight:600;font-size:1.1rem;
+    padding:.25rem .9rem;letter-spacing:.05em}
+  .card .vote.alt{background:var(--frankenrot)}
+  .card .role{font-size:.7rem;letter-spacing:.25em;text-transform:uppercase;
+    color:var(--mute);font-weight:700;margin-bottom:.5rem}
+  .card .role b{color:var(--frankenrot)}
+  .card pre.prompt{font-family:ui-monospace,monospace;font-size:.8rem;
+    line-height:1.5;background:var(--parchment);padding:.8rem;margin-bottom:.9rem;
+    white-space:pre-wrap;border-left:3px solid var(--ink);font-weight:500}
+  .card .out{flex:1;font-size:.88rem;line-height:1.55;overflow:auto;min-height:0;
+    padding-right:.4rem}
+  .card .out h5{font-family:"Fraunces",serif;font-weight:600;font-size:.95rem;
+    margin-bottom:.5rem;color:var(--ink)}
+  .card .out p{margin-bottom:.55rem}
+  .card .out p:last-child{margin-bottom:0}
+  .card.reveal-good{outline:4px solid var(--moss);outline-offset:-4px}
+  .card.reveal-bad{outline:4px solid var(--frankenrot);outline-offset:-4px;opacity:.55}
+
+  .factors{display:none;margin-top:.75rem;background:var(--parchment);padding:.9rem 1.1rem;
+    border-left:3px solid var(--senf);font-size:.85rem;line-height:1.55}
+  .factors.visible{display:block}
+  .factors h5{font-family:"Fraunces",serif;font-weight:600;font-size:.9rem;
+    margin-bottom:.5rem;color:var(--ink)}
+  .factors ul{list-style:none;padding:0;margin:0}
+  .factors ul li{padding:.2rem 0;padding-left:1.1rem;position:relative}
+  .factors ul li::before{content:"→";position:absolute;left:0;color:var(--senf);font-weight:700}
+  .factors .tag{display:inline-block;background:var(--ink);color:var(--paper);
+    font-size:.7rem;padding:.1rem .45rem;border-radius:2px;margin-right:.4rem;
+    font-weight:600;letter-spacing:.03em;text-transform:uppercase}
+
+  .spotter{display:grid;grid-template-columns:1.2fr 1fr;gap:2rem;flex:1;min-height:0}
+  .spotter .imgwrap{background:var(--parchment);position:relative;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;border:1px solid var(--ink)}
+  .spotter .imgwrap img{width:100%;height:100%;object-fit:cover}
+  .spotter .imgwrap .stamp{position:absolute;bottom:1rem;right:1rem;
+    background:var(--paper);padding:.4rem .8rem;font-size:.7rem;letter-spacing:.2em;
+    text-transform:uppercase;font-weight:700;display:none;border:2px solid currentColor}
+  .spotter .imgwrap.reveal .stamp{display:block}
+  .spotter .imgwrap.r-echt .stamp{color:var(--moss)}
+  .spotter .imgwrap.r-ki .stamp{color:var(--frankenrot)}
+  .spotter .imgwrap.r-stock .stamp{color:var(--senf)}
+  .spotter .options{display:flex;flex-direction:column;gap:.85rem;justify-content:center}
+  .opt{background:#fff;border:1px solid var(--ink);padding:1rem 1.25rem;display:flex;
+    align-items:center;gap:1rem;font-size:1rem;font-weight:500;position:relative;
+    transition:all .3s ease}
+  .opt .key{font-family:"Fraunces",serif;font-style:italic;font-weight:600;
+    font-size:1.4rem;color:var(--frankenrot);width:2rem;flex-shrink:0}
+  .opt .lbl{flex:1}
+  .opt .desc{font-size:.78rem;color:var(--mute);font-weight:400;display:block;
+    margin-top:.2rem}
+  .opt.correct{background:var(--moss);color:var(--paper);border-color:var(--moss)}
+  .opt.correct .key,.opt.correct .desc{color:var(--paper)}
+  .opt.wrong{opacity:.4}
+
+  .geo{display:flex;flex-direction:column;gap:.9rem;flex:1;min-height:0;overflow:auto}
+  .variant{background:#fff;border:1px solid var(--ink);padding:1rem 1.25rem;
+    display:grid;grid-template-columns:auto 1fr auto;gap:1.25rem;align-items:center;
+    opacity:.4;transition:opacity .3s ease}
+  .variant.revealed{opacity:1}
+  .variant .vkey{font-family:"Fraunces",serif;font-style:italic;font-weight:600;
+    font-size:2.2rem;color:var(--frankenrot)}
+  .variant .vbody h5{font-family:"Fraunces",serif;font-weight:600;font-size:1.1rem;
+    margin-bottom:.3rem}
+  .variant .vbody p{font-size:.88rem;color:var(--mute);line-height:1.5}
+  .variant .vbody .why{display:none;margin-top:.5rem;font-size:.83rem;
+    background:var(--parchment);padding:.55rem .75rem;color:var(--ink);
+    border-left:3px solid var(--senf)}
+  .variant.reveal .vbody .why{display:block}
+  .variant .vscore{font-family:"Fraunces",serif;font-style:italic;font-weight:600;
+    font-size:1rem;color:var(--mute);text-align:right;min-width:7.5rem}
+  .variant .vscore b,.variant .vscore .vresult{opacity:0;transition:opacity .3s ease}
+  .variant.reveal .vscore b,.variant.reveal .vscore .vresult{opacity:1}
+  .variant .vscore b{display:block;font-style:normal;font-size:1.8rem;color:var(--ink);
+    line-height:1}
+  .variant.reveal.r-best{outline:4px solid var(--moss);outline-offset:-4px}
+  .variant.reveal.r-best .vscore b{color:var(--moss)}
+  .variant.reveal.r-mid .vscore b{color:var(--senf)}
+  .variant.reveal.r-worst .vscore b{color:var(--frankenrot)}
+
+  .agentgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:.9rem;flex:1;min-height:0}
+  .acard{background:#fff;border:2px solid var(--ink);padding:1.1rem;display:flex;
+    flex-direction:column;gap:.6rem;position:relative;transition:border-color .3s ease}
+  .acard .acase{font-family:"Fraunces",serif;font-weight:600;font-size:1rem;
+    line-height:1.3}
+  .acard .ahint{font-size:.82rem;color:var(--mute);line-height:1.5;flex:1}
+  .acard .averdict{display:none;padding:.45rem .65rem;font-size:.75rem;font-weight:700;
+    letter-spacing:.03em;border:2px solid currentColor;text-align:center;line-height:1.3}
+  .acard.reveal .averdict{display:block}
+  .acard.r-chat .averdict{color:var(--senf);background:rgba(212,160,23,.1)}
+  .acard.r-agent .averdict{color:var(--frankenrot);background:rgba(197,70,46,.08)}
+  .acard.r-chat .averdict::before{content:"Chatbot reicht → "}
+  .acard.r-agent .averdict::before{content:"Echter Agent → "}
+
+  .acard .apills{display:flex;gap:.4rem;margin-top:auto;padding-top:.4rem}
+  .acard .apills button{font-family:"Bricolage Grotesque",system-ui,sans-serif;
+    font-size:.72rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase;
+    border:1.5px solid var(--ink);background:transparent;color:var(--ink);
+    padding:.3rem .7rem;border-radius:2px;cursor:pointer;transition:all .2s ease}
+  .acard .apills button:hover{background:var(--parchment)}
+  .acard .apills button.chosen-chatbot{background:var(--senf);color:var(--paper);border-color:var(--senf)}
+  .acard .apills button.chosen-agent{background:var(--frankenrot);color:var(--paper);border-color:var(--frankenrot)}
+  .acard.result-correct{border-color:var(--moss);box-shadow:0 0 0 2px rgba(90,109,76,.25)}
+  .acard.result-wrong{border-color:var(--frankenrot);box-shadow:0 0 0 2px rgba(197,70,46,.2)}
+  .acard .abadge{display:none;position:absolute;top:.5rem;right:.5rem;font-size:.65rem;
+    font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:.2rem .5rem;
+    border-radius:2px}
+  .acard.result-correct .abadge{display:block;background:var(--moss);color:var(--paper)}
+  .acard.result-wrong .abadge{display:block;background:var(--frankenrot);color:var(--paper)}
+
+  .agent-score{display:none;margin-top:.5rem;text-align:center;font-family:"Fraunces",serif;
+    font-size:1.1rem;font-weight:600;color:var(--ink)}
+  .agent-score.visible{display:block}
+  .agent-score b{color:var(--moss)}
+
+  .bottom{position:relative;z-index:1;display:flex;justify-content:space-between;
+    align-items:center;padding-top:.9rem;margin-top:.9rem;border-top:1px solid var(--parchment);
+    font-size:.78rem;color:var(--mute)}
+  .bottom .keys{display:flex;gap:1.2rem;flex-wrap:wrap}
+  .bottom kbd{font-family:ui-monospace,monospace;background:var(--ink);
+    color:var(--paper);padding:.15rem .4rem;border-radius:3px;font-size:.7rem;
+    margin:0 .2em;font-weight:500}
+  .bottom .progress{display:flex;gap:.3rem}
+  .bottom .progress span{width:9px;height:9px;border:1px solid var(--ink);
+    border-radius:50%}
+  .bottom .progress span.done{background:var(--ink)}
+  .bottom .progress span.now{background:var(--frankenrot);border-color:var(--frankenrot)}
+
+  .end{justify-content:center;align-items:flex-start}
+  .end .eyebrow{font-size:.85rem;letter-spacing:.3em;text-transform:uppercase;
+    color:var(--frankenrot);font-weight:700;margin-bottom:1.5rem}
+  .end h2{font-family:"Fraunces",serif;font-weight:400;
+    font-size:clamp(2.5rem,6vw,5rem);line-height:1;letter-spacing:-.02em;max-width:18ch}
+  .end h2 em{font-style:italic;color:var(--frankenrot)}
+  .end p{margin-top:1.5rem;max-width:55ch;font-size:1.1rem;line-height:1.5}
+</style>
+</head>
+<body>
+
+<div class="stage">
+
+<div class="top">
+  <div class="brand"><b>vhs.hof</b> · Workshop „KI im Marketing"</div>
+  <div class="crumb"><span class="num" id="crumbNum">00</span> · <span id="crumbName">Cover</span></div>
+</div>
+
+<section class="screen cover active" data-name="Cover">
+  <div class="eyebrow">Vier Spiele · Mitmachen statt zuhören</div>
+  <h1>Wer hat<br>recht?<em>Wir<br>finden's heraus.</em><span class="alt">Vier Mitmach-Runden in einem Workshop.</span></h1>
+  <div class="meta">
+    <div><span>Datum</span><b>20. Mai 2026</b></div>
+    <div><span>Format</span><b>Online · BBB</b></div>
+    <div><span>Referent</span><b>Arno S. Schimmelpfennig</b></div>
+    <div><span>Teilnehmende</span><b>bis zu 25</b></div>
+  </div>
+  <div class="hint">
+    Steuerung: <kbd>→</kbd> nächster Schritt &nbsp;·&nbsp; <kbd>←</kbd> zurück &nbsp;·&nbsp;
+    <kbd>Leertaste</kbd> Auflösung einblenden / ausblenden &nbsp;·&nbsp;
+    <kbd>F</kbd> Vollbild
+  </div>
+</section>
+
+<section class="screen chapter" data-name="Kapitel I">
+  <div class="roman">— I —</div>
+  <h2>Prompt-<em>Battle</em></h2>
+  <p class="lead">Zwei Prompts. Zwei Ergebnisse. Eine Frage:<br>Welcher Text taugt für die nächste Kursausschreibung?</p>
+  <div class="rules">
+    <span>3 Runden · wird schwerer</span>
+    <span>BBB-Poll: A oder B</span>
+    <span>Auflösung mit Begründung</span>
+  </div>
+</section>
+
+<!-- RUNDE 1: Gut = A (links). Leicht erkennbar durch Strukturunterschied. -->
+<section class="screen" data-name="Battle 1 · Kursausschreibung">
+  <div class="qhead">
+    <div>
+      <div class="label">Runde 1 von 3 · Einstieg</div>
+      <h3>Welcher Prompt liefert die bessere <em>Kursbeschreibung</em> für „Aquarell für Anfänger"?</h3>
+    </div>
+    <div class="pollhint">BBB-Poll → A oder B</div>
+  </div>
+  <div class="battle">
+    <div class="card" data-good="true">
+      <div class="vote">A</div>
+      <div class="role">Prompt <b>A</b></div>
+      <pre class="prompt">Rolle: Du bist Programmplanerin an einer kleinen
+VHS in Oberfranken.
+Aufgabe: Schreibe einen Ausschreibungstext für
+einen Aquarell-Anfängerkurs (4 Termine, je 90 Min,
+Donnerstag 18:00).
+Zielgruppe: Berufstätige zwischen 40 und 65,
+keine Vorkenntnisse, suchen Ausgleich zum Alltag.
+Bedingungen:
+- max. 90 Wörter
+- 1 Bedürfnis ansprechen (Entschleunigung)
+- konkret nennen: Material wird gestellt
+- Schluss-Satz mit klarer Handlungsaufforderung
+Vermeide: „spannend", „eintauchen",
+„faszinierend", „umfassend".</pre>
+      <div class="out">
+        <h5>Output (gekürzt)</h5>
+        <p>Vier Donnerstagabende, in denen Sie das Tempo selbst bestimmen. Mit Pinsel, Wasser und Farbe entstehen erste eigene Bilder — auch wenn Sie seit der Schulzeit nichts mehr gemalt haben.</p>
+        <p>Sie brauchen nichts mitzubringen: Papier, Farben und Pinsel sind im Kursraum bereit. Was bleibt, sind 90 Minuten ohne Bildschirm und vier kleine Werke zum Mitnehmen.</p>
+        <p><b>Anmeldung bis 15. September im VHS-Büro oder online.</b></p>
+      </div>
+    </div>
+    <div class="card" data-good="false">
+      <div class="vote alt">B</div>
+      <div class="role">Prompt <b>B</b></div>
+      <pre class="prompt">Schreibe einen kurzen Ausschreibungstext für
+einen Aquarellkurs an der VHS Hof. Der Kurs
+ist für Anfänger, findet abends statt und
+soll Lust auf kreative Abwechslung machen.
+Halte den Text einladend und freundlich.</pre>
+      <div class="out">
+        <h5>Output (gekürzt)</h5>
+        <p>Dieser Aquarellkurs richtet sich an alle, die in die Welt der Aquarellmalerei eintauchen möchten. In entspannter Atmosphäre lernen Sie die Grundlagen der Aquarelltechnik kennen.</p>
+        <p>Der Kurs vermittelt einen umfassenden Einblick in die faszinierende Welt der Wasserfarben. Sie werden begeistert sein, was Sie alles lernen können.</p>
+      </div>
+    </div>
+  </div>
+  <div class="factors">
+    <h5>Warum funktioniert Prompt A besser?</h5>
+    <ul>
+      <li><span class="tag">Rollenklarheit</span> „Programmplanerin an einer kleinen VHS" gibt dem Modell einen konkreten Schreibstil vor</li>
+      <li><span class="tag">Zielgruppe definiert</span> Alter, Vorkenntnisse und Bedürfnis (Ausgleich) steuern Tonalität und Inhalt</li>
+      <li><span class="tag">Konkrete Einschränkungen</span> Max. 90 Wörter + Pflichtinhalte (Material, CTA) erzwingen Präzision</li>
+      <li><span class="tag">Negative Anweisungen</span> Verbotene Floskeln verhindern generische Füllsätze — Prompt B hat keine</li>
+    </ul>
+  </div>
+</section>
+
+<!-- RUNDE 2: Gut = B (rechts). Beide haben Struktur, aber B hat konkrete Anker. -->
+<section class="screen" data-name="Battle 2 · Newsletter-Betreff">
+  <div class="qhead">
+    <div>
+      <div class="label">Runde 2 von 3 · Mittelschwer</div>
+      <h3>Welcher Prompt erzeugt Betreffzeilen, die <em>geöffnet</em> werden?</h3>
+    </div>
+    <div class="pollhint">BBB-Poll → A oder B</div>
+  </div>
+  <div class="battle">
+    <div class="card" data-good="false">
+      <div class="vote">A</div>
+      <div class="role">Prompt <b>A</b></div>
+      <pre class="prompt">Rolle: Du bist Marketingexpertin für eine
+regionale Volkshochschule.
+Aufgabe: Schreibe 5 Betreffzeilen für den
+VHS-Newsletter im Mai.
+Zielgruppe: Stammleser, 40–70, an Weiterbildung
+interessiert.
+Stil: kurz, aktivierend, keine Ausrufezeichen.
+Gib mir verschiedene Varianten (sachlich,
+emotional, neugierig machend).</pre>
+      <div class="out">
+        <h5>Output (Top-3)</h5>
+        <p>1. Weiterbildung im Frühling — Ihr Mai-Programm ist da</p>
+        <p>2. Was lernen Sie diesen Monat Neues?</p>
+        <p>3. Fünf Kurse für den Feierabend, die sich lohnen</p>
+      </div>
+    </div>
+    <div class="card" data-good="true">
+      <div class="vote alt">B</div>
+      <div class="role">Prompt <b>B</b></div>
+      <pre class="prompt">Rolle: Newsletter-Profi für lokale Bildung.
+Aufgabe: 5 Betreffzeilen für Mai 2026.
+Anker: 1 konkretes Ereignis (Pfingstferien),
+1 konkreter Kurs (Erste-Hilfe-Auffrischung,
+17. Mai), 1 Schmerzpunkt (Anmeldungen schließen
+in 6 Tagen).
+Stil: kurz (max. 55 Zeichen), keine Floskeln
+(„spannend", „neu"), kein Caps-Lock,
+max. 1 Emoji nur wenn nötig.
+V1: Frage. V2: Zahl. V3: Datum.
+V4: Insider-Ton. V5: Gegenteil-Effekt.</pre>
+      <div class="out">
+        <h5>Output (Top-3)</h5>
+        <p>1. Erste Hilfe in 4 Stunden — 17. Mai, noch 3 Plätze</p>
+        <p>2. Was Pfingsten in Hof unterscheidet (4 Kurse drin)</p>
+        <p>3. Lieber zu Hause? Auch okay — aber lesen Sie das hier</p>
+      </div>
+    </div>
+  </div>
+  <div class="factors">
+    <h5>Warum funktioniert Prompt B besser?</h5>
+    <ul>
+      <li><span class="tag">Kontext/Anlass</span> Konkrete Daten und Ereignisse (Pfingstferien, 17. Mai, 6 Tage) — Prompt A bleibt abstrakt („Mai")</li>
+      <li><span class="tag">Zeichenlimit</span> Max. 55 Zeichen erzwingt Kürze — Prompt A sagt nur „kurz" ohne Maß</li>
+      <li><span class="tag">Strukturierte Vielfalt</span> V1–V5 mit konkreten Stilmustern (Frage, Zahl, Datum) — Prompt A sagt nur „verschiedene Varianten"</li>
+      <li><span class="tag">Negative Anweisungen</span> Verbotene Floskeln + kein Caps-Lock — Prompt A verbietet nur Ausrufezeichen</li>
+    </ul>
+  </div>
+</section>
+
+<!-- RUNDE 3: Gut = A (links). Schwer! Beide sehen gut strukturiert aus. Subtiler Unterschied. -->
+<section class="screen" data-name="Battle 3 · Social-Post">
+  <div class="qhead">
+    <div>
+      <div class="label">Runde 3 von 3 · Schwer</div>
+      <h3>Welcher Instagram-Post wirkt <em>authentischer</em>?</h3>
+    </div>
+    <div class="pollhint">BBB-Poll → A oder B</div>
+  </div>
+  <div class="battle">
+    <div class="card" data-good="true">
+      <div class="vote">A</div>
+      <div class="role">Prompt <b>A</b></div>
+      <pre class="prompt">Du schreibst für die Instagram-Followerschaft
+der VHS Hof (Frauen 35–60, eher introvertiert,
+keine Influencer-Sprache).
+Aufgabe: 1 Post über Yoga-Kurs Mittwoch 19:00,
+Kursleitung Andrea M., 8 Termine, 78 EUR.
+Stil: 1 Beobachtung aus dem letzten Kurs als
+Aufhänger, kein Werbeton, max. 2 Emojis,
+max. 80 Wörter, am Schluss 1 klarer Hinweis
+(„Link in Bio"), 3 Hashtags reichen.</pre>
+      <div class="out">
+        <h5>Output</h5>
+        <p>Im letzten Kurs hat eine Teilnehmerin gesagt: „Ich bin Mittwoch immer aufgewühlt — und gehe ruhig wieder raus." Genau dafür ist dieser Kurs.</p>
+        <p>Acht Abende mit Andrea M., ab dem 22. Mai, immer Mittwoch 19:00. Keine Erfahrung nötig, Matten sind da.</p>
+        <p>🧘 Link in Bio · 78 EUR · #VHSHof #Yoga #Mittwochabend</p>
+      </div>
+    </div>
+    <div class="card" data-good="false">
+      <div class="vote alt">B</div>
+      <div class="role">Prompt <b>B</b></div>
+      <pre class="prompt">Rolle: Social-Media-Redakteurin einer VHS.
+Zielgruppe: Frauen 35–60, gesundheitsbewusst.
+Aufgabe: Instagram-Post für den neuen Yoga-Kurs
+(mittwochs 19:00, 8 Termine, 78 EUR, Leitung
+Andrea M.).
+Ton: nahbar, nicht werblich, authentisch.
+Format: max. 80 Wörter, max. 3 Emojis,
+5 Hashtags, mit CTA am Schluss.
+Der Post soll Lust machen, ohne zu drängen.</pre>
+      <div class="out">
+        <h5>Output</h5>
+        <p>Mittwochabend, 19 Uhr. Handy aus, Matte aus, Kopf aus. 🧘‍♀️ Unser neuer Yoga-Kurs mit Andrea M. ist genau das: 90 Minuten nur für dich. Kein Leistungsdruck, keine Vorerfahrung nötig.</p>
+        <p>8 Abende · 78 € · Start 22. Mai</p>
+        <p>👉 Link in Bio · #VHSHof #YogaHof #Mittwochabend #Auszeit #Gesundheit</p>
+      </div>
+    </div>
+  </div>
+  <div class="factors">
+    <h5>Warum funktioniert Prompt A besser?</h5>
+    <ul>
+      <li><span class="tag">Konkreter Aufhänger</span> „1 Beobachtung aus dem letzten Kurs" — das Modell erfindet ein Zitat, das wie echte Erfahrung klingt. Prompt B sagt nur „nahbar, authentisch" — das ist Stil ohne Material</li>
+      <li><span class="tag">Anti-Sprache statt Stilwunsch</span> „keine Influencer-Sprache" ist schärfer als „nicht werblich, authentisch" — Letzteres ist so vage, dass das Modell trotzdem Marketing-Muster nutzt</li>
+      <li><span class="tag">Weniger ist mehr</span> 3 Hashtags vs. 5 — weniger Hashtags wirken weniger nach Marketing-Kalkül</li>
+      <li><span class="tag">Persönlichkeit der Zielgruppe</span> „eher introvertiert" gibt dem Modell ein psychologisches Profil — „gesundheitsbewusst" ist nur ein Interesse</li>
+    </ul>
+  </div>
+</section>
+
+<section class="screen chapter" data-name="Kapitel II">
+  <div class="roman">— II —</div>
+  <h2>Echt, KI<br>oder <em>Stock?</em></h2>
+  <p class="lead">Vier Bilder aus dem Pool, den jede VHS für ihr Marketing nutzen könnte.<br>Eines davon dürft ihr ab 2. August 2026 nur noch mit Kennzeichnung verwenden.</p>
+  <div class="rules">
+    <span>4 Bilder</span>
+    <span>BBB-Poll: Echt / KI / Stock</span>
+    <span>Live-Auflösung</span>
+  </div>
+</section>
+
+<section class="screen" data-name="Bild 1">
+  <div class="qhead">
+    <div>
+      <div class="label">Bild 1 von 4</div>
+      <h3>Foto auf einer Kursausschreibung „<em>Töpfern für Erwachsene</em>"</h3>
+    </div>
+    <div class="pollhint">BBB-Poll → Echt · KI · Stock</div>
+  </div>
+  <div class="spotter">
+    <div class="imgwrap r-ki">
+      <img src="bilder/toepfern.png" alt="Töpfern für Erwachsene">
+      <div class="stamp">KI-generiert</div>
+    </div>
+    <div class="options">
+      <div class="opt" data-val="echt"><div class="key">A</div><div class="lbl">Echt<span class="desc">selbst fotografiert, im VHS-Kursraum</span></div></div>
+      <div class="opt" data-val="ki"><div class="key">B</div><div class="lbl">KI-generiert<span class="desc">Midjourney / Ideogram / Gemini</span></div></div>
+      <div class="opt" data-val="stock"><div class="key">C</div><div class="lbl">Stock<span class="desc">Adobe Stock, Unsplash, Pexels o.ä.</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" data-name="Bild 2">
+  <div class="qhead">
+    <div>
+      <div class="label">Bild 2 von 4</div>
+      <h3>Header-Grafik im VHS-Newsletter „<em>Sommerprogramm</em>"</h3>
+    </div>
+    <div class="pollhint">BBB-Poll → Echt · KI · Stock</div>
+  </div>
+  <div class="spotter">
+    <div class="imgwrap r-stock">
+      <img src="bilder/sommerprogramm.jpg" alt="Sommerprogramm">
+      <div class="stamp">Stock-Foto</div>
+    </div>
+    <div class="options">
+      <div class="opt" data-val="echt"><div class="key">A</div><div class="lbl">Echt<span class="desc">selbst fotografiert</span></div></div>
+      <div class="opt" data-val="ki"><div class="key">B</div><div class="lbl">KI-generiert<span class="desc">Midjourney / Ideogram / Gemini</span></div></div>
+      <div class="opt" data-val="stock"><div class="key">C</div><div class="lbl">Stock<span class="desc">Adobe Stock, Unsplash o.ä.</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" data-name="Bild 3">
+  <div class="qhead">
+    <div>
+      <div class="label">Bild 3 von 4</div>
+      <h3>Instagram-Tile für „<em>Erste Hilfe für Eltern</em>"</h3>
+    </div>
+    <div class="pollhint">BBB-Poll → Echt · KI · Stock</div>
+  </div>
+  <div class="spotter">
+    <div class="imgwrap r-echt">
+      <img src="bilder/erste-hilfe.webp" alt="Erste Hilfe für Eltern">
+      <div class="stamp">Echtes Foto</div>
+    </div>
+    <div class="options">
+      <div class="opt" data-val="echt"><div class="key">A</div><div class="lbl">Echt<span class="desc">selbst fotografiert</span></div></div>
+      <div class="opt" data-val="ki"><div class="key">B</div><div class="lbl">KI-generiert<span class="desc">Midjourney / Ideogram / Gemini</span></div></div>
+      <div class="opt" data-val="stock"><div class="key">C</div><div class="lbl">Stock<span class="desc">Adobe Stock, Unsplash o.ä.</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="screen" data-name="Bild 4">
+  <div class="qhead">
+    <div>
+      <div class="label">Bild 4 von 4</div>
+      <h3>Flyer-Motiv „<em>Italienisch A1 Abendkurs</em>"</h3>
+    </div>
+    <div class="pollhint">BBB-Poll → Echt · KI · Stock</div>
+  </div>
+  <div class="spotter">
+    <div class="imgwrap r-ki">
+      <img src="bilder/italienisch.png" alt="Italienisch A1 Abendkurs">
+      <div class="stamp">KI-generiert</div>
+    </div>
+    <div class="options">
+      <div class="opt" data-val="echt"><div class="key">A</div><div class="lbl">Echt<span class="desc">selbst fotografiert</span></div></div>
+      <div class="opt" data-val="ki"><div class="key">B</div><div class="lbl">KI-generiert<span class="desc">Midjourney / Ideogram / Gemini</span></div></div>
+      <div class="opt" data-val="stock"><div class="key">C</div><div class="lbl">Stock<span class="desc">Adobe Stock, Unsplash o.ä.</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section class="screen chapter" data-name="Kapitel III">
+  <div class="roman">— III —</div>
+  <h2>GEO-<em>Spotter</em></h2>
+  <p class="lead">Drei Varianten desselben Kurses.<br>Eine wird in Perplexity, ChatGPT-Search und Google AI Overview gefunden.<br>Die anderen nicht. Welche?</p>
+  <div class="rules">
+    <span>3 Varianten</span>
+    <span>BBB-Poll: A / B / C</span>
+    <span>Live-Test in Perplexity</span>
+  </div>
+</section>
+
+<section class="screen" data-name="GEO · Excel-Kurs">
+  <div class="qhead">
+    <div>
+      <div class="label">Drei Varianten · Excel-Grundlagen</div>
+      <h3>Welche Variante findet die <em>KI-Suche</em>?</h3>
+    </div>
+    <div class="pollhint">BBB-Poll → A / B / C</div>
+  </div>
+  <div class="geo">
+    <div class="variant r-worst" data-rank="worst">
+      <div class="vkey">A</div>
+      <div class="vbody">
+        <h5>Excel — Grundlagenkurs Abend</h5>
+        <p><b>Titel:</b> Excel — Grundlagenkurs Abend &nbsp;·&nbsp; <b>Tags:</b> EDV, Computer</p>
+        <p class="why"><b>Warum schwach:</b> Sucht niemand so. Keine Frage formuliert, kein Anwendungsfall, kein Modell-Name. Findet weder Google noch ChatGPT zuverlässig.</p>
+      </div>
+      <div class="vscore"><b>—</b><span class="vresult">findet niemand</span></div>
+    </div>
+    <div class="variant r-mid" data-rank="mid">
+      <div class="vkey">B</div>
+      <div class="vbody">
+        <h5>Excel für Anf��nger: Tabellen, Formeln, erste Schritte</h5>
+        <p><b>Titel:</b> Excel für Anfänger: Tabellen, Formeln, erste Schritte &nbsp;·&nbsp; <b>Tags:</b> Excel Kurs Anfänger Hof</p>
+        <p class="why"><b>Warum okay:</b> Klassisches SEO ist erfüllt — Suchbegriff in der Headline. Aber: keine konkrete Frage, kein Verb, kein „wie".</p>
+      </div>
+      <div class="vscore"><b>+</b><span class="vresult">findet Google</span></div>
+    </div>
+    <div class="variant r-best" data-rank="best">
+      <div class="vkey">C</div>
+      <div class="vbody">
+        <h5>„Wie lerne ich Excel ohne Vorkenntnisse?" — VHS-Abendkurs in Hof, 4× Donnerstag</h5>
+        <p><b>Titel:</b> Wie lerne ich Excel ohne Vorkenntnisse? — VHS-Abendkurs Hof &nbsp;·&nbsp; <b>Beschreibung:</b> Beantwortet die häufigsten Anfängerfragen: Was ist eine Zelle, wie summiere ich, wie speichere ich ohne Datenverlust. 4 Abende, kostenfreies Übungsmaterial.</p>
+        <p class="why"><b>Warum stark:</b> Headline ist eine echte Frage — genau so suchen Menschen in ChatGPT, Perplexity und Gemini. Beantwortet die Frage direkt in der Beschreibung. Ort + Format + Konkretes.</p>
+      </div>
+      <div class="vscore"><b>★</b><span class="vresult">findet ChatGPT + Google</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="screen chapter" data-name="Kapitel IV">
+  <div class="roman">— IV —</div>
+  <h2>Agent oder<br><em>Chatbot?</em></h2>
+  <p class="lead">Sechs Aufgaben aus dem VHS-Alltag.<br>Welche kann ein ChatGPT-Fenster heute schon erledigen?<br>Und für welche bräuchtet ihr einen echten KI-Agenten?</p>
+  <div class="rules">
+    <span>6 Aufgaben</span>
+    <span>BBB-Poll: Chatbot / Agent</span>
+    <span>Auflösung in einem Rutsch</span>
+  </div>
+</section>
+
+<section class="screen" data-name="Aufgaben · Chatbot oder Agent">
+  <div class="qhead">
+    <div>
+      <div class="label">Sechs Aufgaben · Heute oder erst 2027</div>
+      <h3>Für welche Aufgabe braucht ihr <em>mehr</em> als einen Chatbot?</h3>
+    </div>
+    <div class="pollhint">BBB-Poll pro Karte → Chatbot / Agent</div>
+  </div>
+  <div class="agentgrid">
+    <div class="acard r-chat" data-correct="chatbot">
+      <div class="abadge"></div>
+      <div class="acase">Newsletter-Text für den Mai entwerfen</div>
+      <div class="ahint">Einmaliger Auftrag, klares Ergebnis, keine Folgehandlungen nötig.</div>
+      <div class="apills">
+        <button data-choice="chatbot">Chatbot</button>
+        <button data-choice="agent">Agent</button>
+      </div>
+      <div class="averdict">heute mit ChatGPT</div>
+    </div>
+    <div class="acard r-chat" data-correct="chatbot">
+      <div class="abadge"></div>
+      <div class="acase">Drei Varianten einer Kursbeschreibung erzeugen</div>
+      <div class="ahint">Klassische generative Aufgabe — Texte, Brainstorming, Umformulierungen.</div>
+      <div class="apills">
+        <button data-choice="chatbot">Chatbot</button>
+        <button data-choice="agent">Agent</button>
+      </div>
+      <div class="averdict">heute mit ChatGPT</div>
+    </div>
+    <div class="acard r-agent" data-correct="agent">
+      <div class="abadge"></div>
+      <div class="acase">Jede Woche freitags Social-Posts vorbereiten und in den Buffer-Plan einstellen</div>
+      <div class="ahint">Wiederkehrend + zwei Werkzeuge bedienen + speichern. Das schafft kein Chat-Fenster allein.</div>
+      <div class="apills">
+        <button data-choice="chatbot">Chatbot</button>
+        <button data-choice="agent">Agent</button>
+      </div>
+      <div class="averdict">Automation (n8n, Make, Agent)</div>
+    </div>
+    <div class="acard r-chat" data-correct="chatbot">
+      <div class="abadge"></div>
+      <div class="acase">Bild für die Töpferkurs-Ausschreibung erzeugen</div>
+      <div class="ahint">Ein Auftrag, ein Bild, einmaliger Output.</div>
+      <div class="apills">
+        <button data-choice="chatbot">Chatbot</button>
+        <button data-choice="agent">Agent</button>
+      </div>
+      <div class="averdict">heute mit Ideogram / Gemini</div>
+    </div>
+    <div class="acard r-agent" data-correct="agent">
+      <div class="abadge"></div>
+      <div class="acase">Bei jeder Anmeldung automatisch Bestätigungsmail + Kalender-Eintrag + Erinnerung 24h vorher</div>
+      <div class="ahint">Trigger-getriebene Kette über drei Systeme — klassischer Workflow-Fall, nicht Chat.</div>
+      <div class="apills">
+        <button data-choice="chatbot">Chatbot</button>
+        <button data-choice="agent">Agent</button>
+      </div>
+      <div class="averdict">Automation</div>
+    </div>
+    <div class="acard r-agent" data-correct="agent">
+      <div class="abadge"></div>
+      <div class="acase">Auf die Website schauen, fehlerhafte Kursdaten finden, Korrekturvorschläge im Backend einstellen</div>
+      <div class="ahint">Mehrere autonome Schritte über externe Systeme. Realistisch erst 2026/27 produktiv.</div>
+      <div class="apills">
+        <button data-choice="chatbot">Chatbot</button>
+        <button data-choice="agent">Agent</button>
+      </div>
+      <div class="averdict">echter Agent (Operator, Cowork)</div>
+    </div>
+  </div>
+  <div class="agent-score" id="agentScore"><b>0</b> von 6 richtig</div>
+</section>
+
+<section class="screen end" data-name="Ende">
+  <div class="eyebrow">— Ende der Spiele —</div>
+  <h2>Jetzt seid <em>ihr</em><br>am Schreibtisch.</h2>
+  <p>Die vier Übungen, die wir nach jedem Themenblock machen, laufen genauso: ein Beispiel, eine kurze Aufgabe, ein sichtbares Ergebnis.<br><br>Auf zur ersten Praxisrunde.</p>
+</section>
+
+<div class="bottom">
+  <div class="keys">
+    <span><kbd>→</kbd> weiter</span>
+    <span><kbd>←</kbd> zurück</span>
+    <span><kbd>Leertaste</kbd> Auflösung</span>
+    <span><kbd>F</kbd> Vollbild</span>
+  </div>
+  <div class="progress" id="progress"></div>
+</div>
+
+</div>
+
+<script>
+(()=>{
+  const screens=[...document.querySelectorAll('.screen')];
+  let idx=0;
+  const crumbNum=document.getElementById('crumbNum');
+  const crumbName=document.getElementById('crumbName');
+  const progress=document.getElementById('progress');
+
+  // GEO Spotter: track reveal step per screen
+  const geoRevealSteps=new Map();
+
+  screens.forEach(()=>{const s=document.createElement('span');progress.appendChild(s)});
+
+  // Agent card pill buttons
+  document.querySelectorAll('.acard .apills button').forEach(btn=>{
+    btn.addEventListener('click',e=>{
+      e.stopPropagation();
+      const card=btn.closest('.acard');
+      const choice=btn.dataset.choice;
+      card.querySelectorAll('.apills button').forEach(b=>{
+        b.classList.remove('chosen-chatbot','chosen-agent');
+      });
+      btn.classList.add(choice==='chatbot'?'chosen-chatbot':'chosen-agent');
+      card.dataset.chosen=choice;
+    });
+  });
+
+  function show(i){
+    screens[idx].classList.remove('active');
+    idx=Math.max(0,Math.min(screens.length-1,i));
+    screens[idx].classList.add('active');
+    crumbNum.textContent=String(idx).padStart(2,'0');
+    crumbName.textContent=screens[idx].dataset.name||'';
+    [...progress.children].forEach((s,j)=>{
+      s.className='';
+      if(j<idx)s.classList.add('done');
+      if(j===idx)s.classList.add('now');
+    });
+    // Reset all reveals on slide change
+    document.querySelectorAll('.reveal,.reveal-good,.reveal-bad,.correct,.wrong').forEach(el=>{
+      el.classList.remove('reveal','reveal-good','reveal-bad','correct','wrong');
+    });
+    document.querySelectorAll('.factors.visible').forEach(f=>f.classList.remove('visible'));
+    document.querySelectorAll('.variant.revealed').forEach(v=>v.classList.remove('revealed'));
+    document.querySelectorAll('.acard.result-correct,.acard.result-wrong').forEach(c=>{
+      c.classList.remove('result-correct','result-wrong');
+    });
+    document.querySelectorAll('.acard .abadge').forEach(b=>{b.textContent='';});
+    const scoreEl=document.getElementById('agentScore');
+    if(scoreEl)scoreEl.classList.remove('visible');
+    geoRevealSteps.delete(idx);
+  }
+
+  function toggleReveal(){
+    const cur=screens[idx];
+
+    // Prompt Battle cards
+    const cards=cur.querySelectorAll('.battle .card');
+    if(cards.length){
+      const anyRevealed=[...cards].some(c=>c.classList.contains('reveal-good')||c.classList.contains('reveal-bad'));
+      cards.forEach(c=>{
+        c.classList.remove('reveal-good','reveal-bad');
+        if(!anyRevealed)c.classList.add(c.dataset.good==='true'?'reveal-good':'reveal-bad');
+      });
+      const factors=cur.querySelector('.factors');
+      if(factors){
+        if(!anyRevealed)factors.classList.add('visible');
+        else factors.classList.remove('visible');
+      }
+      return;
+    }
+
+    // Image spotter
+    const wrap=cur.querySelector('.spotter .imgwrap');
+    if(wrap){
+      const isRev=wrap.classList.contains('reveal');
+      wrap.classList.toggle('reveal');
+      const correct=[...wrap.classList].find(c=>c.startsWith('r-'))?.replace('r-','');
+      cur.querySelectorAll('.opt').forEach(o=>{
+        o.classList.remove('correct','wrong');
+        if(!isRev){
+          if(o.dataset.val===correct)o.classList.add('correct');
+          else o.classList.add('wrong');
+        }
+      });
+      return;
+    }
+
+    // GEO Spotter: sequential reveal (worst -> mid -> best)
+    const variants=cur.querySelectorAll('.variant');
+    if(variants.length){
+      const step=geoRevealSteps.get(idx)||0;
+      const order=['worst','mid','best'];
+      if(step<order.length){
+        const target=[...variants].find(v=>v.dataset.rank===order[step]);
+        if(target){
+          target.classList.add('reveal','revealed');
+        }
+        geoRevealSteps.set(idx,step+1);
+      } else {
+        // Reset all
+        variants.forEach(v=>v.classList.remove('reveal','revealed'));
+        geoRevealSteps.set(idx,0);
+      }
+      return;
+    }
+
+    // Agent/Chatbot cards
+    const acards=cur.querySelectorAll('.acard');
+    if(acards.length){
+      const anyRev=[...acards].some(c=>c.classList.contains('reveal'));
+      if(!anyRev){
+        let correctCount=0;
+        acards.forEach(c=>{
+          c.classList.add('reveal');
+          const chosen=c.dataset.chosen||'';
+          const correct=c.dataset.correct||'';
+          if(chosen){
+            if(chosen===correct){
+              c.classList.add('result-correct');
+              c.querySelector('.abadge').textContent='Richtig';
+              correctCount++;
+            } else {
+              c.classList.add('result-wrong');
+              c.querySelector('.abadge').textContent='Falsch';
+            }
+          }
+        });
+        const scoreEl=document.getElementById('agentScore');
+        if(scoreEl){
+          scoreEl.querySelector('b').textContent=correctCount;
+          scoreEl.classList.add('visible');
+        }
+      } else {
+        acards.forEach(c=>{
+          c.classList.remove('reveal','result-correct','result-wrong');
+          c.querySelector('.abadge').textContent='';
+        });
+        const scoreEl=document.getElementById('agentScore');
+        if(scoreEl)scoreEl.classList.remove('visible');
+      }
+      return;
+    }
+  }
+
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight'||e.key==='PageDown')show(idx+1);
+    else if(e.key==='ArrowLeft'||e.key==='PageUp')show(idx-1);
+    else if(e.key===' '){e.preventDefault();toggleReveal();}
+    else if(e.key==='f'||e.key==='F'){
+      if(!document.fullscreenElement)document.documentElement.requestFullscreen();
+      else document.exitFullscreen();
+    }
+    else if(e.key==='Home')show(0);
+    else if(e.key==='End')show(screens.length-1);
+  });
+
+  show(0);
+})();
+</script>
+</body>
+</html>

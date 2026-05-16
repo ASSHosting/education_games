@@ -1,0 +1,732 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prompt-Bibliothek · VHS Hof · KI im Marketing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,800;1,9..144,400;1,9..144,600&family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1A1A1A;
+    --paper:#FAFAF7;
+    --parchment:#EFEAE0;
+    --frankenrot:#C5462E;
+    --senf:#D4A017;
+    --moss:#5A6D4C;
+    --mute:#8A8377;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{background:var(--paper);color:var(--ink);
+    font-family:"Bricolage Grotesque",system-ui,sans-serif;font-optical-sizing:auto;
+    line-height:1.55;font-size:16px}
+
+  body::before{content:"";position:fixed;inset:0;
+    background-image:
+      linear-gradient(var(--parchment) 1px,transparent 1px),
+      linear-gradient(90deg,var(--parchment) 1px,transparent 1px);
+    background-size:48px 48px;opacity:.4;pointer-events:none;z-index:0}
+
+  .wrap{position:relative;z-index:1;max-width:1200px;margin:0 auto;padding:3rem 2.5rem 6rem}
+
+  /* MASTHEAD */
+  .masthead{border-bottom:2px solid var(--ink);padding-bottom:1rem;margin-bottom:2.5rem;
+    display:grid;grid-template-columns:1fr auto;gap:2rem;align-items:end}
+  .masthead .brand{font-family:"Fraunces",serif;font-style:italic;font-weight:600;font-size:1.1rem}
+  .masthead .brand b{font-style:normal;font-weight:800;color:var(--frankenrot)}
+  .masthead .date{font-size:.8rem;letter-spacing:.18em;text-transform:uppercase;color:var(--mute);font-weight:500}
+
+  .hero{padding:2rem 0 3rem;border-bottom:1px solid var(--parchment);margin-bottom:3rem}
+  .hero .eyebrow{font-size:.85rem;letter-spacing:.3em;text-transform:uppercase;
+    color:var(--frankenrot);font-weight:700;margin-bottom:1rem}
+  .hero h1{font-family:"Fraunces",serif;font-weight:400;font-size:clamp(2.5rem,6vw,5rem);
+    line-height:1;letter-spacing:-.02em;max-width:18ch;margin-bottom:1.5rem}
+  .hero h1 em{font-style:italic;color:var(--frankenrot);font-weight:600}
+  .hero p{max-width:55ch;font-size:1.1rem;color:var(--mute);line-height:1.55}
+  .hero p b{color:var(--ink);font-weight:600}
+
+  /* TOC */
+  .toc{background:#fff;border:1px solid var(--ink);padding:1.5rem 2rem;margin-bottom:3rem;
+    display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem 2rem}
+  .toc h4{grid-column:1/-1;font-family:"Fraunces",serif;font-weight:600;font-size:1rem;
+    margin-bottom:.6rem;padding-bottom:.5rem;border-bottom:1px solid var(--parchment);
+    text-transform:uppercase;letter-spacing:.15em;font-style:italic}
+  .toc a{display:grid;grid-template-columns:auto 1fr auto;gap:.8rem;align-items:baseline;
+    text-decoration:none;color:var(--ink);padding:.3rem 0;border-bottom:1px dotted var(--parchment);
+    font-size:.92rem}
+  .toc a:hover{color:var(--frankenrot)}
+  .toc a .num{font-family:"Fraunces",serif;font-style:italic;font-weight:600;
+    color:var(--frankenrot);width:1.5rem}
+  .toc a .pg{color:var(--mute);font-size:.85rem;font-variant-numeric:tabular-nums}
+
+  /* CHAPTER */
+  .chapter{margin:5rem 0 2.5rem}
+  .chapter .roman{font-family:"Fraunces",serif;font-style:italic;font-weight:400;
+    font-size:1.2rem;color:var(--frankenrot);letter-spacing:.15em;margin-bottom:.5rem}
+  .chapter h2{font-family:"Fraunces",serif;font-weight:400;font-size:clamp(2rem,4vw,3.2rem);
+    line-height:1;letter-spacing:-.02em;max-width:20ch;margin-bottom:1rem}
+  .chapter h2 em{font-style:italic;color:var(--frankenrot)}
+  .chapter p.lead{max-width:55ch;color:var(--mute);font-size:1.05rem}
+
+  /* PROMPT CARD */
+  .prompt{background:#fff;border:1px solid var(--ink);margin-bottom:1.5rem;
+    display:grid;grid-template-columns:6rem 1fr;overflow:hidden}
+  .prompt .index{background:var(--ink);color:var(--paper);padding:1.5rem 1rem;
+    display:flex;flex-direction:column;justify-content:space-between;
+    font-family:"Fraunces",serif}
+  .prompt .index .id{font-style:italic;font-weight:600;font-size:1.8rem;line-height:1}
+  .prompt .index .id span{display:block;font-size:.6em;color:var(--senf);font-style:normal;
+    text-transform:uppercase;letter-spacing:.2em;margin-top:.3rem;font-weight:500}
+  .prompt .index .tag{font-size:.65rem;letter-spacing:.2em;text-transform:uppercase;
+    color:var(--paper);opacity:.7;font-family:"Bricolage Grotesque",sans-serif;
+    font-weight:500;margin-top:1rem}
+  .prompt .body{padding:1.4rem 1.6rem}
+  .prompt h3{font-family:"Fraunces",serif;font-weight:600;font-size:1.35rem;
+    line-height:1.2;margin-bottom:.4rem}
+  .prompt .when{font-size:.88rem;color:var(--mute);margin-bottom:1rem;font-style:italic}
+  .prompt .when b{color:var(--frankenrot);font-style:normal;font-weight:600}
+
+  .prompt .ptxt{position:relative;margin:1rem 0}
+  .prompt pre{font-family:ui-monospace,"SF Mono",monospace;font-size:.83rem;
+    line-height:1.55;background:var(--parchment);padding:1rem 1.2rem;
+    white-space:pre-wrap;border-left:3px solid var(--ink);overflow-x:auto;
+    font-weight:500}
+  .prompt pre .ph{color:var(--frankenrot);font-weight:700;background:rgba(197,70,46,.08);
+    padding:.05rem .25rem;border-radius:2px}
+  .prompt button.copy{position:absolute;top:.5rem;right:.5rem;background:var(--ink);
+    color:var(--paper);border:none;padding:.35rem .7rem;font-family:"Bricolage Grotesque",sans-serif;
+    font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;cursor:pointer;
+    font-weight:600;transition:background .2s}
+  .prompt button.copy:hover{background:var(--frankenrot)}
+  .prompt button.copy.done{background:var(--moss)}
+
+  .prompt .tips{margin-top:1rem;padding:.85rem 1rem;background:rgba(212,160,23,.08);
+    border-left:3px solid var(--senf);font-size:.85rem;line-height:1.5}
+  .prompt .tips b{font-family:"Fraunces",serif;font-style:italic;color:var(--senf);
+    font-weight:600;display:block;margin-bottom:.2rem;font-size:.78rem;
+    letter-spacing:.1em;text-transform:uppercase}
+
+  .prompt .meta{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:1rem;
+    padding-top:.8rem;border-top:1px dotted var(--parchment)}
+  .prompt .meta span{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--mute);font-weight:600;padding:.2rem .5rem;background:var(--parchment)}
+
+  footer{margin-top:5rem;padding-top:2rem;border-top:2px solid var(--ink);
+    display:flex;justify-content:space-between;font-size:.8rem;color:var(--mute);
+    letter-spacing:.05em}
+  footer .fn{font-family:"Fraunces",serif;font-style:italic;font-weight:600;
+    color:var(--ink);font-size:.95rem}
+
+  @media (max-width:700px){
+    .wrap{padding:2rem 1.2rem}
+    .toc{grid-template-columns:1fr}
+    .prompt{grid-template-columns:1fr}
+    .prompt .index{flex-direction:row;align-items:center;padding:.8rem 1.2rem}
+    .prompt .index .id{font-size:1.3rem}
+    .prompt .index .tag{margin-top:0;margin-left:auto}
+  }
+
+  @media print{
+    body::before{display:none}
+    .toc a:hover{color:var(--ink)}
+    .prompt{break-inside:avoid;page-break-inside:avoid}
+    button.copy{display:none}
+    .wrap{padding:1rem 1.5rem 2rem}
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<header class="masthead">
+  <div class="brand"><b>vhs.hof</b> · Workshop „KI im Marketing" — Begleitmaterial</div>
+  <div class="date">15 Prompts · Mai 2026 · Druck- &amp; copy-paste-fertig</div>
+</header>
+
+<section class="hero">
+  <div class="eyebrow">Werkzeugkasten · für den Schreibtisch</div>
+  <h1>Fünfzehn<br>Prompts, die <em>tun</em>,<br>was sie sollen.</h1>
+  <p>Diese Sammlung ist <b>kein Theorie-Buch</b>. Jeder Prompt ist getestet, hat einen klaren Anwendungsfall und kann mit zwei bis fünf eigenen Einsetzungen direkt in ChatGPT, Claude, Gemini, Copilot oder Ideogram laufen. <b>Rot markierte Stellen</b> sind die einzigen Stellen, an denen ihr etwas ändern müsst.</p>
+</section>
+
+<!-- TOC -->
+<nav class="toc">
+  <h4>Inhalt</h4>
+  <a href="#p01"><span class="num">01</span><span>Kursausschreibung (kurz, mit Profil)</span><span class="pg">Texte</span></a>
+  <a href="#p02"><span class="num">02</span><span>Newsletter-Betreffzeilen, fünf Varianten</span><span class="pg">Texte</span></a>
+  <a href="#p03"><span class="num">03</span><span>Social-Media-Post mit Anker</span><span class="pg">Texte</span></a>
+  <a href="#p04"><span class="num">04</span><span>Antwort auf Kursanfrage per E-Mail</span><span class="pg">Texte</span></a>
+  <a href="#p05"><span class="num">05</span><span>Kursbestätigung mit Erinnerung</span><span class="pg">Texte</span></a>
+  <a href="#p06"><span class="num">06</span><span>Bild-Briefing: Kursvisual für Ideogram</span><span class="pg">Bilder</span></a>
+  <a href="#p07"><span class="num">07</span><span>Bild-Briefing: Flyer-Hintergrund</span><span class="pg">Bilder</span></a>
+  <a href="#p08"><span class="num">08</span><span>Bild-Briefing: Social-Tile mit Text-Overlay</span><span class="pg">Bilder</span></a>
+  <a href="#p09"><span class="num">09</span><span>Kennzeichnung formulieren (Art. 50)</span><span class="pg">Recht</span></a>
+  <a href="#p10"><span class="num">10</span><span>Kurstitel für die KI-Suche</span><span class="pg">GEO</span></a>
+  <a href="#p11"><span class="num">11</span><span>FAQ-Block, der bei Perplexity erscheint</span><span class="pg">GEO</span></a>
+  <a href="#p12"><span class="num">12</span><span>Beschreibung GEO-fest umformulieren</span><span class="pg">GEO</span></a>
+  <a href="#p13"><span class="num">13</span><span>Einfache Sprache: Kursbeschreibung umsetzen</span><span class="pg">Routinen</span></a>
+  <a href="#p14"><span class="num">14</span><span>Pressemeldung in 10 Minuten</span><span class="pg">Routinen</span></a>
+  <a href="#p15"><span class="num">15</span><span>Reminder-Mail vor Kursbeginn</span><span class="pg">Routinen</span></a>
+</nav>
+
+<!-- ====================== KAPITEL 1 ====================== -->
+<div class="chapter" id="ch1">
+  <div class="roman">— Kapitel I —</div>
+  <h2><em>Texte</em>: Vom Schreibblock zum fertigen Kurstext</h2>
+  <p class="lead">Fünf Prompts für die meist­gefragten Textsorten im VHS-Marketing-Alltag. Alle mit klarer Rolle, klarer Aufgabe, klarem Zielformat.</p>
+</div>
+
+<article class="prompt" id="p01">
+  <div class="index"><div><div class="id">01<span>Prompt</span></div></div><div class="tag">Texte</div></div>
+  <div class="body">
+    <h3>Kursausschreibung mit Profil</h3>
+    <p class="when">Anwendung: <b>Ihr habt einen Kurs, der bisher nicht voll wird.</b> Die alte Beschreibung klingt „nett", erreicht aber niemanden konkret. Dieser Prompt setzt euch eine konkrete Zielgruppe in den Kopf — und der KI auch.</p>
+    <div class="ptxt"><button class="copy" data-id="p01">Kopieren</button>
+<pre id="src-p01">Rolle: Du bist Programmplanerin an einer kleinen VHS in Oberfranken.
+
+Aufgabe: Schreibe einen Ausschreibungstext für den Kurs <span class="ph">[Kurstitel]</span> (<span class="ph">[Anzahl Termine]</span> Termine, je <span class="ph">[Dauer]</span> Minuten, <span class="ph">[Wochentag &amp; Uhrzeit]</span>).
+
+Zielgruppe: <span class="ph">[Alter, Beruf, was sie suchen — z. B. "Berufstätige zwischen 40 und 65, keine Vorkenntnisse, suchen Ausgleich zum Alltag"]</span>
+
+Bedingungen:
+- max. 90 Wörter
+- 1 konkretes Bedürfnis ansprechen (<span class="ph">[Entschleunigung / Karriere / Anschluss / …]</span>)
+- konkret nennen: <span class="ph">[was wird gestellt, was muss mitgebracht werden]</span>
+- Schluss-Satz mit klarer Handlungsaufforderung und Anmeldefrist <span class="ph">[Datum]</span>
+
+Vermeide: "spannend", "eintauchen", "faszinierend", "umfassend", "entdecken Sie", Marketing-Floskeln allgemein.</pre>
+    </div>
+    <div class="tips"><b>Tipp aus der Praxis</b>Ergänzt einmal in Klammern, <em>was im letzten Kurs schiefging</em> — Beispiel: „(Letztes Mal kamen viele Berufstätige, die nicht wussten, dass Material gestellt wird.)" Die KI baut das in den Text ein.</div>
+    <div class="meta"><span>ChatGPT</span><span>Claude</span><span>Gemini</span><span>Copilot</span></div>
+  </div>
+</article>
+
+<article class="prompt" id="p02">
+  <div class="index"><div><div class="id">02<span>Prompt</span></div></div><div class="tag">Texte</div></div>
+  <div class="body">
+    <h3>Fünf Newsletter-Betreffzeilen</h3>
+    <p class="when">Anwendung: <b>Ihr habt 20 Minuten und braucht einen Betreff, der nicht nach VHS-Newsletter klingt.</b> Der Prompt liefert fünf unterschiedlich gebaute Varianten — ihr wählt die beste.</p>
+    <div class="ptxt"><button class="copy" data-id="p02">Kopieren</button>
+<pre id="src-p02">Rolle: Newsletter-Profi für lokale Bildung.
+
+Aufgabe: 5 Betreffzeilen für den Newsletter <span class="ph">[Monat/Jahr]</span> der VHS Hof.
+
+Anker (alles drei einbauen):
+- 1 konkretes Ereignis: <span class="ph">[Pfingstferien, Sommerfest, …]</span>
+- 1 konkreter Kurs: <span class="ph">[Kurs + Datum, max. 7 Wörter]</span>
+- 1 Schmerzpunkt: <span class="ph">[z. B. "Anmeldungen schließen in 6 Tagen"]</span>
+
+Stil:
+- max. 55 Zeichen pro Betreff
+- keine Floskeln ("spannend", "neu", "exklusiv")
+- kein Caps-Lock
+- max. 1 Emoji, nur wenn es einen Unterschied macht
+
+Bau die 5 Varianten unterschiedlich:
+V1: als Frage
+V2: mit konkreter Zahl
+V3: mit Datum
+V4: im Insider-Ton ("Lieber zu Hause? Auch okay, aber …")
+V5: mit Gegenteil-Effekt ("Nicht öffnen, wenn Sie …")</pre>
+    </div>
+    <div class="tips"><b>Tipp aus der Praxis</b>Lasst die KI <em>nach jeder Variante</em> einen Halbsatz schreiben, warum sie funktionieren könnte. So lernt ihr beim Auswählen.</div>
+    <div class="meta"><span>ChatGPT</span><span>Claude</span><span>Gemini</span><span>Copilot</span></div>
+  </div>
+</article>
+
+<article class="prompt" id="p03">
+  <div class="index"><div><div class="id">03<span>Prompt</span></div></div><div class="tag">Texte</div></div>
+  <div class="body">
+    <h3>Social-Media-Post mit Anker</h3>
+    <p class="when">Anwendung: <b>Ein Kurs startet bald</b> und ihr braucht einen Instagram- oder Facebook-Post, der nicht aussieht wie alle anderen VHS-Posts. Schlüssel ist <em>1 Beobachtung aus dem letzten Kurs</em> — die habt ihr, kein KI-Tool der Welt.</p>
+    <div class="ptxt"><button class="copy" data-id="p03">Kopieren</button>
+<pre id="src-p03">Du schreibst für die Instagram-Followerschaft der VHS Hof
+(<span class="ph">[Zielgruppe — z. B. "Frauen 35–60, eher introvertiert, keine Influencer-Sprache"]</span>).
+
+Aufgabe: 1 Post über den Kurs <span class="ph">[Kursname]</span>
+- Start: <span class="ph">[Datum, Uhrzeit]</span>
+- Kursleitung: <span class="ph">[Name]</span>
+- <span class="ph">[Anzahl Termine]</span> Termine · <span class="ph">[Preis]</span> EUR
+
+Aufhänger (PFLICHT): 1 echte Beobachtung aus dem letzten Kurs.
+HIER EINSETZEN: <span class="ph">[z. B. "Eine Teilnehmerin sagte: 'Ich bin Mittwoch immer aufgewühlt — und gehe ruhig wieder raus.'"]</span>
+
+Stil:
+- kein Werbeton, kein "✨ Entdecke unseren neuen Kurs ✨"
+- max. 2 Emojis im ganzen Post
+- max. 80 Wörter
+- Schluss: 1 klarer Hinweis ("Link in Bio", "Anmeldung über die Website")
+- max. 3 Hashtags</pre>
+    </div>
+    <div class="tips"><b>Tipp aus der Praxis</b>Die echte Beobachtung ist der teuerste Teil. Bittet Kursleitungen einmal im Quartal um <em>einen</em> Satz aus dem Kursraum — daraus baut ihr ein Quartal lang Social Posts.</div>
+    <div class="meta"><span>ChatGPT</span><span>Claude</span><span>Gemini</span></div>
+  </div>
+</article>
+
+<article class="prompt" id="p04">
+  <div class="index"><div><div class="id">04<span>Prompt</span></div></div><div class="tag">Texte</div></div>
+  <div class="body">
+    <h3>Antwort auf Kursanfrage per E-Mail</h3>
+    <p class="when">Anwendung: <b>Jemand schreibt mit einer halben Frage</b> („Findet der Kurs eigentlich statt?"). Ihr habt 30 Antworten in der Inbox. Dieser Prompt baut Antworten, die nach euch klingen — nicht nach Servicedesk.</p>
+    <div class="ptxt"><button class="copy" data-id="p04">Kopieren</button>
+<pre id="src-p04">Rolle: Du bist freundliche, gut organisierte VHS-Mitarbeiterin.
+
+Aufgabe: Antworte auf folgende Anfrage:
+
+ANFRAGE:
+<span class="ph">[Hier die Mail einfügen — Namen entfernen oder durch "Interessent" ersetzen!]</span>
+
+KURS-INFOS (gesichert):
+- Titel: <span class="ph">[Kursname]</span>
+- Start: <span class="ph">[Datum]</span>
+- Plätze frei: <span class="ph">[Anzahl oder "leider keine mehr"]</span>
+- Sonstiges: <span class="ph">[z. B. "Material wird gestellt"]</span>
+
+Bedingungen:
+- max. 100 Wörter
+- nicht förmlich, aber höflich (Du oder Sie — wähle was zur Anfrage passt)
+- beantworte zuerst die Frage, dann Zusatz-Info
+- am Schluss 1 klare nächste Handlung (z. B. "Anmeldung über den Link, dann melde ich mich nochmal")
+- Unterschrift: <span class="ph">[Vorname Nachname, VHS Hof]</span>
+
+WICHTIG: Erfinde nichts, was nicht in den Kurs-Infos steht.</pre>
+    </div>
+    <div class="tips"><b>Tipp Datenschutz</b>Ersetzt vor dem Einsetzen <em>Namen, E-Mail-Adressen und Telefonnummern</em> in der Anfrage durch Platzhalter. Sonst sind das personenbezogene Daten in einem US-Tool — nicht erlaubt ohne Auftragsverarbeitung.</div>
+    <div class="meta"><span>ChatGPT</span><span>Claude</span><span>Copilot</span></div>
+  </div>
+</article>
+
+<article class="prompt" id="p05">
+  <div class="index"><div><div class="id">05<span>Prompt</span></div></div><div class="tag">Texte</div></div>
+  <div class="body">
+    <h3>Kursbestätigung mit Erinnerung</h3>
+    <p class="when">Anwendung: <b>Eure Standard-Bestätigung ist trocken</b>. Dieser Prompt baut sie um — gleicher Informationsgehalt, aber Tonalität, die Vorfreude erzeugt und Abmeldungen reduziert.</p>
+    <div class="ptxt"><button class="copy" data-id="p05">Kopieren</button>
+<pre id="src-p05">Rolle: VHS-Mitarbeiterin, die Kursbestätigungen so schreibt,
+dass Menschen sich freuen — nicht nur informiert sind.
+
+Aufgabe: Bestätigungsmail für den Kurs <span class="ph">[Kursname]</span>.
+
+Pflicht-Infos:
+- Kursleitung: <span class="ph">[Name]</span>
+- 1. Termin: <span class="ph">[Datum, Uhrzeit, Raum/Link]</span>
+- weitere Termine: <span class="ph">[Daten]</span>
+- mitzubringen: <span class="ph">[Liste oder "nichts"]</span>
+- Abmeldefrist: <span class="ph">[Datum]</span>
+
+Stil:
+- höflich, aber nicht steif
+- 3 Absätze: (1) Bestätigung + Vorfreude-Satz, (2) Pflicht-Infos kompakt, (3) Was sie als nächstes tun
+- max. 130 Wörter
+- 1 menschlicher Satz am Ende ("Wenn etwas dazwischenkommt — kurze Mail reicht, dann gebe ich den Platz weiter.")
+
+Vermeide: "anbei", "hiermit bestätige ich", "wir freuen uns sehr".</pre>
+    </div>
+    <div class="tips"><b>Tipp Routine</b>Speichert die Antwort der KI einmal als Vorlage in eurem System — danach reicht copy-paste mit <em>3 Einsetzungen</em>.</div>
+    <div class="meta"><span>ChatGPT</span><span>Claude</span><span>Copilot</span></div>
+  </div>
+</article>
+
+<!-- ====================== KAPITEL 2 ====================== -->
+<div class="chapter" id="ch2">
+  <div class="roman">— Kapitel II —</div>
+  <h2><em>Bilder</em>: Selbst machen, kennzeichnen, ruhig schlafen</h2>
+  <p class="lead">Drei Bild-Briefings und eine Kennzeichnungs-Vorlage. Die Briefings funktionieren in Ideogram, Gemini „Nano-Banana" und Midjourney. Die Kennzeichnung ist Pflicht ab 02.08.2026.</p>
+</div>
+
+<article class="prompt" id="p06">
+  <div class="index"><div><div class="id">06<span>Prompt</span></div></div><div class="tag">Bilder</div></div>
+  <div class="body">
+    <h3>Bild-Briefing: Kursvisual</h3>
+    <p class="when">Anwendung: <b>Ein Stockfoto würde es auch tun, aber kostet 30 EUR und sieht aus wie überall.</b> Dieser Prompt baut ein eigenes Bild für eure Kursausschreibung.</p>
+    <div class="ptxt"><button class="copy" data-id="p06">Kopieren</button>
+<pre id="src-p06">Style: warm, dokumentarisch, leicht körnig, kein Hochglanz.
+Erinnert an deutsche Bildung der 80er, neu fotografiert.
+
+Motiv: <span class="ph">[z. B. "Hände formen einen Tonkrug an einer Töpferscheibe"]</span>
+
+Atmosphäre: <span class="ph">[z. B. "Werkstattlicht, leichter Staub in der Luft, später Nachmittag"]</span>
+
+Komposition: leichte Aufsicht, der Fokus liegt auf den Händen,
+Gesichter sind nicht oder nur angeschnitten sichtbar.
+Kein Text im Bild. Kein Logo.
+
+Farbpalette: gebrochenes Weiß, warmes Braun, ein Stich Senf.
+
+Format: <span class="ph">[Hochformat 3:4 / Querformat 16:9 / Quadrat 1:1]</span>
+
+Vermeide: Stockfoto-Ästhetik, künstliches Lächeln,
+zu glatte Haut, zu helle Beleuchtung, Studio-Look.</pre>
+    </div>
+    <div class="tips"><b>Tipp</b>„Keine Gesichter sichtbar" spart euch zwei Probleme: das KI-Bild-Problem mit Händen/Augen <em>und</em> die DSGVO-Frage bei erkennbaren Personen.</div>
+    <div class="meta"><span>Ideogram</span><span>Gemini</span><span>Midjourney</span></div>
+  </div>
+</article>
+
+<article class="prompt" id="p07">
+  <div class="index"><div><div class="id">07<span>Prompt</span></div></div><div class="tag">Bilder</div></div>
+  <div class="body">
+    <h3>Bild-Briefing: Flyer-Hintergrund</h3>
+    <p class="when">Anwendung: <b>Euer Flyer braucht einen Hintergrund</b>, kein Hauptmotiv. Etwas, das man darüberlegt, nicht etwas, das den Blick fängt.</p>
+    <div class="ptxt"><button class="copy" data-id="p07">Kopieren</button>
+<pre id="src-p07">Aufgabe: Hintergrundbild für einen Flyer.
+
+Style: minimalistisch, abstrakt, ruhig.
+Erinnert an handgemaltes Aquarell-Papier.
+
+Motiv: <span class="ph">[z. B. "verlaufende warme Farbflächen in Ocker und Terrakotta, mit feinen Lichtflecken"]</span>
+
+Komposition:
+- der untere Drittel ist heller (Platz für Text)
+- der obere Bereich kann mehr Farbe haben
+- kein Hauptmotiv, kein Mittelpunkt, kein Vordergrund
+
+Farbpalette: <span class="ph">[2–3 Farben, passend zum Kursthema]</span>
+
+Format: A4 hoch (3:4 oder genaue A4-Proportion)
+Auflösung: hoch genug für Druck
+
+Vermeide: Personen, Gesichter, scharfe Linien, Logos,
+Text im Bild, fotorealistische Elemente.</pre>
+    </div>
+    <div class="tips"><b>Tipp</b>Abstrakte Bilder sind <em>kennzeichnungspflichtig wie alle anderen KI-Bilder</em> — aber sie wirken auf Flyern professioneller als ein generisches Stockfoto.</div>
+    <div class="meta"><span>Ideogram</span><span>Gemini</span><span>Midjourney</span></div>
+  </div>
+</article>
+
+<article class="prompt" id="p08">
+  <div class="index"><div><div class="id">08<span>Prompt</span></div></div><div class="tag">Bilder</div></div>
+  <div class="body">
+    <h3>Bild-Briefing: Social-Tile mit Text-Overlay</h3>
+    <p class="when">Anwendung: <b>Quadratisches Bild für Instagram/Facebook</b>, mit Platz für Headline und Datum. Ideogram kann mittlerweile zuverlässig Text einbauen — das machen wir uns zunutze.</p>
+    <div class="ptxt"><button class="copy" data-id="p08">Kopieren</button>
+<pre id="src-p08">Style: modern editorial, ruhig, mit Charakter.
+
+Motiv: <span class="ph">[1 Symbol oder Gegenstand, der zum Kurs passt — z. B. "ein einzelnes Kursbuch auf einem Holztisch"]</span>
+
+Text im Bild (PFLICHT, exakt so):
+Headline: <span class="ph">[max. 5 Wörter, z. B. "Italienisch ab Mai"]</span>
+Datum: <span class="ph">[z. B. "ab 21.05.2026"]</span>
+Footer: VHS Hof
+
+Layout:
+- Headline groß, oben
+- Datum klein, unter der Headline
+- Footer ganz unten, klein
+- Motiv rechts oder als Hintergrund
+- Format: 1:1 Quadrat (Instagram)
+
+Farbpalette: <span class="ph">[2 Farben, ruhig — z. B. "warmes Weiß und tiefes Petrol"]</span>
+
+Typografie: serifenbetonte Headline, ruhige Schrift, keine Effekte.
+
+Vermeide: Stockfoto-Look, Glitzer, Verläufe,
+mehrfache Schriften, Werbe-Ästhetik.</pre>
+    </div>
+    <div class="tips"><b>Tipp</b>Ideogram ist Stand 2026 das beste Tool für KI-Bilder <em>mit korrektem Text</em>. ChatGPT und Gemini bauen oft Buchstabensalat.</div>
+    <div class="meta"><span>Ideogram</span></div>
+  </div>
+</article>
+
+<article class="prompt" id="p09">
+  <div class="index"><div><div class="id">09<span>Prompt</span></div></div><div class="tag">Recht</div></div>
+  <div class="body">
+    <h3>Kennzeichnung formulieren (Art. 50 KI-VO)</h3>
+    <p class="when">Anwendung: <b>Ab 2. August 2026 müssen KI-generierte Bilder, Texte, Videos gekennzeichnet werden.</b> Dieser Prompt baut für jeden Kontext eine passende, kurze Kennzeichnung — kein juristischer Stolperstein.</p>
+    <div class="ptxt"><button class="copy" data-id="p09">Kopieren</button>
+<pre id="src-p09">Rolle: Du kennst Art. 50 der KI-Verordnung (EU 2024/1689),
+gültig ab 02.08.2026.
+
+Aufgabe: Schlage 3 Varianten einer Kennzeichnung für folgendes
+Marketing-Material vor.
+
+Material: <span class="ph">[z. B. "Instagram-Post mit KI-generiertem Hintergrundbild und KI-generiertem Text"]</span>
+
+Kontext: <span class="ph">[z. B. "Bild liegt auf dem Post, Beschreibung steht in der Caption darunter"]</span>
+
+Bedingungen:
+- klar, ohne Juristen-Sprache
+- max. 1 Satz pro Variante
+- Variante 1: minimal (z. B. nur "Bild: KI-generiert")
+- Variante 2: mittel (mit kurzem Hinweis auf Tool)
+- Variante 3: ausführlich (für Impressum/About-Seite)
+
+Bonus: 1 Satz, ob die Kennzeichnung sichtbar IM Bild oder
+in der Bildunterschrift stehen sollte — mit Begründung
+aus Art. 50.</pre>
+    </div>
+    <div class="tips"><b>Hinweis</b>Die KI ist hier <em>Hilfsmittel</em>, nicht Rechtsberatung. Die endgültige Formulierung gehört in die VHS-internen Richtlinien — am besten einmalig festlegen, dann konsistent verwenden.</div>
+    <div class="meta"><span>ChatGPT</span><span>Claude</span></div>
+  </div>
+</article>
+
+<!-- ====================== KAPITEL 3 ====================== -->
+<div class="chapter" id="ch3">
+  <div class="roman">— Kapitel III —</div>
+  <h2><em>GEO</em>: Sichtbar werden in ChatGPT, Perplexity &amp; Co.</h2>
+  <p class="lead">Wenn eure Zielgruppe ChatGPT fragt „Welche VHS in Oberfranken bietet Aquarellkurse?", müsst ihr in der Antwort vorkommen. Drei Prompts dafür.</p>
+</div>
+
+<article class="prompt" id="p10">
+  <div class="index"><div><div class="id">10<span>Prompt</span></div></div><div class="tag">GEO</div></div>
+  <div class="body">
+    <h3>Kurstitel für die KI-Suche</h3>
+    <p class="when">Anwendung: <b>Euer alter Kurstitel war "Excel-Grundlagen Abend"</b>. Niemand sucht so. Dieser Prompt baut Titel, die in der KI-Suche und bei Google funktionieren.</p>
+    <div class="ptxt"><button class="copy" data-id="p10">Kopieren</button>
+<pre id="src-p10">Rolle: SEO/GEO-Spezialist für lokale Bildungsanbieter.
+
+Aufgabe: 5 Titelvarianten für einen Kurs.
+
+Kurs:
+- Thema: <span class="ph">[z. B. "Excel-Grundlagen"]</span>
+- Zielgruppe: <span class="ph">[z. B. "Anfänger, beruflich genutzt"]</span>
+- Format: <span class="ph">[z. B. "4 Abende, je 90 Min"]</span>
+- Ort: VHS Hof
+- Besonderheit: <span class="ph">[z. B. "Übungsdateien zum Mitnehmen"]</span>
+
+Bedingungen:
+- 3 von 5 Titeln müssen als Frage formuliert sein
+  (Menschen fragen KI-Tools mit Fragen, nicht mit Stichworten)
+- 1 Titel muss "Hof" oder "Oberfranken" enthalten
+- 1 Titel muss eine konkrete Zahl enthalten
+- max. 70 Zeichen
+- kein "spannend", "neu", "kompakt"
+
+Liefere zu jedem Titel:
+- den Titel
+- 1 Halbsatz, warum er für die KI-Suche funktioniert</pre>
+    </div>
+    <div class="tips"><b>Tipp aus der Praxis</b>Testet die Top-3 Titel selbst: Geht in Perplexity und fragt: „Wo kann man in Hof Excel lernen?" — Wenn ihr in den Quellen nicht auftaucht, fehlt eurem Titel + Beschreibung noch was.</div>
+    <div class="meta"><span>ChatGPT</span><span>Claude</span><span>Gemini</span></div>
+  </div>
+</article>
+
+<article class="prompt" id="p11">
+  <div class="index"><div><div class="id">11<span>Prompt</span></div></div><div class="tag">GEO</div></div>
+  <div class="body">
+    <h3>FAQ-Block, der in Perplexity erscheint</h3>
+    <p class="when">Anwendung: <b>KI-Suchen lieben FAQs.</b> Wenn auf eurer Kursseite die Fragen stehen, die echte Menschen wirklich stellen — werdet ihr als Quelle zitiert.</p>
+    <div class="ptxt"><button class="copy" data-id="p11">Kopieren</button>
+<pre id="src-p11">Rolle: Du kennst die häufigsten Anfänger-Fragen zu
+folgendem Kursthema und schreibst FAQ-Antworten.
+
+Kursthema: <span class="ph">[z. B. "Aquarellmalerei für Anfänger"]</span>
+Ort: VHS Hof
+Zielgruppe: <span class="ph">[z. B. "Berufstätige 40–65, keine Vorkenntnisse"]</span>
+
+Aufgabe: Baue 6 FAQs.
+
+Bedingungen pro FAQ:
+- Frage in der EXAKTEN Sprache, in der ein Mensch sie tippen würde
+  (also: "Wie viel kostet ein Aquarellkurs an der VHS?", nicht
+   "Welches Preisniveau weisen unsere Kurse auf?")
+- Antwort: 2–3 Sätze, konkret, mit Zahlen wo möglich
+- am Ende der Antwort: 1 Halbsatz Mehrwert ("Material wird gestellt.")
+
+Pflicht-Fragen (immer drin):
+1. "Was kostet …" — Preisfrage
+2. "Brauche ich …" — Vorkenntnis-Frage
+3. "Wo ist …" — Ortsfrage
+
+Die anderen 3: themenspezifisch.</pre>
+    </div>
+    <div class="tips"><b>Tipp technisch</b>Die FAQs gehören direkt auf eure Kursseite, idealerweise mit FAQ-Schema (JSON-LD) in der HTML. Bittet eure IT — oder lasst euch das von der KI in einem zweiten Prompt erzeugen.</div>
+    <div class="meta"><span>ChatGPT</span><span>Claude</span></div>
+  </div>
+</article>
+
+<article class="prompt" id="p12">
+  <div class="index"><div><div class="id">12<span>Prompt</span></div></div><div class="tag">GEO</div></div>
+  <div class="body">
+    <h3>Beschreibung GEO-fest umformulieren</h3>
+    <p class="when">Anwendung: <b>Ihr habt eine bestehende Kursbeschreibung</b>, die solide ist, aber bei KI-Suchen nicht auftaucht. Dieser Prompt baut sie um, ohne dass ihr neu anfangen müsst.</p>
+    <div class="ptxt"><button class="copy" data-id="p12">Kopieren</button>
+<pre id="src-p12">Rolle: Du optimierst bestehende Kurstexte für die Sichtbarkeit
+in ChatGPT-Search, Perplexity, Google AI Overview und Gemini.
+
+Aufgabe: Formuliere folgenden Text so um, dass er für die
+KI-Suche funktioniert — ohne ihn länger zu machen.
+
+URSPRUNGSTEXT:
+<span class="ph">[bestehende Kursbeschreibung hier einfügen]</span>
+
+Bedingungen:
+1. Der erste Satz beantwortet die Frage "Worum geht es?"
+   — direkt, ohne Einleitung, ohne "In diesem Kurs …"
+2. Drei konkrete Fakten müssen drin sein (Termine, Ort, Preis
+   oder Material — was relevant ist)
+3. Eine konkrete Zielgruppe muss benannt werden
+   ("für Berufstätige, die …", nicht "für alle Interessierten")
+4. Ein konkreter Anlass muss durchscheinen
+   (z. B. "wenn Sie ab Sommer beruflich …")
+5. Länge: gleich oder kürzer als das Original.
+
+Liefere am Schluss: 1 Halbsatz, was du geändert hast und warum.</pre>
+    </div>
+    <div class="tips"><b>Tipp aus der Praxis</b>Macht das einmal mit 5 eurer Kurse. Ab dem dritten Mal erkennt ihr selbst das Muster — und braucht den Prompt nicht mehr.</div>
+    <div class="meta"><span>ChatGPT</span><span>Claude</span><span>Gemini</span></div>
+  </div>
+</article>
+
+<!-- ====================== KAPITEL 4 ====================== -->
+<div class="chapter" id="ch4">
+  <div class="roman">— Kapitel IV —</div>
+  <h2><em>Routinen</em>: Aufgaben, die ab morgen schneller gehen</h2>
+  <p class="lead">Drei Routine-Prompts, die ihr einmal anpasst und dann immer wieder benutzt. Das ist der eigentliche Hebel: nicht 1× einen Text schreiben lassen, sondern 50× den gleichen Texttyp schneller produzieren.</p>
+</div>
+
+<article class="prompt" id="p13">
+  <div class="index"><div><div class="id">13<span>Prompt</span></div></div><div class="tag">Routinen</div></div>
+  <div class="body">
+    <h3>Einfache Sprache: Kursbeschreibung umsetzen</h3>
+    <p class="when">Anwendung: <b>Inklusion ist Auftrag der VHS.</b> Eine Beschreibung in Einfacher Sprache erreicht zusätzlich Menschen mit Lese-Lernbedarf, Senioren, DaF-Lernende. Dieser Prompt liefert eine saubere Version.</p>
+    <div class="ptxt"><button class="copy" data-id="p13">Kopieren</button>
+<pre id="src-p13">Rolle: Du schreibst Texte in Einfacher Sprache (Stufe A2/B1
+nach europäischem Referenzrahmen).
+
+Aufgabe: Übersetze folgenden Kurstext in Einfache Sprache.
+
+URSPRUNGSTEXT:
+<span class="ph">[Standard-Kursbeschreibung hier einfügen]</span>
+
+Regeln:
+- kurze Sätze (max. 12 Wörter)
+- ein Gedanke pro Satz
+- keine Fremdwörter — wenn nötig, kurz erklären
+  ("Aquarell. Das ist Malen mit Wasserfarben.")
+- aktiv statt passiv
+- konkret statt abstrakt
+- keine Bandwurm-Komposita ("Anmeldemöglichkeit"
+  → "So melden Sie sich an:")
+- KEINE Mittel-Punkte ("Schüler·innen"), KEINE
+  Gendersternchen — die brechen Vorlese-Software
+- Anrede: Sie
+
+Format:
+- Überschriften vor Absätzen
+- max. 6 Sätze pro Absatz
+- am Schluss: "So melden Sie sich an:" und konkret die Schritte</pre>
+    </div>
+    <div class="tips"><b>Tipp Inklusion</b>Bietet beide Versionen an: die Standard-Beschreibung <em>und</em> die einfache. Pflichtbarrierefreiheit (BFSG, Juni 2025) erfasst zwar nicht alle VHS-Materialien, gute Praxis ist es trotzdem.</div>
+    <div class="meta"><span>ChatGPT</span><span>Claude</span></div>
+  </div>
+</article>
+
+<article class="prompt" id="p14">
+  <div class="index"><div><div class="id">14<span>Prompt</span></div></div><div class="tag">Routinen</div></div>
+  <div class="body">
+    <h3>Pressemeldung in 10 Minuten</h3>
+    <p class="when">Anwendung: <b>Etwas passiert an der VHS</b> — neuer Kurs, Jubiläum, Kooperation. Die Lokalzeitung will eine Meldung. Dieser Prompt baut sie pressetauglich, ohne Werbe-Sprech.</p>
+    <div class="ptxt"><button class="copy" data-id="p14">Kopieren</button>
+<pre id="src-p14">Rolle: Du arbeitest seit 15 Jahren bei einer Lokalzeitung
+und kennst, was als Pressemeldung funktioniert.
+
+Aufgabe: Schreibe eine Pressemeldung für die Frankenpost / Hofer
+Anzeiger über folgendes Ereignis:
+
+EREIGNIS:
+<span class="ph">[Was ist passiert / passiert bald? In 3 Sätzen.]</span>
+
+FAKTEN (PFLICHT in der Meldung):
+- Wer: <span class="ph">[VHS Hof, ggf. Kooperationspartner]</span>
+- Was: <span class="ph">[konkret, in 1 Satz]</span>
+- Wann: <span class="ph">[Datum, Uhrzeit]</span>
+- Wo: <span class="ph">[Ort]</span>
+- Warum interessant: <span class="ph">[was ist neu/anders/erwähnenswert]</span>
+
+ZITAT (falls gewünscht):
+<span class="ph">[z. B. "VHS-Leiterin: 'Wir wollten zeigen, dass …'"]</span>
+
+Bedingungen:
+- max. 1.500 Zeichen (mit Leerzeichen)
+- Aufbau: 1 Satz Kernbotschaft, dann Details, dann Hintergrund
+- KEIN Werbeton — Tonalität wie in einer Lokalzeitung
+- 1 menschliches Detail (z. B. "Letzten Mittwoch saßen 14 Menschen
+  zum ersten Mal …")
+- am Schluss: Kontakt-Block
+  (VHS Hof, Telefon, Mail, Web)
+
+Vermeide: "wir freuen uns sehr", "ein voller Erfolg",
+"in entspannter Atmosphäre".</pre>
+    </div>
+    <div class="tips"><b>Tipp Praxis</b>Lasst die KI 2 Varianten machen — eine sachliche und eine mit menschlichem Aufhänger. Die zweite wird häufiger gedruckt.</div>
+    <div class="meta"><span>ChatGPT</span><span>Claude</span></div>
+  </div>
+</article>
+
+<article class="prompt" id="p15">
+  <div class="index"><div><div class="id">15<span>Prompt</span></div></div><div class="tag">Routinen</div></div>
+  <div class="body">
+    <h3>Reminder-Mail vor Kursbeginn</h3>
+    <p class="when">Anwendung: <b>3 Tage vor Kursstart eine Erinnerung.</b> Klingt banal, reduziert No-Shows nachweislich. Dieser Prompt baut eine Mail, die nicht „Erinnerung an Ihre Buchung" heißt.</p>
+    <div class="ptxt"><button class="copy" data-id="p15">Kopieren</button>
+<pre id="src-p15">Rolle: VHS-Mitarbeiterin, die Erinnerungen schreibt,
+die Menschen nicht nervig finden.
+
+Aufgabe: Reminder-Mail, die 3 Tage vor Kursstart rausgeht.
+
+Kurs:
+- Titel: <span class="ph">[Kursname]</span>
+- Start: <span class="ph">[Datum, Uhrzeit, Raum/Link]</span>
+- Kursleitung: <span class="ph">[Name]</span>
+
+Format: kurz halten (max. 90 Wörter).
+
+Aufbau:
+1. Erste Zeile: "Noch 3 Tage." (oder ähnlich kurz, kein Marketing).
+2. Zweite Zeile: 1 menschlicher Satz, der Vorfreude erzeugt
+   (NICHT "wir freuen uns auf Sie", sondern etwas Konkretes
+   wie "Andrea hat schon eingeräumt — Sie brauchen wirklich nichts
+   mitbringen.")
+3. Dritte Zeile: Ort/Link + 1 organisatorischer Hinweis
+   (z. B. "Anfahrt mit dem Auto: Parken ist hinter dem Gebäude
+   einfacher als davor.").
+4. Vierte Zeile: Abmeldelink, falls etwas dazwischenkommt
+   ("Wenn etwas dazwischenkommt: 1 Klick, dann gebe ich
+   den Platz weiter.").
+
+KEIN: "Wir hoffen, Sie sind weiterhin interessiert",
+"Erinnerung an Ihre Buchung", "anbei senden wir Ihnen".</pre>
+    </div>
+    <div class="tips"><b>Tipp Workflow</b>Das ist genau die Aufgabe, die ihr <em>automatisieren</em> könnt — drei Tage vor jedem Kurs, ein Trigger in eurem System, dieser Prompt als Vorlage, fertig. Mehr dazu im Schwerpunkt 4 des Workshops.</div>
+    <div class="meta"><span>ChatGPT</span><span>Claude</span><span>Copilot</span></div>
+  </div>
+</article>
+
+<footer>
+  <div>
+    <span class="fn">Prompt-Bibliothek · VHS Hof · Workshop 20.05.2026</span><br>
+    Stand: Mai 2026 · Erstellt für Teilnehmende des Workshops „KI im Marketing"
+  </div>
+  <div style="text-align:right">
+    Referent: Arno S. Schimmelpfennig<br>
+    arno-schimmelpfennig.de
+  </div>
+</footer>
+
+</div>
+
+<script>
+document.querySelectorAll('button.copy').forEach(btn=>{
+  btn.addEventListener('click',async()=>{
+    const id=btn.dataset.id;
+    const pre=document.getElementById('src-'+id);
+    const txt=pre.innerText.trim();
+    try{
+      await navigator.clipboard.writeText(txt);
+      btn.textContent='Kopiert ✓';
+      btn.classList.add('done');
+      setTimeout(()=>{btn.textContent='Kopieren';btn.classList.remove('done')},2000);
+    }catch(e){
+      // fallback: select text
+      const r=document.createRange();r.selectNode(pre);
+      const sel=window.getSelection();sel.removeAllRanges();sel.addRange(r);
+    }
+  });
+});
+</script>
+</body>
+</html>
