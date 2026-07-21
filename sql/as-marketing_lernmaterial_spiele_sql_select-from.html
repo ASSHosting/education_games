@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Master Class | neue fische x iSyst</title>
+    <style>
+        :root {
+            --nf-orange: #FF5000;
+            --nf-black: #1A1A1A;
+            --nf-dark-grey: #2D2D2D;
+            --nf-light-grey: #F3F4F6;
+            --nf-white: #FFFFFF;
+            --code-bg: #1e1e1e;
+            --code-text: #d4d4d4;
+            --success: #27ae60;
+            --error: #c0392b;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: var(--nf-light-grey);
+            color: var(--nf-black);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: var(--nf-white);
+            width: 100%;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            z-index: 100;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 95%;
+            background: var(--nf-white);
+            margin-top: 6rem;
+            margin-bottom: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* HUD (Heads Up Display) */
+        .hud {
+            display: flex;
+            justify-content: space-between;
+            background: var(--nf-black);
+            color: white;
+            padding: 1rem 2rem;
+            font-weight: bold;
+            font-family: monospace;
+            font-size: 1.2rem;
+        }
+
+        .timer { color: var(--nf-orange); }
+
+        /* Scenario Styling */
+        .scenario-box {
+            background: #fff3e0;
+            border-left: 5px solid var(--nf-orange);
+            padding: 1.5rem;
+            margin: 1.5rem 2rem;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        
+        .highlight {
+            font-weight: bold;
+            color: var(--nf-black);
+            background: rgba(255, 80, 0, 0.1);
+            padding: 0 4px;
+        }
+
+        /* SQL Editor Visual */
+        .sql-terminal {
+            background: var(--code-bg);
+            color: var(--code-text);
+            padding: 2rem;
+            margin: 0 2rem 0.5rem;
+            border-radius: 6px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.3rem;
+            box-shadow: inset 0 2px 10px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .sql-line { display: flex; align-items: center; gap: 10px; }
+        .keyword { color: #569cd6; font-weight: bold; } 
+        
+        .slot {
+            border-bottom: 2px dashed #666;
+            color: #888;
+            padding: 2px 8px;
+            cursor: pointer;
+            min-width: 150px;
+            text-align: center;
+            transition: all 0.2s;
+        }
+
+        .slot:hover { color: white; border-color: white; }
+        .slot.active { 
+            color: var(--nf-orange); 
+            border-bottom: 2px solid var(--nf-orange);
+            background: rgba(255,255,255,0.05);
+            transform: scale(1.05);
+        }
+        .slot.filled {
+            border-bottom: none;
+            color: #ce9178;
+            background: transparent;
+            font-weight: bold;
+            transform: none;
+        }
+
+        .mini-feedback {
+            height: 1.5rem;
+            margin: 0 2rem 1rem;
+            text-align: right;
+            font-size: 0.9rem;
+            font-style: italic;
+            color: #d35400; /* Darker orange for warnings */
+        }
+
+        /* Options Grid */
+        .options-area {
+            background: var(--nf-light-grey);
+            padding: 2rem;
+            border-top: 1px solid #ddd;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .card {
+            background: white;
+            padding: 1rem;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            cursor: pointer;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            font-weight: 600;
+            transition: transform 0.1s, box-shadow 0.1s;
+            position: relative;
+            user-select: none;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            border-color: var(--nf-orange);
+        }
+
+        .card.wrong {
+            background: #ffcccc;
+            border-color: var(--error);
+            color: #c0392b;
+            opacity: 0.5;
+            pointer-events: none;
+            text-decoration: line-through;
+        }
+        
+        /* Animation für echte Fehler */
+        .shake { animation: shake 0.4s; }
+        
+        /* Animation für "Richtig, aber falscher Slot" */
+        .nono { animation: nono 0.4s; border-color: #f39c12; background: #fffaf0; }
+
+        .card.correct {
+            background: #d5f5e3;
+            border-color: var(--success);
+            color: var(--success);
+            font-weight: bold;
+            pointer-events: none;
+        }
+
+        /* Modal Overlay */
+        .modal-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 50;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        .modal-overlay.visible { opacity: 1; pointer-events: all; }
+
+        .modal-content {
+            background: white;
+            padding: 2.5rem;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 8px;
+            text-align: left;
+            border-top: 6px solid var(--nf-orange);
+        }
+
+        .modal-title { font-size: 1.5rem; margin-bottom: 1rem; color: var(--nf-black); font-weight: 800; }
+        .modal-text { font-size: 1.1rem; line-height: 1.6; color: #444; margin-bottom: 2rem; }
+        
+        .btn {
+            background: var(--nf-black);
+            color: white;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .btn:hover { background: var(--nf-orange); }
+
+        .hidden { display: none !important; }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        @keyframes nono {
+             0%, 100% { transform: translateX(0); }
+             25% { transform: rotate(-3deg); }
+             75% { transform: rotate(3deg); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div style="font-weight: 800; font-size: 1.2rem;">neue<span>fische</span> <span style="font-weight:400; color:#666;">// Master Class</span></div>
+        <div style="font-size: 0.9rem;">Training: Precision SQL</div>
+    </header>
+
+    <!-- Start Screen -->
+    <div id="start-screen" class="container" style="text-align: center; padding: 4rem 2rem;">
+        <h1 style="color: var(--nf-orange); font-size: 2.5rem; margin-bottom: 1rem;">Precision SQL Challenge</h1>
+        <p style="font-size: 1.2rem; max-width: 600px; margin: 0 auto 2rem;">
+            Willkommen im Experten-Modus.<br>
+            Hier reicht es nicht, "irgendeine" Tabelle zu finden. 
+            Sie müssen den Kontext genau lesen.<br><br>
+            <strong>Die Regeln:</strong><br>
+            1. Ähnliche Tabellennamen (Live vs. Archiv)<br>
+            2. Ähnliche Spaltennamen (Brutto vs. Netto)<br>
+            3. Zeit läuft gegen Sie.
+        </p>
+        <button class="btn" onclick="app.start()">Challenge Starten</button>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="game-screen" class="container hidden">
+        <div class="hud">
+            <div>Runde <span id="round-display">1/6</span></div>
+            <div>Score: <span id="score-display">0</span></div>
+            <div class="timer">⏳ <span id="time-display">30</span>s</div>
+        </div>
+
+        <div class="scenario-box">
+            <div style="text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px; color: #666; margin-bottom: 0.5rem;">Auftragseingang:</div>
+            <div id="scenario-text">Lade Szenario...</div>
+        </div>
+
+        <div class="sql-terminal">
+            <div class="sql-line">
+                <span class="keyword">SELECT</span>
+                <span id="slot-select" class="slot" onclick="app.selectSlot('select')">? SPALTE ?</span>
+            </div>
+            <div class="sql-line">
+                <span class="keyword">FROM</span>
+                <span id="slot-from" class="slot" onclick="app.selectSlot('from')">? TABELLE ?</span>
+            </div>
+        </div>
+        
+        <!-- Feedback Area for "Wrong Slot" hints -->
+        <div id="feedback-line" class="mini-feedback"></div>
+
+        <div class="options-area">
+            <div id="options-grid" class="options-grid">
+                <!-- Cards injected here -->
+            </div>
+        </div>
+
+        <!-- Debrief Modal -->
+        <div id="modal" class="modal-overlay">
+            <div class="modal-content">
+                <div class="modal-title" id="modal-title">Analyse</div>
+                <div class="modal-text" id="modal-text">Erklärungstext...</div>
+                <div style="text-align: right;">
+                    <button class="btn" onclick="app.nextRound()">Nächster Auftrag &rarr;</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- End Screen -->
+    <div id="end-screen" class="container hidden" style="text-align: center; padding: 4rem;">
+        <h1 style="margin-bottom: 0.5rem;">Session Beendet</h1>
+        <div style="font-size: 4rem; font-weight: 800; color: var(--nf-orange); margin: 1rem 0;" id="final-score">0</div>
+        <p style="font-size: 1.2rem;">Punkte erreicht</p>
+        
+        <div style="margin: 3rem auto; max-width: 500px; text-align: left; background: #f9f9f9; padding: 2rem; border-radius: 8px;">
+            <strong>Trainer-Check:</strong><br>
+            Vergleichen Sie Ihren Score im Raum.<br><br>
+            Wer unter 3000 Punkten liegt: Sie haben wahrscheinlich oft die "offensichtliche", aber falsche Tabelle gewählt (z.B. Archiv statt Live-Daten). Bei iSyst und SQL entscheiden Details über valide Testergebnisse.
+        </div>
+        
+        <button class="btn" onclick="location.reload()">Neustart</button>
+    </div>
+
+    <script>
+        const levels = [
+            {
+                id: 1,
+                context: "Retail Analytics",
+                text: "Wir benötigen eine Preisliste für Geschäftskunden. Ziehen Sie den <span class='highlight'>Netto-Preis</span> aller <span class='highlight'>aktuell verfügbaren</span> Artikel.",
+                correctFrom: "artikel_bestand",
+                correctSelect: "preis_netto",
+                explanation: "<strong>Warum diese Wahl?</strong><br>Wir brauchten 'Bestand' (nicht das Archiv) und explizit den 'Netto'-Preis. 'preis_brutto' wäre für Endkunden, 'artikel_archiv' enthält nicht mehr lieferbare Ware.",
+                options: [
+                    { text: "artikel_bestand", type: "from", correct: true },
+                    { text: "artikel_archiv", type: "from", correct: false },
+                    { text: "preis_netto", type: "select", correct: true },
+                    { text: "preis_brutto", type: "select", correct: false },
+                    { text: "lager_id", type: "distractor", correct: false },
+                    { text: "kunden_liste", type: "distractor", correct: false }
+                ]
+            },
+            {
+                id: 2,
+                context: "HR & Compliance",
+                text: "Der Betriebsrat benötigt eine Liste der <span class='highlight'>privaten E-Mail-Adressen</span> von Mitarbeitern, die das Unternehmen <span class='highlight'>bereits verlassen</span> haben.",
+                correctFrom: "ma_ehemalige",
+                correctSelect: "email_privat",
+                explanation: "<strong>Kontext ist alles:</strong><br>Datenschutz ist kritisch. Wir durften NICHT auf die aktive 'ma_aktuell' Tabelle zugreifen. Zudem war die private Mail gefragt, nicht die (wahrscheinlich deaktivierte) Firmen-Mail.",
+                options: [
+                    { text: "ma_aktuell", type: "from", correct: false },
+                    { text: "ma_ehemalige", type: "from", correct: true },
+                    { text: "email_firma", type: "select", correct: false },
+                    { text: "email_privat", type: "select", correct: true },
+                    { text: "austrittsdatum", type: "distractor", correct: false },
+                    { text: "bewerber_pool", type: "distractor", correct: false }
+                ]
+            },
+            {
+                id: 3,
+                context: "Bibliothek / Mahnwesen",
+                text: "Erstellen Sie eine Mahnliste. Wir brauchen die <span class='highlight'>Mitglieds-Nummer</span> aller Personen, die aktuell <span class='highlight'>überfällige Bücher</span> besitzen.",
+                correctFrom: "ausleihe_ueberfaellig",
+                correctSelect: "mitglied_id",
+                explanation: "<strong>Logik-Check:</strong><br>'buch_id' hilft uns nicht, den Menschen zu mahnen. Wir brauchten die ID des Menschen ('mitglied_id'). Die Tabelle 'ausleihe_historie' wäre falsch, da diese zurückgegebene Bücher enthält.",
+                options: [
+                    { text: "ausleihe_historie", type: "from", correct: false },
+                    { text: "ausleihe_ueberfaellig", type: "from", correct: true },
+                    { text: "buch_id", type: "select", correct: false }, 
+                    { text: "mitglied_id", type: "select", correct: true },
+                    { text: "mahngebuehr", type: "distractor", correct: false },
+                    { text: "bibliothek_besucher", type: "distractor", correct: false }
+                ]
+            },
+            {
+                id: 4,
+                context: "Logistik (Versand)",
+                text: "Qualitätssicherung: Prüfen Sie das <span class='highlight'>Gewicht</span> aller Pakete, die als <span class='highlight'>Sperrgut</span> klassifiziert sind.",
+                correctFrom: "pakete_sperrgut",
+                correctSelect: "gewicht_kg",
+                explanation: "<strong>Spezialisierung:</strong><br>In großen Datenbanken sind Daten oft partitioniert. 'pakete_alle' ist ineffizient. Wir gehen direkt in die Partition 'pakete_sperrgut'. 'versandkosten' ist ein abgeleiteter Wert, kein physikalisches Attribut wie Gewicht.",
+                options: [
+                    { text: "pakete_alle", type: "from", correct: false },
+                    { text: "pakete_sperrgut", type: "from", correct: true },
+                    { text: "versandkosten", type: "select", correct: false },
+                    { text: "gewicht_kg", type: "select", correct: true },
+                    { text: "empfaenger_adresse", type: "distractor", correct: false },
+                    { text: "lkw_flotte", type: "distractor", correct: false }
+                ]
+            },
+            {
+                id: 5,
+                context: "iSyst: Endurance Test",
+                text: "Wir analysieren einen Langzeittest. Selektieren Sie die <span class='highlight'>Spannungs-Spitzenwerte (Peaks)</span> aus den Protokollen der <span class='highlight'>abgebrochenen Tests</span>.",
+                correctFrom: "test_abgebrochen",
+                correctSelect: "spannung_peak_v",
+                explanation: "<strong>Embedded Thinking:</strong><br>Es gibt oft 'erfolgreiche' und 'failed' Logs. Hier war explizit nach den abgebrochenen gefragt. 'spannung_avg' (Durchschnitt) verdeckt die kritischen Spitzen (Peaks), die oft zum Abbruch führen.",
+                options: [
+                    { text: "test_erfolgreich", type: "from", correct: false },
+                    { text: "test_abgebrochen", type: "from", correct: true },
+                    { text: "spannung_avg_v", type: "select", correct: false },
+                    { text: "spannung_peak_v", type: "select", correct: true },
+                    { text: "test_dauer_ms", type: "distractor", correct: false },
+                    { text: "labor_temperatur", type: "distractor", correct: false }
+                ]
+            },
+            {
+                id: 6,
+                context: "iSyst: Bus-Systeme (CAN)",
+                text: "Fehlersuche im CAN-Bus. Zeige alle <span class='highlight'>Message-IDs</span>, die im <span class='highlight'>Gateway-Log</span> als 'blocked' markiert wurden.",
+                correctFrom: "log_gateway_blocked",
+                correctSelect: "can_msg_id",
+                explanation: "<strong>Deep Dive:</strong><br>'log_all' zu durchsuchen dauert zu lange. Wir filtern direkt über die Tabelle 'log_gateway_blocked'. Die 'payload_hex' sind die Daten, aber wir brauchten den Identifier (ID), um zu wissen, wer gesendet hat.",
+                options: [
+                    { text: "log_all", type: "from", correct: false },
+                    { text: "log_gateway_blocked", type: "from", correct: true },
+                    { text: "payload_hex", type: "select", correct: false },
+                    { text: "can_msg_id", type: "select", correct: true },
+                    { text: "timestamp_ms", type: "distractor", correct: false },
+                    { text: "steuergeraet_vorn", type: "distractor", correct: false }
+                ]
+            }
+        ];
+
+        const app = {
+            currentIdx: 0,
+            score: 0,
+            timeLeft: 30,
+            timerInterval: null,
+            activeSlot: 'from', // 'select' | 'from'
+            selections: { from: null, select: null },
+            isRoundActive: false,
+
+            start: () => {
+                document.getElementById('start-screen').classList.add('hidden');
+                document.getElementById('game-screen').classList.remove('hidden');
+                app.startRound();
+            },
+
+            startRound: () => {
+                const level = levels[app.currentIdx];
+                app.selections = { from: null, select: null };
+                app.isRoundActive = true;
+                
+                // Reset UI
+                document.getElementById('round-display').innerText = `${level.id}/${levels.length}`;
+                document.getElementById('scenario-text').innerHTML = level.text;
+                document.getElementById('feedback-line').innerText = "";
+                
+                // Slots Clear
+                const sSelect = document.getElementById('slot-select');
+                const sFrom = document.getElementById('slot-from');
+                sSelect.innerText = "? SPALTE ?"; sSelect.classList.remove('filled');
+                sFrom.innerText = "? TABELLE ?"; sFrom.classList.remove('filled');
+                
+                // Activate FROM by default
+                app.selectSlot('from');
+
+                // Generate Options (Shuffled)
+                const grid = document.getElementById('options-grid');
+                grid.innerHTML = '';
+                const shuffled = [...level.options].sort(() => Math.random() - 0.5);
+                
+                shuffled.forEach(opt => {
+                    const card = document.createElement('div');
+                    card.className = 'card';
+                    card.innerText = opt.text;
+                    card.onclick = () => app.handleCardClick(opt, card);
+                    grid.appendChild(card);
+                });
+
+                // Start/Reset Timer
+                clearInterval(app.timerInterval);
+                app.timeLeft = 30; 
+                app.updateTimerUI();
+                app.timerInterval = setInterval(() => {
+                    app.timeLeft--;
+                    app.updateTimerUI();
+                    if(app.timeLeft <= 0) {
+                        app.timeLeft = 0;
+                        clearInterval(app.timerInterval);
+                    }
+                }, 1000);
+            },
+
+            updateTimerUI: () => {
+                const el = document.getElementById('time-display');
+                el.innerText = app.timeLeft;
+                if(app.timeLeft < 10) el.style.color = '#c0392b';
+                else el.style.color = 'var(--nf-orange)';
+            },
+
+            selectSlot: (type) => {
+                if(!app.isRoundActive) return;
+                app.activeSlot = type;
+                document.querySelectorAll('.slot').forEach(s => s.classList.remove('active'));
+                document.getElementById(`slot-${type}`).classList.add('active');
+                
+                // Clear hints
+                document.getElementById('feedback-line').innerText = "";
+            },
+
+            handleCardClick: (opt, cardElement) => {
+                if(!app.isRoundActive) return;
+                if(cardElement.classList.contains('wrong')) return;
+                if(cardElement.classList.contains('correct')) return;
+
+                const currentSlot = app.activeSlot;
+                const feedbackEl = document.getElementById('feedback-line');
+
+                // BUG FIX: Prüfen, ob die Karte zwar richtig ist, aber für den ANDEREN Slot
+                // Wenn opt.correct = true ist (eine der beiden richtigen Antworten),
+                // aber der Typ (select/from) nicht passt, darf sie nicht gesperrt werden.
+                if (opt.correct && opt.type !== currentSlot) {
+                    // Feedback geben
+                    const targetName = currentSlot === 'from' ? "eine Tabelle" : "eine Spalte";
+                    const foundName = opt.type === 'from' ? "Tabelle" : "Spalte";
+                    
+                    feedbackEl.innerText = `⚠️ Das ist eine ${foundName}! Wir suchen gerade ${targetName}. Oben umschalten!`;
+                    
+                    // Visueller Hint ohne Sperre
+                    cardElement.classList.add('nono');
+                    setTimeout(() => cardElement.classList.remove('nono'), 500);
+                    return; // Abbrechen, Karte bleibt aktiv!
+                }
+
+                // Normaler Check: Passt der Typ und ist es die richtige Antwort?
+                const isTypeMatch = (currentSlot === 'from' && opt.type === 'from') || 
+                                    (currentSlot === 'select' && opt.type === 'select');
+                
+                if (isTypeMatch && opt.correct) {
+                    // KORREKT
+                    cardElement.classList.add('correct');
+                    feedbackEl.innerText = "";
+                    
+                    const slotEl = document.getElementById(`slot-${currentSlot}`);
+                    slotEl.innerText = opt.text;
+                    slotEl.classList.remove('active');
+                    slotEl.classList.add('filled');
+                    app.selections[currentSlot] = opt.text;
+                    
+                    // Auto-Switch oder Finish
+                    if (app.selections.from && app.selections.select) {
+                        app.finishRound();
+                    } else if (currentSlot === 'from') {
+                        app.selectSlot('select');
+                    } else {
+                        app.selectSlot('from');
+                    }
+                } else {
+                    // FALSCH (Distraktor oder falsche Tabelle für diesen Kontext)
+                    cardElement.classList.add('wrong');
+                    cardElement.classList.add('shake');
+                    setTimeout(() => cardElement.classList.remove('shake'), 500);
+                    
+                    // Penalty
+                    app.score = Math.max(0, app.score - 50);
+                    app.timeLeft = Math.max(0, app.timeLeft - 5);
+                    feedbackEl.innerText = "❌ Falsch. Zeitstrafe -5s";
+                    
+                    app.updateScoreUI();
+                    app.updateTimerUI();
+                }
+            },
+
+            finishRound: () => {
+                clearInterval(app.timerInterval);
+                app.isRoundActive = false;
+                document.getElementById('feedback-line').innerText = "";
+                
+                // Calculate Score
+                const timeBonus = app.timeLeft * 20;
+                app.score += (100 + timeBonus); 
+                app.updateScoreUI();
+
+                // Show Debrief Modal
+                setTimeout(() => {
+                    const level = levels[app.currentIdx];
+                    document.getElementById('modal-title').innerText = `Debrief: ${level.context}`;
+                    document.getElementById('modal-text').innerHTML = level.explanation;
+                    document.getElementById('modal').classList.add('visible');
+                }, 500);
+            },
+
+            nextRound: () => {
+                document.getElementById('modal').classList.remove('visible');
+                app.currentIdx++;
+                if(app.currentIdx < levels.length) {
+                    app.startRound();
+                } else {
+                    app.endGame();
+                }
+            },
+
+            updateScoreUI: () => {
+                document.getElementById('score-display').innerText = app.score;
+            },
+
+            endGame: () => {
+                document.getElementById('game-screen').classList.add('hidden');
+                document.getElementById('end-screen').classList.remove('hidden');
+                document.getElementById('final-score').innerText = app.score;
+            }
+        };
+    </script>
+</body>
+</html>

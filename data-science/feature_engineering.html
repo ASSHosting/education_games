@@ -1985,17 +1985,35 @@ print(scaled[1][0])</code></pre>
 
         <div class="formula-card">
           <h3>Code-Beispiel</h3>
-          <pre><code class="language-python">from sklearn.preprocessing import MinMaxScaler, StandardScaler, RobustScaler
+          <pre><code class="language-python"># Wir importieren drei verschiedene Scaler, um ihre Wirkung direkt vergleichen zu koennen.
+from sklearn.preprocessing import MinMaxScaler, StandardScaler, RobustScaler
 
+# X_train sind die Trainingsdaten. Jede innere Liste steht fuer einen Datenpunkt mit genau einem Merkmal.
+X_train = [[10.0], [20.0], [30.0]]
+
+# MinMaxScaler verschiebt alle Werte in einen festen Bereich, hier von 0 bis 1.
+# Das ist sinnvoll, wenn du Merkmale auf dieselbe Skala bringen willst.
 minmax = MinMaxScaler(feature_range=(0, 1))
-minmax.fit(X_train[["bill_length_mm", "flipper_length_mm"]])
-X_train_scaled = minmax.transform(X_train[["bill_length_mm", "flipper_length_mm"]])
+# fit_transform lernt zuerst Min und Max aus X_train und skaliert danach die Daten sofort.
+X_train_minmax = minmax.fit_transform(X_train)
 
+# StandardScaler bringt die Daten auf Mittelwert 0 und Standardabweichung 1.
+# Das braucht man oft fuer Modelle, die empfindlich auf unterschiedlich grosse Werte reagieren.
 standard = StandardScaler()
-standard.fit(X_train[["bill_length_mm"]])
+X_train_standard = standard.fit_transform(X_train)
 
+# RobustScaler nutzt Median und Quartilsabstand statt Mittelwert und Standardabweichung.
+# Er ist deshalb robuster, wenn Ausreisser in den Daten vorkommen.
 robust = RobustScaler()
-robust.fit(X_train[["bill_length_mm"]])</code></pre>
+X_train_robust = robust.fit_transform(X_train)
+
+# Die Ausgaben zeigen dir direkt, wie dieselben Daten nach jeder Skalierung aussehen.
+print("MinMaxScaler:")
+print(X_train_minmax)
+print("\nStandardScaler:")
+print(X_train_standard)
+print("\nRobustScaler:")
+print(X_train_robust)</code></pre>
         </div>
 
         <div class="quiz-card" data-quiz="module-3">

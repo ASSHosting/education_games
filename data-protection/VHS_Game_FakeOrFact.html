@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fake or Fact Quiz – KI für KMU</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #631832 0%, #173262 100%);
+            color: #231A24;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1000px;
+            width: 100%;
+            background-color: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #631832 0%, #173262 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+        
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 40px;
+        }
+        
+        .question-container {
+            margin-bottom: 40px;
+        }
+        
+        .question-number {
+            font-size: 14px;
+            color: #606F8C;
+            font-weight: 600;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+        
+        .question-text {
+            font-size: 24px;
+            color: #231A24;
+            font-weight: 600;
+            margin-bottom: 30px;
+            line-height: 1.4;
+        }
+        
+        .buttons-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 20px;
+            font-size: 18px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .btn-fake {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 2px solid #f5c6cb;
+        }
+        
+        .btn-fake:hover:not(:disabled) {
+            background-color: #f5c6cb;
+            transform: scale(1.05);
+        }
+        
+        .btn-fake:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .btn-fact {
+            background-color: #d4edda;
+            color: #155724;
+            border: 2px solid #c3e6cb;
+        }
+        
+        .btn-fact:hover:not(:disabled) {
+            background-color: #c3e6cb;
+            transform: scale(1.05);
+        }
+        
+        .btn-fact:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .result-box {
+            background-color: #F8F8F8;
+            border-left: 4px solid #631832;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .result-box.show {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+        
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .result-box.correct {
+            background-color: #d4edda;
+            border-left-color: #155724;
+        }
+        
+        .result-box.incorrect {
+            background-color: #f8d7da;
+            border-left-color: #721c24;
+        }
+        
+        .result-box h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .result-box p {
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .scoreboard {
+            background-color: #f0f4f8;
+            border: 2px solid #173262;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        
+        .scoreboard h3 {
+            font-size: 16px;
+            color: #173262;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .score-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .score-row:last-child {
+            border-bottom: none;
+        }
+        
+        .score-label {
+            font-size: 14px;
+            color: #231A24;
+            font-weight: 500;
+        }
+        
+        .score-value {
+            font-size: 18px;
+            color: #631832;
+            font-weight: 700;
+        }
+        
+        .nav-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+        }
+        
+        .btn-nav {
+            flex: 1;
+            padding: 15px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-prev {
+            background-color: #e9ecef;
+            color: #231A24;
+        }
+        
+        .btn-prev:hover:not(:disabled) {
+            background-color: #dee2e6;
+        }
+        
+        .btn-next {
+            background-color: #173262;
+            color: white;
+        }
+        
+        .btn-next:hover:not(:disabled) {
+            background-color: #0f1f3f;
+        }
+        
+        .btn-nav:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #631832 0%, #173262 100%);
+            transition: width 0.3s ease;
+        }
+        
+        .info-box {
+            background-color: #e7f3ff;
+            border-left: 4px solid #173262;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+            font-size: 13px;
+            color: #0c5460;
+        }
+        
+        .info-box strong {
+            color: #173262;
+        }
+        
+        @media (max-width: 600px) {
+            .header h1 {
+                font-size: 24px;
+            }
+            
+            .question-text {
+                font-size: 18px;
+            }
+            
+            .buttons-container {
+                flex-direction: column;
+            }
+            
+            .content {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 Fake or Fact Quiz</h1>
+            <p>Halluzinationen erkennen – Wahr oder Falsch?</p>
+        </div>
+        
+        <div class="content">
+            <div class="info-box">
+                <strong>Showmaster-Modus:</strong> Gib die Antwort ein, die Teilnehmer sehen das Ergebnis live!
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            
+            <div class="scoreboard">
+                <h3>📊 Spielstand</h3>
+                <div class="score-row">
+                    <span class="score-label">Frage:</span>
+                    <span class="score-value" id="currentQuestion">1 / 6</span>
+                </div>
+                <div class="score-row">
+                    <span class="score-label">Richtig:</span>
+                    <span class="score-value" id="correctCount">0</span>
+                </div>
+                <div class="score-row">
+                    <span class="score-label">Falsch:</span>
+                    <span class="score-value" id="incorrectCount">0</span>
+                </div>
+                <div class="score-row">
+                    <span class="score-label">Quote:</span>
+                    <span class="score-value" id="percentage">0%</span>
+                </div>
+            </div>
+            
+            <div class="question-container">
+                <div class="question-number" id="questionNumber">Frage 1 von 6</div>
+                <div class="question-text" id="questionText">ChatGPT wurde 2022 gegründet.</div>
+                
+                <div class="buttons-container">
+                    <button class="btn btn-fake" id="btnFake" onclick="selectAnswer('fake')">❌ FALSCH</button>
+                    <button class="btn btn-fact" id="btnFact" onclick="selectAnswer('fact')">✅ WAHR</button>
+                </div>
+                
+                <div class="result-box" id="resultBox">
+                    <h3 id="resultTitle"></h3>
+                    <p id="resultText"></p>
+                </div>
+            </div>
+            
+            <div class="nav-buttons">
+                <button class="btn-nav btn-prev" id="btnPrev" onclick="previousQuestion()" disabled>← Zurück</button>
+                <button class="btn-nav btn-next" id="btnNext" onclick="nextQuestion()">Weiter →</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const questions = [
+            {
+                question: "ChatGPT wurde 2022 gegründet.",
+                correct: "fact",
+                explanation: "✅ Richtig! ChatGPT wurde im November 2022 von OpenAI veröffentlicht."
+            },
+            {
+                question: "KI kann 100% akkurat recherchieren.",
+                correct: "fake",
+                explanation: "❌ Falsch! KI kann Halluzinationen haben – sie erfindet manchmal Fakten. Immer Quellen prüfen!"
+            },
+            {
+                question: "Die Postkarten-Regel schützt deine Daten.",
+                correct: "fact",
+                explanation: "✅ Richtig! Wenn du nur das der KI gibst, was auf eine Postkarte passt, sind deine sensiblen Daten sicher."
+            },
+            {
+                question: "2-Faktor-Authentifizierung ist optional.",
+                correct: "fake",
+                explanation: "❌ Falsch! 2FA ist essentiell für Sicherheit. Immer aktivieren!"
+            },
+            {
+                question: "KI kann Gedanken lesen.",
+                correct: "fake",
+                explanation: "❌ Falsch! KI kann nur das verarbeiten, was du ihr schreibst. Keine Gedankenlesen!"
+            },
+            {
+                question: "Quellen prüfen ist wichtig bei KI-Ergebnissen.",
+                correct: "fact",
+                explanation: "✅ Richtig! Immer mindestens 2 unabhängige Quellen prüfen, bevor du KI-Ergebnisse nutzt."
+            }
+        ];
+        
+        let currentQuestionIndex = 0;
+        let correctCount = 0;
+        let incorrectCount = 0;
+        let answered = false;
+        
+        function loadQuestion() {
+            const q = questions[currentQuestionIndex];
+            document.getElementById('questionText').textContent = q.question;
+            document.getElementById('questionNumber').textContent = `Frage ${currentQuestionIndex + 1} von ${questions.length}`;
+            document.getElementById('currentQuestion').textContent = `${currentQuestionIndex + 1} / ${questions.length}`;
+            document.getElementById('resultBox').classList.remove('show', 'correct', 'incorrect');
+            document.getElementById('btnFake').disabled = false;
+            document.getElementById('btnFact').disabled = false;
+            answered = false;
+            updateProgress();
+            updateNavButtons();
+        }
+        
+        function selectAnswer(answer) {
+            if (answered) return;
+            
+            answered = true;
+            const q = questions[currentQuestionIndex];
+            const isCorrect = answer === q.correct;
+            
+            if (isCorrect) {
+                correctCount++;
+                document.getElementById('resultBox').classList.add('correct');
+                document.getElementById('resultTitle').textContent = '✅ Richtig!';
+            } else {
+                incorrectCount++;
+                document.getElementById('resultBox').classList.add('incorrect');
+                document.getElementById('resultTitle').textContent = '❌ Falsch!';
+            }
+            
+            document.getElementById('resultText').textContent = q.explanation;
+            document.getElementById('resultBox').classList.add('show');
+            
+            document.getElementById('correctCount').textContent = correctCount;
+            document.getElementById('incorrectCount').textContent = incorrectCount;
+            updatePercentage();
+            
+            document.getElementById('btnFake').disabled = true;
+            document.getElementById('btnFact').disabled = true;
+        }
+        
+        function nextQuestion() {
+            if (currentQuestionIndex < questions.length - 1) {
+                currentQuestionIndex++;
+                loadQuestion();
+            } else {
+                showFinalScore();
+            }
+        }
+        
+        function previousQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                loadQuestion();
+            }
+        }
+        
+        function updateProgress() {
+            const progress = ((currentQuestionIndex + 1) / questions.length) * 100;
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+        
+        function updateNavButtons() {
+            document.getElementById('btnPrev').disabled = currentQuestionIndex === 0;
+            document.getElementById('btnNext').textContent = currentQuestionIndex === questions.length - 1 ? 'Ergebnis →' : 'Weiter →';
+        }
+        
+        function updatePercentage() {
+            const total = correctCount + incorrectCount;
+            const percentage = total > 0 ? Math.round((correctCount / total) * 100) : 0;
+            document.getElementById('percentage').textContent = percentage + '%';
+        }
+        
+        function showFinalScore() {
+            const percentage = Math.round((correctCount / questions.length) * 100);
+            const message = percentage >= 80 ? '🏆 Ausgezeichnet!' : percentage >= 60 ? '👍 Gut gemacht!' : '💪 Weiter trainieren!';
+            alert(`${message}\n\nDein Ergebnis: ${correctCount} von ${questions.length} richtig (${percentage}%)`);
+            resetQuiz();
+        }
+        
+        function resetQuiz() {
+            currentQuestionIndex = 0;
+            correctCount = 0;
+            incorrectCount = 0;
+            loadQuestion();
+        }
+        
+        // Initial load
+        loadQuestion();
+    </script>
+</body>
+</html>

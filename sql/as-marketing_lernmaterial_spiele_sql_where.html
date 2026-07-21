@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Precision Challenge | neue fische x iSyst</title>
+    <style>
+        :root {
+            --nf-orange: #FF5000;
+            --nf-black: #1A1A1A;
+            --nf-grey: #F3F4F6;
+            --isyst-blue: #005A9C;
+            --signal-green: #2ecc71; /* Treffer */
+            --noise-red: #e74c3c;    /* False Positive */
+            --missed-grey: #95a5a6;  /* Nicht gefunden */
+            --terminal-bg: #1e1e1e;
+        }
+
+        body {
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background-color: var(--nf-grey);
+            color: var(--nf-black);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Header & Branding */
+        header {
+            background-color: #fff;
+            width: 100%;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo { font-weight: 800; font-size: 1.4rem; color: var(--nf-black); }
+        .logo span { color: var(--nf-orange); }
+
+        .container {
+            max-width: 900px;
+            width: 95%;
+            margin-top: 6rem;
+            margin-bottom: 4rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        /* Mission Briefing */
+        .mission-card {
+            background: #fff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 6px solid var(--nf-orange);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .mission-title {
+            font-size: 0.9rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+            margin-bottom: 0.5rem;
+            font-weight: bold;
+        }
+
+        .mission-text { font-size: 1.3rem; font-weight: bold; line-height: 1.4; }
+        .highlight { color: var(--nf-orange); }
+
+        /* SQL Editor Console */
+        .console {
+            background: var(--terminal-bg);
+            color: #ecf0f1;
+            padding: 2rem;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .sql-line { margin-bottom: 0.8rem; display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
+        .keyword { color: #3498db; font-weight: bold; }
+        .string { color: #e67e22; }
+
+        input.code-input {
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-bottom: 2px solid #666;
+            color: #fff;
+            font-family: inherit;
+            font-size: inherit;
+            padding: 0.2rem 0.5rem;
+            width: 300px;
+            outline: none;
+            transition: all 0.3s;
+        }
+        input.code-input:focus { border-bottom-color: var(--nf-orange); background: rgba(255,255,255,0.15); }
+
+        /* Data Table visualization */
+        .data-monitor {
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .data-header {
+            background: #ecf0f1;
+            padding: 1rem;
+            font-weight: bold;
+            display: grid;
+            grid-template-columns: 80px 120px 1fr;
+            border-bottom: 2px solid #bdc3c7;
+            font-size: 0.9rem;
+            color: #7f8c8d;
+        }
+
+        .data-row {
+            padding: 1rem;
+            display: grid;
+            grid-template-columns: 80px 120px 1fr;
+            border-bottom: 1px solid #eee;
+            font-family: 'Courier New', monospace;
+            font-size: 0.95rem;
+            transition: background 0.2s;
+        }
+
+        /* Status States for Rows */
+        .row-default { background: #fff; color: #333; }
+        .row-match-correct { background: #d5f5e3; color: #145a32; border-left: 5px solid var(--signal-green); } /* Signal found */
+        .row-match-wrong { background: #fadbd8; color: #7b241c; border-left: 5px solid var(--noise-red); } /* Noise caught */
+        .row-missed { background: #f2f3f4; color: #95a5a6; opacity: 0.6; } /* Signal missed */
+
+        /* Controls */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 1rem;
+        }
+
+        .btn {
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            border: none;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+        
+        .btn-run { background: var(--nf-orange); color: white; box-shadow: 0 4px 10px rgba(255, 80, 0, 0.3); }
+        .btn-run:hover { transform: translateY(-2px); background: #e04600; }
+        
+        .btn-next { background: var(--nf-black); color: white; display: none; }
+
+        .score-box {
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+        
+        /* Hinting */
+        .hint-text {
+            color: #e74c3c;
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
+            display: none;
+            font-weight: bold;
+        }
+
+        /* Trainer Notes */
+        .trainer-section {
+            max-width: 900px;
+            width: 95%;
+            margin-bottom: 3rem;
+            border-top: 1px solid #ccc;
+            padding-top: 2rem;
+        }
+        
+        details { background: #fff; padding: 1rem; border-radius: 8px; cursor: pointer; }
+        summary { font-weight: bold; color: var(--nf-orange); }
+
+        /* Animations */
+        .shake-input { animation: shake 0.4s; border-bottom-color: red !important; }
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">neue<span>fische</span> // iSyst Precision</div>
+        <div id="level-indicator" style="font-weight: bold; color: #666;">Level 1/6</div>
+    </header>
+
+    <div id="game-container" class="container">
+        
+        <!-- Mission Brief -->
+        <div class="mission-card">
+            <div class="mission-title">Aktueller Filter-Auftrag</div>
+            <div id="mission-text" class="mission-text">Lade Daten...</div>
+        </div>
+
+        <!-- SQL Console -->
+        <div class="console">
+            <div class="sql-line">
+                <span class="keyword">SELECT</span> * <span class="keyword">FROM</span> system_logs
+            </div>
+            <div class="sql-line">
+                <span class="keyword">WHERE</span> <span id="column-name">message</span> <span class="keyword">LIKE</span> 
+                <span class="string">'</span><input type="text" id="pattern-input" class="code-input" placeholder="Pattern eingeben..." autocomplete="off"><span class="string">'</span>;
+            </div>
+            <div style="font-size: 0.8rem; color: #7f8c8d; margin-top: 1rem;">
+                Syntax-Hilfe: <strong>%</strong> (beliebig viele Zeichen) | <strong>_</strong> (genau 1 Zeichen)
+            </div>
+        </div>
+
+        <!-- Controls & Score -->
+        <div class="controls">
+            <div class="score-box">
+                Status: <span id="status-text" style="color:#666;">Warte auf Eingabe...</span>
+                <div id="hint-msg" class="hint-text"></div>
+            </div>
+            <div>
+                <button id="btn-run" class="btn btn-run" onclick="game.runQuery()">Filter anwenden (RUN)</button>
+                <button id="btn-next" class="btn btn-next" onclick="game.nextLevel()">Nächster Auftrag &rarr;</button>
+            </div>
+        </div>
+
+        <!-- Data Monitor -->
+        <div class="data-monitor">
+            <div class="data-header">
+                <div>ID</div>
+                <div>LEVEL</div>
+                <div>MESSAGE</div>
+            </div>
+            <div id="data-rows">
+                <!-- Rows injected by JS -->
+            </div>
+        </div>
+
+    </div>
+
+    <!-- End Screen -->
+    <div id="end-screen" class="container" style="display: none; text-align: center;">
+        <h1 style="color: var(--nf-orange); font-size: 3rem;">Analyse Beendet</h1>
+        <p style="font-size: 1.5rem;">Ihre Präzisions-Bilanz:</p>
+        <div id="final-score" style="font-size: 4rem; font-weight: 800; margin: 2rem 0;">0%</div>
+        <p style="max-width: 600px; margin: 0 auto; line-height: 1.6;">
+            Im Testing ist Rauschen (False Positives) teuer. Es kostet Zeit und verbirgt die echten Fehler.
+            Nutzen Sie <code>LIKE</code> weise – so spezifisch wie nötig, so generisch wie möglich.
+        </p>
+        <button class="btn btn-run" style="margin-top: 2rem;" onclick="location.reload()">Neustart</button>
+    </div>
+
+    <!-- Trainer Guide -->
+    <section class="trainer-section">
+        <details>
+            <summary>👨‍🏫 Trainer-Guide: Didaktik & Lösungen (Hier klicken)</summary>
+            <div style="margin-top: 1rem; line-height: 1.6; color: #333;">
+                <h3>Lösungs-Schlüssel</h3>
+                <ul>
+                    <li><strong>Lvl 1 (Timeout):</strong> <code>Timeout%</code> (Fängt alles was mit Timeout beginnt)</li>
+                    <li><strong>Lvl 2 (Error Falle):</strong> <code>Error%</code> <br><em>Didaktik:</em> "No Error" wird ignoriert, da es mit 'N' beginnt. Die echten Errors wurden in den Daten bereinigt, sodass sie mit "Error" beginnen.</li>
+                    <li><strong>Lvl 3 (Unterstrich):</strong> <code>v1._</code> <br><em>Didaktik:</em> Findet v1.2, aber ignoriert v1.12 (zu lang für einen Unterstrich).</li>
+                    <li><strong>Lvl 4 (Hex):</strong> <code>0xA%</code></li>
+                    <li><strong>Lvl 5 (Endung):</strong> <code>%.log</code></li>
+                    <li><strong>Lvl 6 (Case Study):</strong> <code>E_0%</code> oder <code>E___</code></li>
+                </ul>
+            </div>
+        </details>
+    </section>
+
+    <script>
+        const levels = [
+            {
+                id: 1,
+                title: "Der einfache Timeout",
+                desc: "Ein System antwortet nicht. Filtern Sie alle Nachrichten, die mit <span class='highlight'>Timeout</span> beginnen.",
+                column: "message",
+                data: [
+                    {id: 101, level: "INFO", msg: "System start"},
+                    {id: 102, level: "ERROR", msg: "Timeout bei Verbindung DB", target: true},
+                    {id: 103, level: "ERROR", msg: "Timeout Gateway 504", target: true},
+                    {id: 104, level: "INFO", msg: "Verbindung hergestellt"},
+                    {id: 105, level: "WARN", msg: "Latenz hoch (kein Timeout)"} 
+                ]
+            },
+            {
+                id: 2,
+                title: "False Positive Falle",
+                desc: "Wir suchen echte Fehler am ANFANG der Nachricht. Filtern Sie nach <span class='highlight'>Error</span>. <br>⚠️ Aber Vorsicht: Ignorieren Sie Statusmeldungen, die besagen, dass es 'No Error' gab!",
+                column: "message",
+                data: [
+                    {id: 201, level: "INFO", msg: "Status: No Error"}, /* Falle: Beginnt mit S */
+                    {id: 202, level: "ERROR", msg: "Error: Critical in Module A", target: true}, /* FIX: Beginnt jetzt mit Error */
+                    {id: 203, level: "ERROR", msg: "Error: Nullpointer", target: true},
+                    {id: 204, level: "INFO", msg: "Check: No Error found"} /* Falle */
+                ]
+            },
+            {
+                id: 3,
+                title: "Die Macht des Unterstrichs",
+                desc: "Wir suchen nur Version <span class='highlight'>v1.X</span> (einstellig, z.B. v1.2). <br>Version v1.12 oder v10.0 sollen NICHT gefunden werden. <br>Tipp: Die Nachricht besteht nur aus der Version.",
+                column: "version_code",
+                data: [
+                    {id: 301, level: "WARN", msg: "v1.2", target: true},
+                    {id: 302, level: "INFO", msg: "v1.12"}, /* Falle: Zweistellig */
+                    {id: 303, level: "ERROR", msg: "v1.9", target: true},
+                    {id: 304, level: "INFO", msg: "v10.0"} /* Falle: v10 */
+                ]
+            },
+            {
+                id: 4,
+                title: "Sensor Daten (Hex-Werte)",
+                desc: "Filtern Sie alle Werte, die mit dem Hex-Präfix <span class='highlight'>0xA</span> beginnen. Alles andere ist Rauschen.",
+                column: "hex_value",
+                data: [
+                    {id: 401, level: "DATA", msg: "0xA1", target: true},
+                    {id: 402, level: "DATA", msg: "0xB2"},
+                    {id: 403, level: "DATA", msg: "0xA9", target: true},
+                    {id: 404, level: "DATA", msg: "10xA"},
+                    {id: 405, level: "DATA", msg: "0xAA", target: true}
+                ]
+            },
+            {
+                id: 5,
+                title: "Endungen finden",
+                desc: "Finde alle Dateien, die auf <span class='highlight'>.log</span> enden.",
+                column: "filename",
+                data: [
+                    {id: 501, level: "FILE", msg: "system_config.xml"},
+                    {id: 502, level: "FILE", msg: "error_dump.log", target: true},
+                    {id: 503, level: "FILE", msg: "access.log.old"}, /* Falle: Endet nicht auf .log */
+                    {id: 504, level: "FILE", msg: "daily_report.log", target: true}
+                ]
+            },
+            {
+                id: 6,
+                title: "Strict Format",
+                desc: "Finden Sie Codes im Format <span class='highlight'>E_0X</span> (E, Unterstrich, Null, Ziffer).",
+                column: "error_code",
+                data: [
+                    {id: 601, level: "ERR", msg: "E_05", target: true},
+                    {id: 602, level: "ERR", msg: "E_09", target: true},
+                    {id: 603, level: "INFO", msg: "E_1"}, 
+                    {id: 604, level: "WARN", msg: "E_105"},
+                    {id: 605, level: "ERR", msg: "F_05"}
+                ]
+            }
+        ];
+
+        const game = {
+            currentLevel: 0,
+            totalScore: 0,
+
+            init: () => {
+                game.loadLevel();
+                document.getElementById('pattern-input').addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter') game.runQuery();
+                });
+            },
+
+            loadLevel: () => {
+                const lvl = levels[game.currentLevel];
+                document.getElementById('level-indicator').innerText = `Level ${lvl.id} / ${levels.length}`;
+                document.getElementById('mission-text').innerHTML = lvl.desc;
+                document.getElementById('column-name').innerText = lvl.column;
+                
+                const table = document.getElementById('data-rows');
+                table.innerHTML = "";
+                
+                lvl.data.forEach(row => {
+                    const div = document.createElement('div');
+                    div.className = 'data-row row-default';
+                    div.id = `row-${row.id}`;
+                    div.innerHTML = `
+                        <div>${row.id}</div>
+                        <div>${row.level}</div>
+                        <div>${row.msg}</div>
+                    `;
+                    table.appendChild(div);
+                });
+
+                document.getElementById('pattern-input').value = "";
+                document.getElementById('pattern-input').disabled = false;
+                document.getElementById('status-text').innerText = "Bereit für Filter...";
+                document.getElementById('status-text').style.color = "#666";
+                document.getElementById('hint-msg').style.display = 'none';
+                document.getElementById('btn-run').style.display = 'inline-block';
+                document.getElementById('btn-next').style.display = 'none';
+            },
+
+            runQuery: () => {
+                const input = document.getElementById('pattern-input').value;
+                if(!input) {
+                    document.getElementById('pattern-input').classList.add('shake-input');
+                    setTimeout(() => document.getElementById('pattern-input').classList.remove('shake-input'), 500);
+                    return;
+                }
+
+                // Strict SQL LIKE Simulation
+                // % -> .* (any char sequence)
+                // _ -> . (single char)
+                // Anchored start and end to strictly check the content
+                let regexPattern = input
+                    .replace(/[.+^${}()|[\]\\]/g, '\\$&') // Escape regex chars
+                    .replace(/%/g, '.*')
+                    .replace(/_/g, '.');
+                
+                const regex = new RegExp(`^${regexPattern}$`, 'i');
+
+                const lvl = levels[game.currentLevel];
+                let hits = 0;
+                let falsePositives = 0;
+                let targetsTotal = lvl.data.filter(r => r.target).length;
+
+                lvl.data.forEach(row => {
+                    const el = document.getElementById(`row-${row.id}`);
+                    const match = regex.test(row.msg);
+
+                    if (match) {
+                        if (row.target) {
+                            el.className = 'data-row row-match-correct';
+                            hits++;
+                        } else {
+                            el.className = 'data-row row-match-wrong';
+                            falsePositives++;
+                        }
+                    } else {
+                        if (row.target) {
+                            el.className = 'data-row row-missed';
+                        } else {
+                            el.className = 'data-row row-default';
+                        }
+                    }
+                });
+
+                game.evaluateResult(hits, targetsTotal, falsePositives, input);
+            },
+
+            evaluateResult: (hits, total, bad, input) => {
+                const status = document.getElementById('status-text');
+                const hint = document.getElementById('hint-msg');
+                
+                hint.style.display = 'none';
+
+                if (hits === total && bad === 0) {
+                    status.innerHTML = "<span style='color:var(--signal-green)'>✅ Perfekt! Signal isoliert.</span>";
+                    game.totalScore += 100;
+                    game.levelSuccess();
+                } else if (bad > 0) {
+                    status.innerHTML = `<span style='color:var(--noise-red)'>⚠️ FEHLER: ${bad} falsche Zeilen!</span>`;
+                    
+                    // Specific hints for Level 2
+                    if (game.currentLevel === 1 && input.includes('%Error%')) {
+                        hint.innerText = "Tipp: '%Error%' findet auch das Wort am Ende eines Satzes. Wir suchen aber Nachrichten, die mit Error BEGINNEN.";
+                        hint.style.display = 'block';
+                    }
+                } else {
+                    status.innerHTML = `<span style='color:#e67e22'>⚠️ Zu eng. Nur ${hits}/${total} Treffer.</span>`;
+                }
+            },
+
+            levelSuccess: () => {
+                document.getElementById('btn-run').style.display = 'none';
+                document.getElementById('btn-next').style.display = 'inline-block';
+                document.getElementById('pattern-input').disabled = true;
+            },
+
+            nextLevel: () => {
+                game.currentLevel++;
+                if (game.currentLevel < levels.length) {
+                    game.loadLevel();
+                } else {
+                    game.finishGame();
+                }
+            },
+
+            finishGame: () => {
+                document.getElementById('game-container').style.display = 'none';
+                document.getElementById('end-screen').style.display = 'block';
+                const percent = Math.round((game.totalScore / (levels.length * 100)) * 100);
+                document.getElementById('final-score').innerText = `${percent}%`;
+            }
+        };
+
+        game.init();
+    </script>
+</body>
+</html>

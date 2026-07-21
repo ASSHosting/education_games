@@ -112,9 +112,12 @@
             </div>
         );
 
-        const MiniMap = ({ lineIndices, activeIdx }) => (
-            <div className="grid grid-cols-3 gap-[2px] p-1 bg-[#8a6844] rounded-md w-14 h-14 md:w-16 md:h-16 shadow-inner border-2 border-[#6b4c2a] shrink-0">
-                {[0,1,2,3,4,5,6,7,8].map(i => {
+        const MiniMap = ({ lineIndices, activeIdx, size=3 }) => (
+            <div
+                className={`grid gap-[2px] p-1 bg-[#8a6844] rounded-md shadow-inner border-2 border-[#6b4c2a] shrink-0 ${size === 4 ? 'w-16 h-16 md:w-20 md:h-20' : 'w-14 h-14 md:w-16 md:h-16'}`}
+                style={{ gridTemplateColumns: `repeat(${size}, minmax(0, 1fr))` }}
+            >
+                {Array.from({length: size * size}).map((_, i) => {
                     const isActive = i === activeIdx;
                     const inLine = lineIndices && lineIndices.includes(i);
                     return <div key={i} className={`w-full h-full rounded-sm transition-colors ${isActive ? 'bg-yellow-300 ring-1 ring-yellow-500 animate-pulse' : inLine ? 'bg-[#c7a47e]' : 'bg-[#6b4c2a]'}`} />
@@ -225,14 +228,50 @@
             );
         };
 
-        const getAllLines = () => [[0,1,2], [3,4,5], [6,7,8], [0,3,6], [1,4,7], [2,5,8], [0,4,8], [2,4,6]];
+        const getAllLines = (size = 3) => {
+            const lines = [];
+
+            for (let row = 0; row < size; row++) {
+                lines.push(Array.from({ length: size }, (_, col) => row * size + col));
+            }
+
+            for (let col = 0; col < size; col++) {
+                lines.push(Array.from({ length: size }, (_, row) => row * size + col));
+            }
+
+            lines.push(Array.from({ length: size }, (_, i) => i * size + i));
+            lines.push(Array.from({ length: size }, (_, i) => i * size + (size - 1 - i)));
+
+            return lines;
+        };
+
+        const getLineLabel = (line, size = 3) => {
+            const first = line[0];
+
+            if (line.every((idx, pos) => idx === first + pos)) {
+                const row = Math.floor(first / size) + 1;
+                return size === 3
+                    ? ["waagerechte Linie oben", "waagerechte Linie in der Mitte", "waagerechte Linie unten"][row - 1]
+                    : `Zeile ${row}`;
+            }
+
+            if (line.every((idx, pos) => idx === first + pos * size)) {
+                const col = (first % size) + 1;
+                return size === 3
+                    ? ["senkrechte Linie links", "senkrechte Linie in der Mitte", "senkrechte Linie rechts"][col - 1]
+                    : `Spalte ${col}`;
+            }
+
+            if (line.every((idx, pos) => idx === pos * size + pos)) return "fallende Diagonale";
+            return "steigende Diagonale";
+        };
 
         const generateSolvableGrid = (targetSum, missingCount) => {
             const c = targetSum / 3;
             const fullGrid = [ c+3, c-4, c+1, c-2, c, c+2, c-1, c+4, c-3 ];
             const isSolvable = (gridState) => {
                 let temp = [...gridState];
-                const lines = getAllLines();
+                const lines = getAllLines(3);
                 let changed = true;
                 while(changed) {
                     changed = false;
@@ -260,46 +299,74 @@
             return fullGrid; 
         };
 
-        const getBestLine = (idx, currentGrid) => {
-            const lines = getAllLines().filter(line => line.includes(idx));
+        const getBestLine = (idx, currentGrid, size = 3) => {
+            const lines = getAllLines(size).filter(line => line.includes(idx));
             for (let line of lines) {
-                if (line.filter(i => currentGrid[i] !== null && i !== idx).length === 2) return line;
+                if (line.filter(i => currentGrid[i] !== null && i !== idx).length === size - 1) return line;
             }
             return null;
         };
 
-        const getFullLine = (currentGrid) => {
-            const lines = getAllLines();
+        const getFullLine = (currentGrid, size = 3) => {
+            const lines = getAllLines(size);
             for (let line of lines) {
-                if (line.filter(i => currentGrid[i] !== null).length === 3) return line;
+                if (line.filter(i => currentGrid[i] !== null).length === size) return line;
             }
             return null;
         };
 
-        const getDirectionalHint = (currentGrid) => {
-            const lines = [
-                { indices: [0,1,2], dir: "waagerechte Linie oben" }, { indices: [3,4,5], dir: "waagerechte Linie in der Mitte" }, { indices: [6,7,8], dir: "waagerechte Linie unten" },
-                { indices: [0,3,6], dir: "senkrechte Linie links" }, { indices: [1,4,7], dir: "senkrechte Linie in der Mitte" }, { indices: [2,5,8], dir: "senkrechte Linie rechts" },
-                { indices: [0,4,8], dir: "schräge Linie" }, { indices: [2,4,6], dir: "schräge Linie" }
-            ];
+        const getCornerIndices = (size = 3) => {
+            if (size !== 4) return null;
+            return [0, size - 1, size * (size - 1), size * size - 1];
+        };
+
+        const getTargetCalculationSource = (currentGrid, size = 3) => {
+            const fullLine = getFullLine(currentGrid, size);
+            if (fullLine) {
+                return { indices: fullLine, label: "Linie" };
+            }
+
+            const corners = getCornerIndices(size);
+            if (corners && corners.every(idx => currentGrid[idx] !== null)) {
+                return { indices: corners, label: "Ecken" };
+            }
+
+            return null;
+        };
+
+        const getDirectionalHint = (currentGrid, size = 3) => {
+            const lines = getAllLines(size).map(line => ({ indices: line, dir: getLineLabel(line, size) }));
             const shuffled = lines.sort(() => Math.random() - 0.5);
             for (let line of shuffled) {
-                if (line.indices.filter(i => currentGrid[i] !== null).length === 2) return line.dir;
+                if (line.indices.filter(i => currentGrid[i] !== null).length === size - 1) return line.dir;
             }
             return null;
         };
 
-        const NumpadModal = ({ isOpen, onClose, onSave, title, equation, expectedSum, speakFunc }) => {
+        const NumpadModal = ({ isOpen, onClose, onSave, title, equation, expectedSum, speakFunc, visualValues=null, helperText="" }) => {
             const [val, setVal] = useState("");
+            const isMaterialMode = Array.isArray(visualValues) && visualValues.length > 0 && expectedSum !== null && expectedSum !== undefined;
+            const parsedVal = val === "" ? 0 : parseInt(val, 10);
+
+            useEffect(() => {
+                if (isOpen) setVal("");
+            }, [isOpen, title, equation]);
+
             if (!isOpen) return null;
             
             const handleDigit = (d) => setVal(prev => (prev.length < 3 ? prev + d : prev));
             const handleDel = () => setVal(prev => prev.slice(0, -1));
+            const handleAdjust = (amount) => {
+                const next = parsedVal + amount;
+                if (next >= 0 && next <= Math.max(expectedSum + 30, 120)) {
+                    setVal(next === 0 ? "" : String(next));
+                }
+            };
             const handleSubmit = () => { 
                 const num = val === "" ? null : parseInt(val, 10);
                 if (expectedSum !== null && expectedSum !== undefined && num !== expectedSum) {
                     if (speakFunc) speakFunc("Das stimmt noch nicht ganz. Rechne noch einmal genau nach!", false);
-                    setVal("");
+                    if (!isMaterialMode) setVal("");
                     return;
                 }
                 onSave(num); 
@@ -308,21 +375,67 @@
 
             return (
                 <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-[80] animate-fade-in backdrop-blur-sm">
-                    <div className="bg-[#fcf8f2] rounded-3xl p-6 shadow-2xl border-4 border-amber-200 w-full max-w-sm flex flex-col items-center">
+                    <div className={`bg-[#fcf8f2] rounded-3xl p-6 shadow-2xl border-4 border-amber-200 w-full flex flex-col items-center ${isMaterialMode ? 'max-w-2xl' : 'max-w-sm'}`}>
                         <h3 className="text-xl font-bold text-amber-900 mb-2 text-center">{title}</h3>
                         {equation && <div className="text-xl font-bold text-blue-600 mb-4 bg-blue-50 px-6 py-2 rounded-xl border border-blue-200 shadow-inner">{equation} = ?</div>}
-                        
-                        <div className="bg-white border-2 border-amber-300 w-full h-16 rounded-xl mb-6 text-4xl font-bold text-amber-900 flex items-center justify-center shadow-inner">
-                            {val || "?"}
-                        </div>
-                        <div className="grid grid-cols-3 gap-3 w-full mb-6">
-                            {[1,2,3,4,5,6,7,8,9].map(d => (
-                                <button key={d} onClick={() => handleDigit(d)} className="bg-amber-100 hover:bg-amber-200 text-amber-900 text-2xl font-bold py-4 rounded-xl shadow-sm active:scale-95 transition-transform">{d}</button>
-                            ))}
-                            <button onClick={handleDel} className="bg-red-100 hover:bg-red-200 text-red-700 text-xl font-bold py-4 rounded-xl shadow-sm active:scale-95 transition-transform">Löschen</button>
-                            <button onClick={() => handleDigit(0)} className="bg-amber-100 hover:bg-amber-200 text-amber-900 text-2xl font-bold py-4 rounded-xl shadow-sm active:scale-95 transition-transform">0</button>
-                            <button onClick={handleSubmit} className="bg-green-500 hover:bg-green-600 text-white text-xl font-bold py-4 rounded-xl shadow-md active:scale-95 transition-transform">OK</button>
-                        </div>
+
+                        {isMaterialMode ? (
+                            <>
+                                <p className="text-center text-sm md:text-base font-medium text-blue-800 bg-blue-50 border border-blue-200 rounded-2xl px-4 py-3 mb-5 w-full">
+                                    {helperText || "Zähle erst die blauen Zehner-Stangen zusammen, dann die grünen Einer-Würfel."}
+                                </p>
+                                <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4 text-lg md:text-2xl font-bold text-gray-600 bg-white border-2 border-blue-200 px-4 py-4 rounded-2xl shadow-sm w-full mb-5">
+                                    {visualValues.map((amount, index) => (
+                                        <React.Fragment key={`target-visual-${index}`}>
+                                            {index > 0 && <span className="text-gray-400">+</span>}
+                                            <div className="flex flex-col items-center bg-amber-50 rounded-2xl px-3 py-3 border border-amber-100 min-w-[88px]">
+                                                <span className="text-2xl md:text-3xl text-amber-900">{amount}</span>
+                                                <VisualQuantity amount={amount} targetSum={expectedSum} isTut={false} />
+                                            </div>
+                                        </React.Fragment>
+                                    ))}
+                                    <span className="text-gray-400">=</span>
+                                    <div className="bg-blue-100 border-2 border-blue-300 px-4 py-3 rounded-xl text-blue-800 min-w-[84px] text-center shadow-inner text-2xl md:text-3xl">
+                                        {val || "?"}
+                                    </div>
+                                </div>
+
+                                <div className="flex justify-center gap-3 md:gap-6 w-full mb-6">
+                                    <div className="flex flex-col gap-2">
+                                        <button onClick={() => handleAdjust(10)} className="px-4 md:px-6 py-3 md:py-4 rounded-xl font-bold text-white shadow-sm bg-blue-500 hover:bg-blue-600 active:scale-95 flex flex-col items-center">
+                                            <span className="text-lg md:text-xl">+ 10</span>
+                                            <span className="text-[10px] opacity-80">Stange</span>
+                                        </button>
+                                        <button onClick={() => handleAdjust(-10)} className="px-4 md:px-6 py-2 md:py-3 rounded-xl font-bold text-white shadow-sm bg-red-400 hover:bg-red-500 active:scale-95">- 10</button>
+                                    </div>
+                                    <div className="flex flex-col gap-2">
+                                        <button onClick={() => handleAdjust(1)} className="px-5 md:px-10 py-3 md:py-4 rounded-xl font-bold text-white shadow-sm bg-green-500 hover:bg-green-600 active:scale-95 flex flex-col items-center">
+                                            <span className="text-lg md:text-xl">+ 1</span>
+                                            <span className="text-[10px] opacity-80">Würfel</span>
+                                        </button>
+                                        <button onClick={() => handleAdjust(-1)} className="px-5 md:px-10 py-2 md:py-3 rounded-xl font-bold text-white shadow-sm bg-orange-400 hover:bg-orange-500 active:scale-95">- 1</button>
+                                    </div>
+                                </div>
+
+                                <button onClick={handleSubmit} className={`w-full max-w-md py-4 rounded-xl font-bold text-lg text-white transition-all shadow-lg ${parsedVal > 0 ? 'bg-green-500 hover:bg-green-600 active:scale-95' : 'bg-gray-300 cursor-not-allowed'}`}>
+                                    Zusammenzählen prüfen
+                                </button>
+                            </>
+                        ) : (
+                            <>
+                                <div className="bg-white border-2 border-amber-300 w-full h-16 rounded-xl mb-6 text-4xl font-bold text-amber-900 flex items-center justify-center shadow-inner">
+                                    {val || "?"}
+                                </div>
+                                <div className="grid grid-cols-3 gap-3 w-full mb-6">
+                                    {[1,2,3,4,5,6,7,8,9].map(d => (
+                                        <button key={d} onClick={() => handleDigit(d)} className="bg-amber-100 hover:bg-amber-200 text-amber-900 text-2xl font-bold py-4 rounded-xl shadow-sm active:scale-95 transition-transform">{d}</button>
+                                    ))}
+                                    <button onClick={handleDel} className="bg-red-100 hover:bg-red-200 text-red-700 text-xl font-bold py-4 rounded-xl shadow-sm active:scale-95 transition-transform">Löschen</button>
+                                    <button onClick={() => handleDigit(0)} className="bg-amber-100 hover:bg-amber-200 text-amber-900 text-2xl font-bold py-4 rounded-xl shadow-sm active:scale-95 transition-transform">0</button>
+                                    <button onClick={handleSubmit} className="bg-green-500 hover:bg-green-600 text-white text-xl font-bold py-4 rounded-xl shadow-md active:scale-95 transition-transform">OK</button>
+                                </div>
+                            </>
+                        )}
                         <button onClick={() => {setVal(""); onClose();}} className="text-gray-500 font-bold hover:text-gray-700">Abbrechen</button>
                     </div>
                 </div>
@@ -336,6 +449,7 @@
             const [currentLevel, setCurrentLevel] = useState(1);
             const [levelData, setLevelData] = useState({ target: 15, initialGrid: [] });
             const [grid, setGrid] = useState(Array(9).fill(null));
+            const [homeworkMatrixSize, setHomeworkMatrixSize] = useState(3);
             const [guidedMode, setGuidedMode] = useState(true);
             const [activeCellModal, setActiveCellModal] = useState(null);
             const [errorLines, setErrorLines] = useState([]);
@@ -349,6 +463,7 @@
 
             const [numpadConfig, setNumpadConfig] = useState({ isOpen: false, type: '', idx: null }); 
             const [shakingCell, setShakingCell] = useState(null);
+            const currentMatrixSize = appMode.includes('hw') ? homeworkMatrixSize : 3;
 
             const speak = (text, requireNextClick = false) => {
                 setFairyText(text); 
@@ -419,25 +534,30 @@
                 speak(storyText, true);
             };
 
-            const startHomeworkSetup = () => {
+            const startHomeworkSetup = (size = homeworkMatrixSize) => {
+                const normalizedSize = typeof size === 'number' ? size : homeworkMatrixSize;
+                setHomeworkMatrixSize(normalizedSize);
                 setAppMode('hw_setup');
-                setLevelData({ target: '?', initialGrid: Array(9).fill(null) });
-                setGrid(Array(9).fill(null));
+                setLevelData({ target: '?', initialGrid: Array(normalizedSize * normalizedSize).fill(null) });
+                setGrid(Array(normalizedSize * normalizedSize).fill(null));
                 setErrorLines([]);
+                setActiveCellModal(null);
                 speak("Tippe auf die Sonne oder auf die Töpfe, um die Zahlen aus deinem Heft abzuschreiben.", false);
             };
 
             const startHomeworkPlay = () => {
-                const fullLine = getFullLine(grid);
-                if (levelData.target === '?' && !fullLine) { 
-                    speak("Wir brauchen die magische Zahl in der Sonne oder mindestens eine komplett gefüllte Reihe!", false); 
+                const targetSource = getTargetCalculationSource(grid, currentMatrixSize);
+                if (levelData.target === '?' && !targetSource) { 
+                    speak(currentMatrixSize === 4 ? "Wir brauchen die magische Zahl in der Sonne oder mindestens eine komplett gefüllte Reihe oder die vier Ecken!" : "Wir brauchen die magische Zahl in der Sonne oder mindestens eine komplett gefüllte Reihe!", false); 
                     return; 
                 }
                 setAppMode('hw_play');
                 setLevelData(prev => ({ ...prev, initialGrid: [...grid] }));
                 
                 if (levelData.target === '?') {
-                    speak("Oh, die magische Zahl fehlt! Aber schau, eine Reihe ist schon voll. Klicke auf die pulsierende Sonne, um die magische Zahl auszurechnen!", true);
+                    speak(targetSource && targetSource.label === "Ecken"
+                        ? "Oh, die magische Zahl fehlt! Aber schau, die vier Ecken sind schon gefüllt. Klicke auf die pulsierende Sonne, um die Zauberzahl auszurechnen!"
+                        : "Oh, die magische Zahl fehlt! Aber schau, eine Reihe ist schon voll. Klicke auf die pulsierende Sonne, um die magische Zahl auszurechnen!", true);
                 } else {
                     speak("Die Hausaufgabe läuft! Klicke auf einen leeren Topf, um ihn zu füllen. Wenn du Hilfe brauchst, klicke auf mich!", false);
                 }
@@ -448,17 +568,19 @@
                 if (appMode !== 'play' && appMode !== 'hw_play') return;
                 if (grid.length === 0 || grid.includes(null) || levelData.target === '?') { setErrorLines([]); return; }
                 const errors = [];
-                getAllLines().forEach((line, index) => {
-                    if (grid[line[0]] + grid[line[1]] + grid[line[2]] !== levelData.target) errors.push(index);
+                getAllLines(currentMatrixSize).forEach((line, index) => {
+                    const lineSum = line.reduce((sum, cellIdx) => sum + (grid[cellIdx] || 0), 0);
+                    if (lineSum !== levelData.target) errors.push(index);
                 });
                 if (errors.length === 0) {
+                    setErrorLines([]);
                     if (appMode === 'hw_play') speak("Juhu! Du hast die Matrix deiner Hausaufgabe komplett richtig gelöst! Du bist spitze.", true);
                     else speak("Klasse! Das ganze Beet blüht! Alle Wurzeln sind verbunden.", true);
                 } else {
                     setErrorLines(errors);
                     speak("Fast fertig! Aber manche Reihen wackeln rot. Da passt die Menge noch nicht.", false);
                 }
-            }, [grid, appMode, levelData.target]);
+            }, [grid, appMode, levelData.target, currentMatrixSize]);
 
             // --- Lenia Klick Handler (Erweitert um pädagogische Rechentipps) ---
             const handleLeniaClick = () => {
@@ -467,11 +589,11 @@
                 // Pädagogische Tipps im Rechenfenster
                 if (activeCellModal !== null) {
                     const mTarget = appMode === 'tutorial' ? 15 : levelData.target;
-                    const mKnown = activeCellModal.lineIndices ? activeCellModal.lineIndices.filter(i => i !== activeCellModal.idx).map(i => grid[i] || 0) : [0,0];
-                    const sKnown = mKnown[0] + mKnown[1];
+                    const mKnown = activeCellModal.lineIndices ? activeCellModal.lineIndices.filter(i => i !== activeCellModal.idx).map(i => grid[i] || 0) : Array(Math.max(currentMatrixSize - 1, 0)).fill(0);
+                    const sKnown = mKnown.reduce((sum, val) => sum + val, 0);
 
                     if (modalPhase === 'calcSum') {
-                        speak("Zähle erst die blauen Zehner-Stangen zusammen, dann die grünen Einer-Würfel. Trag das Ergebnis unten ein!", false);
+                        speak("Zähle erst alle gefüllten Töpfe dieser Linie zusammen. Rechne dabei zuerst die Zehner, dann die Einer.", false);
                     } else if (modalPhase === 'calcMissing') {
                         const diff = mTarget - sKnown;
                         if (diff <= 0) {
@@ -508,9 +630,9 @@
                         speak("Rechne zuerst die magische Zahl aus! Klicke dafür auf die pulsierende Sonne.", false);
                         return;
                     }
-                    const hintDir = getDirectionalHint(grid);
-                    if (hintDir) speak(`Schau dir mal die ${hintDir} an! Dort sind schon zwei Töpfe gefüllt. Du schaffst das!`, false);
-                    else speak("Jede Linie muss zusammen die Sonne ergeben. Zähle die Töpfe zusammen und fülle den Rest auf!", false);
+                    const hintDir = getDirectionalHint(grid, currentMatrixSize);
+                    if (hintDir) speak(`Schau dir mal ${hintDir} an! Dort sind schon ${currentMatrixSize - 1} Töpfe gefüllt. Du schaffst das!`, false);
+                    else speak(`Jede Linie muss zusammen die Sonne ergeben. Zähle die ${currentMatrixSize} Töpfe zusammen und fülle den Rest auf!`, false);
                 }
             };
 
@@ -519,12 +641,12 @@
             const isTut = appMode === 'tutorial';
             const showMathView = activeCellModal !== null; 
             
-            let mathTarget = 15, mathKnown = [0,0], mathCurrent = 0, sumKnown = 0, totalNow = 0, isSuccess = false;
+            let mathTarget = 15, mathKnown = Array(Math.max(currentMatrixSize - 1, 0)).fill(0), mathCurrent = 0, sumKnown = 0, totalNow = 0, isSuccess = false;
             if (showMathView && activeCellModal) {
                 mathTarget = isTut ? 15 : levelData.target;
-                mathKnown = activeCellModal.lineIndices ? activeCellModal.lineIndices.filter(i => i !== activeCellModal.idx).map(i => grid[i] || 0) : [0,0];
+                mathKnown = activeCellModal.lineIndices ? activeCellModal.lineIndices.filter(i => i !== activeCellModal.idx).map(i => grid[i] || 0) : Array(Math.max(currentMatrixSize - 1, 0)).fill(0);
                 mathCurrent = activeCellModal.currentDrops || 0;
-                sumKnown = mathKnown[0] + mathKnown[1];
+                sumKnown = mathKnown.reduce((sum, val) => sum + val, 0);
                 totalNow = sumKnown + mathCurrent;
                 isSuccess = totalNow === mathTarget;
             }
@@ -571,7 +693,7 @@
                     speak("Klasse gerechnet! Und wie viel fehlt jetzt noch in der Reihe bis zur " + mathTarget + "?", false);
                     setModalPhase('calcMissing');
                 } else {
-                    speak("Das stimmt noch nicht ganz. Zähle die beiden Töpfe noch einmal genau zusammen.", false);
+                    speak("Das stimmt noch nicht ganz. Zähle die schon gefüllten Töpfe noch einmal genau zusammen.", false);
                 }
             };
             const updateUserSumGuess = (amount) => {
@@ -583,21 +705,34 @@
             let numpadTitle = "Zahl eingeben";
             let numpadEquation = null;
             let expectedSum = null;
+            let numpadVisualValues = null;
+            let numpadHelperText = "";
             if (numpadConfig.type === 'target') {
                 numpadTitle = "Zahl in der Sonne";
             } else if (numpadConfig.type === 'calc_target') {
                 numpadTitle = "Magische Zahl berechnen";
-                const fl = getFullLine(grid);
-                if (fl) {
-                    const [a, b, c] = fl.map(i => grid[i]);
-                    numpadEquation = `${a} + ${b} + ${c}`;
-                    expectedSum = a + b + c;
+                const targetSource = getTargetCalculationSource(grid, currentMatrixSize);
+                if (targetSource) {
+                    const lineValues = targetSource.indices.map(i => grid[i]);
+                    expectedSum = lineValues.reduce((sum, val) => sum + val, 0);
+                    if (currentMatrixSize === 4) {
+                        numpadVisualValues = lineValues;
+                        numpadHelperText = targetSource.label === "Ecken"
+                            ? "Zähle die vier Ecken zusammen. Nimm erst die blauen Zehner-Stangen, dann die grünen Einer-Würfel."
+                            : "Zähle diese vier Zahlen zusammen. Nimm erst die blauen Zehner-Stangen, dann die grünen Einer-Würfel.";
+                    } else {
+                        numpadEquation = `${targetSource.label}: ${lineValues.join(" + ")}`;
+                    }
                 }
             } else {
                 numpadTitle = "Zahl im Topf";
             }
 
-            const hwCanStart = levelData.target !== '?' || getFullLine(grid) !== null;
+            const hwCanStart = levelData.target !== '?' || getTargetCalculationSource(grid, currentMatrixSize) !== null;
+            const currentLines = getAllLines(currentMatrixSize);
+            const boardMaxWidthClass = currentMatrixSize === 4 ? 'max-w-[420px] md:max-w-[560px]' : 'max-w-[320px] md:max-w-[420px]';
+            const boardValueClass = currentMatrixSize === 4 ? 'text-2xl md:text-4xl' : 'text-3xl md:text-5xl';
+            const boardPlaceholderClass = currentMatrixSize === 4 ? 'text-3xl md:text-5xl' : 'text-4xl md:text-6xl';
 
             // STARTBILDSCHIRM
             if (!hasStarted) {
@@ -678,6 +813,8 @@
                         title={numpadTitle}
                         equation={numpadEquation}
                         expectedSum={expectedSum}
+                        visualValues={numpadVisualValues}
+                        helperText={numpadHelperText}
                         speakFunc={speak}
                         onClose={() => setNumpadConfig({isOpen: false, type: '', idx: null})}
                         onSave={(val) => {
@@ -705,7 +842,7 @@
                         <div className="flex items-center gap-2 md:gap-4">
                             {appMode === 'play' && <span className="text-xs md:text-sm font-bold text-gray-500 bg-gray-100 px-3 py-1 rounded-full">Level {currentLevel}</span>}
                             {appMode === 'hw_play' && (
-                                <button onClick={startHomeworkSetup} className="text-xs md:text-sm font-bold text-amber-600 bg-amber-50 px-3 py-1.5 rounded-full border border-amber-200">Zurücksetzen</button>
+                                <button onClick={() => startHomeworkSetup(homeworkMatrixSize)} className="text-xs md:text-sm font-bold text-amber-600 bg-amber-50 px-3 py-1.5 rounded-full border border-amber-200">Zurücksetzen</button>
                             )}
                             <button 
                                 onClick={() => setAppMode('menu')}
@@ -746,7 +883,23 @@
                                          <button onClick={() => setShowNextButton(false)} className="mt-4 bg-amber-100 hover:bg-amber-200 text-amber-800 font-bold py-2 px-6 rounded-full text-sm transition-colors border-2 border-amber-400 shadow-sm animate-pulse">Los geht's ➔</button>
                                     )}
                                     {appMode === 'hw_setup' && (
-                                         <button onClick={startHomeworkPlay} disabled={!hwCanStart} className={`mt-4 font-bold py-3 px-6 rounded-full text-sm transition-colors shadow-sm ${!hwCanStart ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600 text-white animate-pulse'}`}>Aufgabe starten ➔</button>
+                                        <>
+                                            <div className="mt-4 w-full">
+                                                <p className="text-[11px] uppercase tracking-wide text-amber-700 font-bold text-center mb-2">Matrixgröße</p>
+                                                <div className="flex justify-center gap-2">
+                                                    {[3, 4].map(size => (
+                                                        <button
+                                                            key={size}
+                                                            onClick={() => startHomeworkSetup(size)}
+                                                            className={`px-4 py-2 rounded-full text-sm font-bold border transition-colors ${homeworkMatrixSize === size ? 'bg-amber-500 text-white border-amber-500 shadow-sm' : 'bg-amber-50 text-amber-700 border-amber-200 hover:bg-amber-100'}`}
+                                                        >
+                                                            {size} x {size}
+                                                        </button>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <button onClick={startHomeworkPlay} disabled={!hwCanStart} className={`mt-4 font-bold py-3 px-6 rounded-full text-sm transition-colors shadow-sm ${!hwCanStart ? 'bg-gray-200 text-gray-400 cursor-not-allowed' : 'bg-green-500 hover:bg-green-600 text-white animate-pulse'}`}>Aufgabe starten ➔</button>
+                                        </>
                                     )}
                                     <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 w-6 h-6 bg-white border-b-2 border-r-2 border-blue-200 transform rotate-45"></div>
                                 </div>
@@ -784,12 +937,15 @@
                                         <h2 className="text-amber-800 font-bold mt-2 bg-white/80 px-4 py-1 rounded-full text-sm shadow-sm">Sonne: {isTut ? 15 : levelData.target} Samen pro Linie</h2>
                                     </div>
 
-                                    <div className={`grid grid-cols-3 gap-2 md:gap-3 bg-[#8a6844] p-3 md:p-5 rounded-2xl md:rounded-3xl shadow-xl w-full max-w-[320px] md:max-w-[420px] transition-all duration-1000 ${isTut && tutStep < 3 ? 'opacity-40 grayscale scale-95 pointer-events-none' : 'scale-100'}`}>
+                                    <div
+                                        className={`grid gap-2 md:gap-3 bg-[#8a6844] p-3 md:p-5 rounded-2xl md:rounded-3xl shadow-xl w-full ${boardMaxWidthClass} transition-all duration-1000 ${isTut && tutStep < 3 ? 'opacity-40 grayscale scale-95 pointer-events-none' : 'scale-100'}`}
+                                        style={{ gridTemplateColumns: `repeat(${currentMatrixSize}, minmax(0, 1fr))` }}
+                                    >
                                         {grid.map((val, idx) => {
                                             const isInitialPlay = (appMode === 'play' || appMode === 'hw_play') && levelData.initialGrid && levelData.initialGrid[idx] !== null;
-                                            const bestLine = getBestLine(idx, grid);
+                                            const bestLine = getBestLine(idx, grid, currentMatrixSize);
                                             const isSolvableNow = appMode === 'play' ? (bestLine !== null) : true;
-                                            const isError = (appMode === 'play' || appMode === 'hw_play') && errorLines.some(lineIdx => getAllLines()[lineIdx].includes(idx));
+                                            const isError = (appMode === 'play' || appMode === 'hw_play') && errorLines.some(lineIdx => currentLines[lineIdx].includes(idx));
                                                 
                                             let disableClick = isInitialPlay;
                                             let isHighlightTutorial = false;
@@ -830,15 +986,15 @@
                                                             if (!bestLine && grid.includes(null)) {
                                                                 setShakingCell(idx);
                                                                 setTimeout(() => setShakingCell(null), 500);
-                                                                const hintDir = getDirectionalHint(grid);
-                                                                let text = "Hier fehlen noch zu viele Samen! Wir brauchen eine Linie, in der schon zwei Töpfe voll sind.";
+                                                                const hintDir = getDirectionalHint(grid, currentMatrixSize);
+                                                                let text = `Hier fehlen noch zu viele Samen! Wir brauchen eine Linie, in der schon ${currentMatrixSize - 1} Töpfe voll sind.`;
                                                                 if (hintDir) text += ` Schau doch mal ${hintDir}!`;
                                                                 speak(text, false);
                                                                 return; 
                                                             }
                                                             setActiveCellModal({
                                                                 idx, 
-                                                                lineIndices: bestLine || getAllLines().find(l=>l.includes(idx)), 
+                                                                lineIndices: bestLine || currentLines.find(l => l.includes(idx)), 
                                                                 currentDrops: val || 0
                                                             });
                                                             if (currentLevel >= 3 || appMode === 'hw_play') {
@@ -864,9 +1020,9 @@
                                                 >
                                                     {isPulseTutorial && <Pointer className="-top-8 md:-top-10" />}
                                                     {val !== null ? (
-                                                        <span className={`text-3xl md:text-5xl font-bold drop-shadow-sm ${disableClick && appMode !== 'hw_setup' ? 'text-white' : 'text-amber-900'}`}>{val}</span>
+                                                        <span className={`${boardValueClass} font-bold drop-shadow-sm ${disableClick && appMode !== 'hw_setup' ? 'text-white' : 'text-amber-900'}`}>{val}</span>
                                                     ) : (
-                                                        <span className={`text-4xl md:text-6xl font-bold ${isPulseTutorial || (isSolvableNow && guidedMode) ? 'text-yellow-200' : 'text-[#8a6844] opacity-50'} ${isTut && tutStep < 3 ? 'opacity-0' : ''}`}>
+                                                        <span className={`${boardPlaceholderClass} font-bold ${isPulseTutorial || (isSolvableNow && guidedMode) ? 'text-yellow-200' : 'text-[#8a6844] opacity-50'} ${isTut && tutStep < 3 ? 'opacity-0' : ''}`}>
                                                             {appMode === 'hw_setup' ? '+' : '?'}
                                                         </span>
                                                     )}
@@ -890,7 +1046,7 @@
                                     {grid.length > 0 && !grid.includes(null) && errorLines.length === 0 && appMode === 'hw_play' && (
                                         <div className="mt-8 flex flex-col items-center animate-fade-in pb-10">
                                             <button 
-                                                onClick={startHomeworkSetup}
+                                                onClick={() => startHomeworkSetup(homeworkMatrixSize)}
                                                 className="bg-amber-500 hover:bg-amber-600 text-white px-6 md:px-8 py-4 rounded-full font-bold text-lg md:text-xl shadow-lg active:scale-95 transition-all animate-pulse"
                                             >
                                                 Neue Aufgabe eintragen
@@ -920,7 +1076,7 @@
                                             <span className="text-[10px] md:text-xs font-bold text-amber-700 mt-1 uppercase tracking-wide">Sonne</span>
                                         </div>
                                         <div className="flex flex-col items-center">
-                                            <MiniMap lineIndices={activeCellModal.lineIndices} activeIdx={activeCellModal.idx} />
+                                            <MiniMap lineIndices={activeCellModal.lineIndices} activeIdx={activeCellModal.idx} size={isTut ? 3 : currentMatrixSize} />
                                             <span className="text-[10px] md:text-xs font-bold text-amber-700 mt-1 uppercase tracking-wide">Diese Wurzel</span>
                                         </div>
                                     </div>
@@ -929,16 +1085,16 @@
                                         <div className="flex flex-col items-center w-full mb-6 animate-fade-in">
                                             <h3 className="text-lg md:text-xl font-bold text-blue-700 mb-4 text-center">Schritt 1: Wie viele Würfel haben wir schon?</h3>
                                             
-                                            <div className="flex items-center justify-center gap-2 md:gap-4 text-xl md:text-3xl font-bold text-gray-600 bg-white border-2 border-blue-200 px-4 py-4 rounded-2xl shadow-sm w-full max-w-md">
-                                                <div className="flex flex-col items-center">
-                                                    <span>{mathKnown[0]}</span>
-                                                    <VisualQuantity amount={mathKnown[0]} targetSum={mathTarget} isTut={false} />
-                                                </div>
-                                                <span className="text-gray-400">+</span>
-                                                <div className="flex flex-col items-center">
-                                                    <span>{mathKnown[1]}</span>
-                                                    <VisualQuantity amount={mathKnown[1]} targetSum={mathTarget} isTut={false} />
-                                                </div>
+                                            <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4 text-xl md:text-3xl font-bold text-gray-600 bg-white border-2 border-blue-200 px-4 py-4 rounded-2xl shadow-sm w-full max-w-xl">
+                                                {mathKnown.map((knownValue, index) => (
+                                                    <React.Fragment key={`sum-known-${index}`}>
+                                                        {index > 0 && <span className="text-gray-400">+</span>}
+                                                        <div className="flex flex-col items-center">
+                                                            <span>{knownValue}</span>
+                                                            <VisualQuantity amount={knownValue} targetSum={mathTarget} isTut={false} />
+                                                        </div>
+                                                    </React.Fragment>
+                                                ))}
                                                 <span className="text-gray-400">=</span>
                                                 <div className="bg-blue-100 border-2 border-blue-300 px-4 py-2 rounded-xl text-blue-800 min-w-[70px] text-center shadow-inner">
                                                     {userSumGuess === 0 ? "?" : userSumGuess}
@@ -974,16 +1130,16 @@
                                             {(currentLevel >= 3 || appMode==='hw_play') && <h3 className="text-lg md:text-xl font-bold text-green-700 mb-4 text-center">Schritt 2: Fülle nun bis zur {mathTarget} auf!</h3>}
                                             
                                             <div className="flex flex-col items-center w-full mb-6 space-y-4">
-                                                <div className="flex items-center justify-center gap-2 md:gap-4 text-lg md:text-xl font-bold text-gray-600 bg-white border-2 border-gray-200 px-2 md:px-4 py-3 md:py-4 rounded-2xl shadow-sm w-full max-w-md">
-                                                    <div className="flex flex-col items-center">
-                                                        <span>{mathKnown[0]}</span>
-                                                        {currentLevel < 3 && appMode !== 'hw_play' && <VisualQuantity amount={mathKnown[0]} targetSum={mathTarget} isTut={isTut} />}
-                                                    </div>
-                                                    <span className="text-gray-400">+</span>
-                                                    <div className="flex flex-col items-center">
-                                                        <span>{mathKnown[1]}</span>
-                                                        {currentLevel < 3 && appMode !== 'hw_play' && <VisualQuantity amount={mathKnown[1]} targetSum={mathTarget} isTut={isTut} />}
-                                                    </div>
+                                                <div className="flex flex-wrap items-center justify-center gap-2 md:gap-4 text-lg md:text-xl font-bold text-gray-600 bg-white border-2 border-gray-200 px-2 md:px-4 py-3 md:py-4 rounded-2xl shadow-sm w-full max-w-xl">
+                                                    {mathKnown.map((knownValue, index) => (
+                                                        <React.Fragment key={`missing-known-${index}`}>
+                                                            {index > 0 && <span className="text-gray-400">+</span>}
+                                                            <div className="flex flex-col items-center">
+                                                                <span>{knownValue}</span>
+                                                                {currentLevel < 3 && appMode !== 'hw_play' && <VisualQuantity amount={knownValue} targetSum={mathTarget} isTut={isTut} />}
+                                                            </div>
+                                                        </React.Fragment>
+                                                    ))}
                                                     <span className="text-gray-400">=</span>
                                                     <div className="flex flex-col items-center bg-blue-50 px-3 md:px-5 py-2 rounded-xl border border-blue-100">
                                                         <span className="text-2xl md:text-3xl text-blue-600">{sumKnown}</span>

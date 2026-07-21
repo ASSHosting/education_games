@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prompt-Builder – KI clever nutzen</title>
+<style>
+  :root {
+    --red: #631832;
+    --blue: #173262;
+    --dark: #231A24;
+    --steel: #606F8C;
+    --orange: #FF9900;
+    --green: #00AA55;
+    --white: #FFFFFF;
+    --bg: #F8F8F8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--dark);
+    min-height: 100vh;
+  }
+  header {
+    background: var(--red);
+    color: white;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  header h1 { font-size: 1.4rem; font-weight: 900; text-transform: uppercase; }
+  header .sub { font-size: 0.9rem; opacity: 0.85; }
+  .score-bar {
+    background: var(--blue);
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.95rem;
+    font-weight: bold;
+  }
+  .container { max-width: 700px; margin: 0 auto; padding: 20px; }
+  .scenario-card {
+    background: white;
+    border: 3px solid var(--blue);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+  .scenario-title {
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: var(--blue);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+  .scenario-desc {
+    font-size: 0.95rem;
+    color: var(--dark);
+    margin-bottom: 18px;
+    line-height: 1.5;
+  }
+  .scenario-goal {
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #eef3fb;
+    border: 2px solid #d8e3f6;
+    color: var(--blue);
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+  .prompt-list {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .prompt-option {
+    width: 100%;
+    border: 2px solid #d8dfea;
+    border-radius: 10px;
+    background: white;
+    color: var(--dark);
+    text-align: left;
+    padding: 14px 16px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.1s, border-color 0.1s;
+    line-height: 1.5;
+  }
+  .prompt-option:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+    border-color: var(--blue);
+  }
+  .prompt-option.correct {
+    background: #d4f5e2;
+    border-color: var(--green);
+    box-shadow: 0 0 0 4px rgba(0,170,85,0.18);
+  }
+  .prompt-option.wrong {
+    background: #fde8e8;
+    border-color: #e63946;
+    box-shadow: 0 0 0 4px rgba(230,57,70,0.15);
+  }
+  .prompt-option:disabled {
+    cursor: default;
+    transform: none;
+  }
+  .prompt-key {
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    background: var(--red);
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 900;
+    flex: 0 0 auto;
+  }
+  .prompt-copy {
+    display: block;
+    white-space: pre-line;
+    font-size: 0.94rem;
+  }
+  .analysis-box {
+    display: none;
+    margin-top: 14px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: #f3f7f1;
+    border: 2px solid #cfe1c9;
+    color: #214a2d;
+    line-height: 1.5;
+    font-size: 0.95rem;
+  }
+  .showmaster-hint {
+    background: var(--orange);
+    color: var(--dark);
+    padding: 10px 20px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    text-align: center;
+  }
+  .method-bar {
+    max-width: 700px;
+    margin: 18px auto 0;
+    padding: 0 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+  }
+  .method-pill {
+    background: white;
+    border: 1px solid #d6dce7;
+    color: var(--blue);
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+  .checklist-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-top: 22px;
+    text-align: left;
+  }
+  .checklist-card {
+    border: 1px solid #d8e3f6;
+    border-radius: 10px;
+    padding: 12px 14px;
+    background: #f7faff;
+  }
+  .checklist-card strong {
+    display: block;
+    color: var(--blue);
+    margin-bottom: 6px;
+  }
+  .label-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .label-box {
+    background: var(--blue);
+    color: white;
+    text-align: center;
+    padding: 6px 4px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: bold;
+    text-transform: uppercase;
+  }
+  .drop-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  .drop-zone {
+    min-height: 70px;
+    border: 2.5px dashed var(--steel);
+    border-radius: 8px;
+    background: var(--bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+    color: var(--steel);
+    text-align: center;
+    padding: 6px;
+    transition: background 0.2s, border-color 0.2s;
+    cursor: pointer;
+    position: relative;
+  }
+  .drop-zone.drag-over {
+    background: #e8f0fe;
+    border-color: var(--blue);
+  }
+  .drop-zone.correct {
+    background: #d4f5e2;
+    border-color: var(--green);
+    border-style: solid;
+  }
+  .drop-zone.wrong {
+    background: #fde8e8;
+    border-color: #e63946;
+    border-style: solid;
+  }
+  .drop-zone .placed-chip {
+    background: var(--red);
+    color: white;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: bold;
+    text-align: center;
+    cursor: grab;
+    width: 100%;
+    word-break: break-word;
+  }
+  .chips-pool {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 18px;
+    min-height: 50px;
+    padding: 10px;
+    border: 2px solid #ddd;
+    border-radius: 10px;
+    background: white;
+  }
+  .chip {
+    background: var(--red);
+    color: white;
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+    border: 2px solid transparent;
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+  .chip:active { transform: scale(1.05); box-shadow: 0 4px 12px rgba(0,0,0,0.2); }
+  .chip.dragging { opacity: 0.5; }
+  .btn {
+    display: inline-block;
+    padding: 12px 28px;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 900;
+    cursor: pointer;
+    text-transform: uppercase;
+    transition: transform 0.1s;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-check { background: var(--blue); color: white; }
+  .btn-next { background: var(--green); color: white; display: none; }
+  .btn-reset { background: var(--steel); color: white; font-size: 0.85rem; padding: 8px 16px; }
+  .feedback-box {
+    margin-top: 16px;
+    padding: 14px 18px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    display: none;
+    line-height: 1.5;
+  }
+  .feedback-box.success { background: #d4f5e2; border: 2px solid var(--green); color: #0a4a2a; }
+  .feedback-box.error { background: #fde8e8; border: 2px solid #e63946; color: #5a0a0a; }
+  .result-screen {
+    display: none;
+    text-align: center;
+    padding: 40px 20px;
+  }
+  .result-screen h2 { font-size: 2rem; color: var(--red); margin-bottom: 10px; }
+  .result-screen .score-big { font-size: 3rem; font-weight: 900; color: var(--blue); margin: 20px 0; }
+  .result-screen p { font-size: 1.1rem; color: var(--dark); margin-bottom: 20px; }
+  .progress-dots {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  .dot {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    background: #ccc;
+    transition: background 0.3s;
+  }
+  .dot.done { background: var(--green); }
+  .dot.active { background: var(--orange); }
+  .haring-figure { font-size: 3rem; margin-bottom: 10px; }
+  @media (max-width: 500px) {
+    .checklist-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="haring-figure">A-D</div>
+  <div>
+    <div class="sub">VHS-Webinar · KI clever nutzen</div>
+    <h1>Prompt-Builder</h1>
+  </div>
+</header>
+
+<div class="showmaster-hint">
+  Showmaster-Modus: Teilnehmende antworten mit A, B, C oder D im Chat.
+</div>
+
+<div class="method-bar">
+  <div class="method-pill">1. Ziel klar machen</div>
+  <div class="method-pill">2. Kontext mitgeben</div>
+  <div class="method-pill">3. Ausgabe brauchbar formatieren</div>
+  <div class="method-pill">4. Schwache Prompts gezielt nachschärfen</div>
+</div>
+
+<div class="score-bar">
+  <span id="round-label">Runde 1 von 6</span>
+  <span>Punkte: <strong id="score-display">0</strong></span>
+</div>
+
+  <div class="container">
+    <div class="progress-dots" id="progress-dots"></div>
+
+  <div id="game-area">
+    <div class="scenario-card">
+      <div class="scenario-title" id="scenario-title"></div>
+      <div class="scenario-desc" id="scenario-desc"></div>
+      <div class="scenario-goal" id="scenario-goal"></div>
+      <div class="prompt-list" id="prompt-list"></div>
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
+        <button class="btn btn-next" id="btn-next" onclick="nextRound()">Weiter →</button>
+        <button class="btn btn-reset" onclick="restartRound()">Frage neu laden</button>
+      </div>
+
+      <div class="feedback-box" id="feedback-box"></div>
+      <div class="analysis-box" id="analysis-box"></div>
+    </div>
+  </div>
+
+  <div class="result-screen" id="result-screen">
+    <div style="font-size:4rem;">🏆</div>
+    <h2>Fertig!</h2>
+    <div class="score-big" id="final-score"></div>
+    <p id="result-msg"></p>
+    <div class="checklist-grid">
+      <div class="checklist-card">
+        <strong>Was soll herauskommen?</strong>
+        Gute Prompts benennen Ziel, Aufgabe und gewünschtes Ergebnis.
+      </div>
+      <div class="checklist-card">
+        <strong>Welcher Kontext hilft?</strong>
+        Zielgruppe, Umfang, Anlass, Ton und Randbedingungen machen Antworten brauchbar.
+      </div>
+      <div class="checklist-card">
+        <strong>Format spart Nacharbeit</strong>
+        Tabelle, Liste, Gliederung oder Varianten direkt mitbestellen.
+      </div>
+      <div class="checklist-card">
+        <strong>Können heißt nachschärfen</strong>
+        Wenn die erste Antwort zu allgemein ist, folgt ein präziser Folgeprompt.
+      </div>
+    </div>
+    <button class="btn btn-check" onclick="restartGame()">Nochmal spielen</button>
+  </div>
+</div>
+
+<script>
+const scenarios = [
+  {
+    title: "Runde 1: Geburtstagsfeier planen",
+    desc: "Du willst für 20 Personen ein vegetarisches Menü planen und möchtest eine sofort nutzbare Antwort.",
+    goal: "Welcher Prompt liefert am ehesten ein brauchbares Ergebnis?",
+    options: [
+      { key: "A", prompt: "Mach ein Menü für meinen Geburtstag." },
+      { key: "B", prompt: "Du bist Koch. Plane ein Menü für meine Party." },
+      { key: "C", prompt: "Plane für eine Geburtstagsfeier mit 20 Personen ein vegetarisches 3-Gänge-Menü und gib mir eine Einkaufsliste mit Mengenangaben." },
+      { key: "D", prompt: "Du bist ein Sternekoch. Sag schnell etwas Kreatives für Essen." }
+    ],
+    correct: "C",
+    feedback: "C ist die beste Wahl. Aufgabe, Teilnehmerzahl und Ausgabeformat sind klar. Genau das macht den Prompt im Alltag direkt brauchbar.",
+    analysis: "Merksatz: Eine Rolle kann helfen, ist aber nicht nötig. Wichtiger sind Ziel, Kontext und ein Format, mit dem du weiterarbeiten kannst."
+  },
+  {
+    title: "Runde 2: Beschwerdebrief schreiben",
+    desc: "Ein neu gekauftes Gerät ist defekt. Du willst einen sachlichen Brief an den Händler formulieren.",
+    goal: "Welche Variante führt wahrscheinlich zur klarsten und professionellsten Antwort?",
+    options: [
+      { key: "A", prompt: "Schreibe einen Beschwerdebrief." },
+      { key: "B", prompt: "Du bist Anwalt. Schreibe etwas wegen eines kaputten Produkts." },
+      { key: "C", prompt: "Formuliere einen sachlichen Beschwerdebrief an einen Händler wegen eines defekten Produkts. Der Ton soll freundlich, aber bestimmt sein. Gib den Text als fertigen Brief mit Anrede und Abschluss aus." },
+      { key: "D", prompt: "Schreibe einen sehr strengen Brief und drohe sofort mit Klage." }
+    ],
+    correct: "C",
+    feedback: "C ist am stärksten. Anlass, Ton und Ausgabeform sind sauber gesetzt. Dadurch sinkt das Risiko für unpassende oder überzogene Formulierungen.",
+    analysis: "Merksatz: Gute Prompts steuern nicht nur das Thema, sondern auch Ton, Ziel und Form des Ergebnisses."
+  },
+  {
+    title: "Runde 3: Familienurlaub planen",
+    desc: "Du planst einen 5-Tage-Urlaub mit zwei Kindern und willst einen übersichtlichen Vorschlag.",
+    goal: "Welcher Prompt ist hier am besten für eine wirklich nutzbare Antwort?",
+    options: [
+      { key: "A", prompt: "Plane einen Urlaub für meine Familie." },
+      { key: "B", prompt: "Erstelle einen 5-Tage-Reiseplan für eine Familie mit zwei Kindern (8 und 10 Jahre). Bitte als Tabelle mit Tagesplan, Schlechtwetter-Alternative und grober Kostenschätzung." },
+      { key: "C", prompt: "Du bist Reiseberater. Plane etwas Schönes für die Ferien." },
+      { key: "D", prompt: "Nenne fünf Reiseziele in Europa." }
+    ],
+    correct: "B",
+    feedback: "B ist die beste Variante. Zielgruppe, Dauer und gewünschtes Ausgabeformat sind konkret genug, damit die Antwort planbar statt allgemein wird.",
+    analysis: "Merksatz: Wenn mehrere Randbedingungen wichtig sind, gehören sie in den Prompt. Sonst liefert die KI oft nur nette Allgemeinplätze."
+  },
+  {
+    title: "Runde 4: Vereinsarbeit",
+    desc: "Dein Sportverein veranstaltet ein Jugendturnier und braucht einen Social-Media-Post.",
+    goal: "Welche Variante ist für den Vereinsalltag am brauchbarsten?",
+    options: [
+      { key: "A", prompt: "Schreibe einen Social-Media-Post für unseren Verein." },
+      { key: "B", prompt: "Schreibe einen motivierenden Social-Media-Post für das Jugendturnier unseres Fußballvereins. Zielgruppe sind Eltern und Jugendliche. Gib mir drei Varianten: kurz, mittel und mit klarer Einladung zum Mitmachen." },
+      { key: "C", prompt: "Du bist PR-Profi. Schreib etwas Cooles über Sport." },
+      { key: "D", prompt: "Schreibe einen lustigen Text über Fußball." }
+    ],
+    correct: "B",
+    feedback: "B ist klar am stärksten. Zielgruppe, Anlass und Ausgabeformat helfen der KI, etwas zu schreiben, das wirklich veröffentlicht werden kann.",
+    analysis: "Merksatz: Gerade bei Kommunikation nach außen sollte der Prompt Zielgruppe und gewünschte Wirkung benennen."
+  },
+  {
+    title: "Runde 5: Bei Hausaufgaben helfen",
+    desc: "Ein Kind in der 4. Klasse versteht eine Mathe-Textaufgabe nicht. Du willst unterstützen, aber nicht einfach die Lösung vorsagen.",
+    goal: "Welcher Prompt unterstützt Lernen statt bloßes Abschreiben?",
+    options: [
+      { key: "A", prompt: "Erkläre einem Kind in der 4. Klasse eine Mathe-Textaufgabe in einfachen Schritten und gib erst am Ende einen kleinen Denkanstoß statt sofort die komplette Lösung." },
+      { key: "B", prompt: "Löse diese Matheaufgabe vollständig." },
+      { key: "C", prompt: "Du bist Nachhilfelehrer. Erkläre Mathe." },
+      { key: "D", prompt: "Schreibe die richtige Antwort möglichst kurz." }
+    ],
+    correct: "A",
+    feedback: "A ist die beste Wahl, weil der Prompt auf Lernunterstützung zielt. Das fördert Verstehen statt bloßer Ergebnisproduktion.",
+    analysis: "Merksatz: Gute Prompts können auch Lernziele steuern, zum Beispiel erklären, anleiten, vereinfachen oder nur Denkanstöße geben."
+  },
+  {
+    title: "Runde 6: Schwachen Output nachschärfen",
+    desc: "Du hast zuerst nur geschrieben: 'Schreibe einen Social-Media-Post für unseren Verein.' Die Antwort war zu allgemein.",
+    goal: "Welcher Folgeprompt bringt dich am ehesten vom unklaren Wunsch zu einem brauchbaren Ergebnis?",
+    options: [
+      { key: "A", prompt: "Mach es besser." },
+      { key: "B", prompt: "Schreibe es nochmal." },
+      { key: "C", prompt: "Überarbeite den Post für unser Jugendturnier am Samstag. Zielgruppe sind Eltern und Jugendliche. Der Ton soll motivierend und lokal sein. Gib zwei Varianten mit maximal 280 Zeichen und je einem klaren Aufruf zur Anmeldung." },
+      { key: "D", prompt: "Sei kreativer und professioneller." }
+    ],
+    correct: "C",
+    feedback: "C ist die kompetente Antwort. Prompten bedeutet oft Nachschärfen: Problem erkennen, fehlende Informationen ergänzen und das Ziel präziser machen.",
+    analysis: "Merksatz: Vom Kennen zum Können kommst du erst, wenn du schwache Ergebnisse gezielt verbessern kannst."
+  }
+];
+
+let currentRound = 0;
+let score = 0;
+let answered = false;
+
+function initGame() {
+  currentRound = 0;
+  score = 0;
+  answered = false;
+  document.getElementById('score-display').textContent = '0';
+  document.getElementById('result-screen').style.display = 'none';
+  document.getElementById('game-area').style.display = 'block';
+  buildProgressDots();
+  loadRound();
+}
+
+function buildProgressDots() {
+  const container = document.getElementById('progress-dots');
+  container.innerHTML = '';
+  for (let i = 0; i < scenarios.length; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'dot' + (i === 0 ? ' active' : '');
+    dot.id = 'dot-' + i;
+    container.appendChild(dot);
+  }
+}
+
+function loadRound() {
+  answered = false;
+  const s = scenarios[currentRound];
+  document.getElementById('round-label').textContent = `Runde ${currentRound + 1} von ${scenarios.length}`;
+  document.getElementById('scenario-title').textContent = s.title;
+  document.getElementById('scenario-desc').textContent = s.desc;
+  document.getElementById('scenario-goal').textContent = s.goal;
+  renderOptions(s.options);
+  document.getElementById('btn-next').style.display = 'none';
+  document.getElementById('feedback-box').style.display = 'none';
+  document.getElementById('analysis-box').style.display = 'none';
+  for (let i = 0; i < scenarios.length; i++) {
+    const dot = document.getElementById('dot-' + i);
+    if (i < currentRound) dot.className = 'dot done';
+    else if (i === currentRound) dot.className = 'dot active';
+    else dot.className = 'dot';
+  }
+}
+
+function renderOptions(options) {
+  const list = document.getElementById('prompt-list');
+  list.innerHTML = '';
+  options.forEach((option) => {
+    const button = document.createElement('button');
+    button.className = 'prompt-option';
+    button.type = 'button';
+    button.dataset.key = option.key;
+    button.innerHTML = `<span class="prompt-key">${option.key}</span><span class="prompt-copy">${option.prompt}</span>`;
+    button.addEventListener('click', () => answer(option.key));
+    list.appendChild(button);
+  });
+}
+
+function answer(choice) {
+  if (answered) return;
+  answered = true;
+  const s = scenarios[currentRound];
+  const isCorrect = choice === s.correct;
+  if (isCorrect) score += 10;
+  document.getElementById('score-display').textContent = score;
+  const buttons = Array.from(document.querySelectorAll('.prompt-option'));
+  buttons.forEach((button) => {
+    button.disabled = true;
+    if (button.dataset.key === s.correct) button.classList.add('correct');
+    else if (button.dataset.key === choice) button.classList.add('wrong');
+  });
+  const fb = document.getElementById('feedback-box');
+  const emoji = isCorrect ? '✅' : '❌';
+  fb.textContent = `${emoji} ${s.feedback}`;
+  fb.className = 'feedback-box ' + (isCorrect ? 'success' : 'error');
+  fb.style.display = 'block';
+  const analysis = document.getElementById('analysis-box');
+  analysis.textContent = s.analysis;
+  analysis.style.display = 'block';
+  document.getElementById('btn-next').style.display = 'inline-block';
+}
+
+function restartRound() {
+  loadRound();
+}
+
+function nextRound() {
+  currentRound++;
+  if (currentRound >= scenarios.length) {
+    showResult();
+  } else {
+    loadRound();
+  }
+}
+
+function showResult() {
+  document.getElementById('game-area').style.display = 'none';
+  const rs = document.getElementById('result-screen');
+  rs.style.display = 'block';
+  const maxScore = scenarios.length * 10;
+  const pct = Math.round((score / maxScore) * 100);
+  document.getElementById('final-score').textContent = `${score} / ${maxScore} Punkte`;
+  let msg = '';
+  if (pct >= 84) msg = 'Du erkennst bereits sehr gut, welche Prompts im Alltag wirklich brauchbare Antworten auslösen.';
+  else if (pct >= 50) msg = 'Die Grundidee sitzt. Der nächste Schritt ist, Kontexte und Formate noch bewusster zu steuern.';
+  else msg = 'Nutze die Rückmeldungen als Checkliste. Prompt-Kompetenz entsteht durch präzises Nachschärfen.';
+  document.getElementById('result-msg').textContent = msg;
+}
+
+function restartGame() {
+  initGame();
+}
+
+initGame();
+
+document.addEventListener('keydown', (event) => {
+  const key = event.key.toUpperCase();
+  if (['A', 'B', 'C', 'D'].includes(key) && !answered && currentRound < scenarios.length) {
+    answer(key);
+  } else if (key === 'ENTER' && answered && currentRound < scenarios.length) {
+    nextRound();
+  }
+});
+</script>
+</body>
+</html>

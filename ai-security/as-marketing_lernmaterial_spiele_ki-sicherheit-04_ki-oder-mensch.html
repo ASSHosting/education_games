@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KI oder Mensch? – VHS-Webinar</title>
+<style>
+  :root {
+    --red: #631832;
+    --blue: #173262;
+    --dark: #231A24;
+    --steel: #606F8C;
+    --orange: #FF9900;
+    --green: #00AA55;
+    --white: #FFFFFF;
+    --bg: #F8F8F8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', Arial, sans-serif;
+    background: var(--bg);
+    color: var(--dark);
+    min-height: 100vh;
+  }
+  header {
+    background: var(--blue);
+    color: white;
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  header h1 { font-size: 1.5rem; font-weight: 900; text-transform: uppercase; }
+  header .sub { font-size: 0.9rem; opacity: 0.85; }
+  .score-bar {
+    background: var(--red);
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.95rem;
+    font-weight: bold;
+  }
+  .container { max-width: 680px; margin: 0 auto; padding: 20px; }
+  .progress-dots {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+  .dot { width: 14px; height: 14px; border-radius: 50%; background: #ccc; transition: background 0.3s; }
+  .dot.done { background: var(--green); }
+  .dot.active { background: var(--orange); }
+  .round-card {
+    background: white;
+    border: 3px solid var(--blue);
+    border-radius: 14px;
+    overflow: hidden;
+    margin-bottom: 20px;
+  }
+  .round-header {
+    background: var(--blue);
+    color: white;
+    padding: 14px 20px;
+    font-size: 1rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .text-display {
+    padding: 24px 24px 20px;
+    font-size: 1.05rem;
+    line-height: 1.7;
+    color: var(--dark);
+    border-bottom: 2px solid #eee;
+    min-height: 120px;
+    font-style: italic;
+    background: #FAFAFA;
+  }
+  .question-area {
+    padding: 20px 24px;
+  }
+  .question-text {
+    font-size: 1.1rem;
+    font-weight: 900;
+    color: var(--dark);
+    margin-bottom: 16px;
+    text-align: center;
+  }
+  .situation-box {
+    margin-bottom: 16px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #eef3fb;
+    border: 2px solid #d8e3f6;
+    color: var(--blue);
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+  .btn-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 16px;
+  }
+  .btn-answer {
+    padding: 16px 14px;
+    border: 2px solid #d8dfea;
+    border-radius: 10px;
+    background: white;
+    color: var(--dark);
+    font-size: 0.98rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.1s, box-shadow 0.1s;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    text-align: left;
+    line-height: 1.45;
+    min-height: 114px;
+  }
+  .btn-answer:active { transform: scale(0.97); }
+  .btn-answer:hover { box-shadow: 0 8px 18px rgba(0,0,0,0.08); border-color: var(--blue); }
+  .btn-answer.selected { box-shadow: 0 0 0 4px rgba(255,153,0,0.25); border-color: var(--orange); }
+  .btn-answer.correct { background: var(--green); border-color: var(--green); box-shadow: 0 0 0 4px var(--green); }
+  .btn-answer.wrong { background: #e63946; border-color: #e63946; box-shadow: 0 0 0 4px #e63946; }
+  .btn-key {
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    background: var(--blue);
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    font-weight: 900;
+    flex: 0 0 auto;
+  }
+  .btn-copy {
+    display: block;
+    font-size: 0.95rem;
+  }
+  .feedback-box {
+    display: none;
+    padding: 16px 18px;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 14px;
+  }
+  .feedback-box.success { background: #d4f5e2; border: 2px solid var(--green); color: #0a4a2a; }
+  .feedback-box.error { background: #fde8e8; border: 2px solid #e63946; color: #5a0a0a; }
+  .hint-box {
+    background: #fff8e1;
+    border: 2px solid var(--orange);
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 0.9rem;
+    color: var(--dark);
+    margin-bottom: 14px;
+    display: none;
+  }
+  .hint-box strong { color: var(--orange); }
+  .practice-box {
+    display: none;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: #f3f7f1;
+    border: 2px solid #cfe1c9;
+    color: #214a2d;
+    margin-bottom: 14px;
+    line-height: 1.5;
+    font-size: 0.95rem;
+  }
+  .btn-next {
+    display: none;
+    width: 100%;
+    padding: 14px;
+    background: var(--green);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 900;
+    cursor: pointer;
+    text-transform: uppercase;
+  }
+  .result-screen {
+    display: none;
+    text-align: center;
+    padding: 40px 20px;
+    background: white;
+    border: 3px solid var(--blue);
+    border-radius: 14px;
+  }
+  .result-screen h2 { font-size: 1.8rem; color: var(--blue); margin-bottom: 10px; }
+  .score-big { font-size: 3rem; font-weight: 900; color: var(--red); margin: 20px 0; }
+  .result-screen p { font-size: 1.05rem; color: var(--dark); margin-bottom: 20px; line-height: 1.5; }
+  .btn-restart {
+    padding: 14px 30px;
+    background: var(--blue);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 900;
+    cursor: pointer;
+    text-transform: uppercase;
+  }
+  .screenshare-hint {
+    background: var(--orange);
+    color: var(--dark);
+    padding: 10px 20px;
+    font-size: 0.85rem;
+    font-weight: bold;
+    text-align: center;
+  }
+  .method-bar {
+    max-width: 680px;
+    margin: 18px auto 0;
+    padding: 0 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+  }
+  .method-pill {
+    background: white;
+    border: 1px solid #d6dce7;
+    color: var(--blue);
+    border-radius: 999px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+  .takeaway-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 22px 0;
+    text-align: left;
+  }
+  .takeaway-card {
+    border: 1px solid #d8e3f6;
+    border-radius: 10px;
+    padding: 12px 14px;
+    background: #f7faff;
+  }
+  .takeaway-card strong {
+    display: block;
+    color: var(--blue);
+    margin-bottom: 6px;
+  }
+  @media (max-width: 480px) {
+    .btn-row { grid-template-columns: 1fr; }
+    .btn-answer { min-height: auto; }
+    .takeaway-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div style="font-size:2.5rem;">🔎</div>
+  <div>
+    <div class="sub">VHS-Webinar · KI clever nutzen</div>
+    <h1>KI oder Mensch?</h1>
+  </div>
+</header>
+
+<div class="screenshare-hint">
+  Showmaster-Modus: Teilnehmende antworten mit A, B, C oder D im Chat.
+</div>
+
+<div class="method-bar">
+  <div class="method-pill">1. Text lesen</div>
+  <div class="method-pill">2. Aussagekraft der Hinweise prüfen</div>
+  <div class="method-pill">3. Bei Bedarf Quelle und Kontext checken</div>
+</div>
+
+<div class="score-bar">
+  <span id="round-label">Runde 1 von 6</span>
+  <span>Punkte: <strong id="score-display">0</strong> / <span id="total-display">0</span></span>
+</div>
+
+<div class="container">
+  <div class="progress-dots" id="progress-dots"></div>
+
+  <div id="game-area">
+    <div class="round-card">
+      <div class="round-header">
+        <span id="round-title">Runde 1</span>
+        <span id="category-badge">Kategorie</span>
+      </div>
+      <div class="situation-box" id="situation-box"></div>
+      <div class="text-display" id="text-display"></div>
+      <div class="question-area">
+        <div class="question-text" id="question-text">Welche Einschätzung ist am tragfähigsten?</div>
+        <div class="btn-row" id="options-row"></div>
+        <div class="feedback-box" id="feedback-box"></div>
+        <div class="practice-box" id="practice-box"></div>
+        <button class="btn-next" id="btn-next" onclick="nextRound()">Weiter →</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="result-screen" id="result-screen">
+    <div style="font-size:4rem; margin-bottom:10px;">🎯</div>
+    <h2>Quiz beendet!</h2>
+    <div class="score-big" id="final-score"></div>
+    <p id="result-msg"></p>
+    <div class="takeaway-grid">
+      <div class="takeaway-card">
+        <strong>Stil ist nur ein Indiz</strong>
+        Glatte Sprache, Fehler oder Dialekt sind Hinweise, aber kein Beweis.
+      </div>
+      <div class="takeaway-card">
+        <strong>Kontext schlägt Bauchgefühl</strong>
+        Bei Nachrichten, Zitaten oder Zahlen immer Quelle, Datum und Medium prüfen.
+      </div>
+      <div class="takeaway-card">
+        <strong>Frage nach dem Zweck</strong>
+        Soll der Text informieren, verkaufen, provozieren oder nur schnell klingen?
+      </div>
+      <div class="takeaway-card">
+        <strong>Kompetenz heißt prüfen</strong>
+        Nicht alles sofort als KI oder Mensch abstempeln. Gute Urteile lassen Unsicherheit zu.
+      </div>
+    </div>
+    <button class="btn-restart" onclick="restartGame()">Nochmal spielen</button>
+  </div>
+</div>
+
+<script>
+const rounds = [
+  {
+    title: "Runde 1 – Einkaufszettel",
+    category: "Alltag",
+    situation: "Du siehst den Text ohne weitere Angaben. Welche Einschätzung ist am tragfähigsten?",
+    text: `Milch (2x, aber die fettarme, nicht die normale!)\nBrot - das dunkle von Bäcker Mueller\nAepfel ca. 1kg\nKaese (Gouda, nicht zu jung)\nEier - 10 Stueck\nAch ja: Hundefutter nicht vergessen!!\nUnd Zahnpasta - die letzte Tube ist fast leer`,
+    options: [
+      { key: "A", label: "Wahrscheinlich KI, weil die Liste sauber untereinander steht." },
+      { key: "B", label: "Wahrscheinlich Mensch, weil persoenliche Nachtraege, Vorlieben und Gedankenspruenge sichtbar sind." },
+      { key: "C", label: "Nicht beurteilbar, weil Einkaufslisten nie Hinweise enthalten." },
+      { key: "D", label: "Sicher Mensch, weil Ausrufezeichen nur Menschen verwenden." }
+    ],
+    correct: "B",
+    feedback: "B ist am tragfaehigsten. Die Liste enthaelt persoenliche Eigenheiten, spontane Nachtraege und konkrete Vorlieben. Das spricht eher fuer einen menschlichen Alltagskontext.",
+    practice: "Praxisregel: Einzelne Stilmerkmale sind nur Indizien. Frage immer auch nach Herkunft, Anlass und Zweck des Textes."
+  },
+  {
+    title: "Runde 2 – Nachrichtenmeldung",
+    category: "Journalismus",
+    situation: "Hier ist absichtlich ein schwieriger Fall. Die Aufgabe ist nicht raten, sondern klug urteilen.",
+    text: `Die Bundesregierung hat heute ein neues Foerderprogramm fuer erneuerbare Energien angekuendigt. Das Programm sieht Investitionen in Hoehe von 2,3 Milliarden Euro vor und soll bis 2030 die Kapazitaet fuer Solarenergie um 40 Prozent steigern. Bundeswirtschaftsminister Robert Habeck erklaerte, das Programm sei ein wichtiger Schritt zur Erreichung der Klimaziele. Kritiker bemaengeln jedoch, die Mittel reichten nicht aus.`,
+    options: [
+      { key: "A", label: "Sicher KI, weil das Zitat politisch unglaubwuerdig klingt." },
+      { key: "B", label: "Wahrscheinlich Mensch, weil aktuelle Politikthemen meistens redaktionell entstehen." },
+      { key: "C", label: "Nicht sicher: Der Stil klingt journalistisch, aber ohne Quelle, Datum und Zitatpruefung ist keine belastbare Zuordnung moeglich." },
+      { key: "D", label: "Sicher KI, weil Nachrichtenstil immer auf maschinelle Texte hindeutet." }
+    ],
+    correct: "C",
+    feedback: "C ist die kompetente Antwort. Genau hier fuehrt Raten in die Irre. Ob der Text halluziniert, erkennst du nur mit Kontext: Quelle, Medium, Originalzitat und Datum muessen geprueft werden.",
+    practice: "Praxisregel: Wenn ein Text Tatsachen, Zahlen oder Zitate nennt, zuerst Belege pruefen. Kontext ist wichtiger als Stilgefuehl."
+  },
+  {
+    title: "Runde 3 – Wissenszusammenfassung",
+    category: "Sachtext",
+    situation: "Du sollst eine erste Einschaetzung treffen, ohne gleich absolute Sicherheit zu behaupten.",
+    text: `Kuenstliche Intelligenz bezeichnet Computersysteme, die Aufgaben ausfuehren koennen, fuer die normalerweise menschliche Intelligenz noetig ist. Dazu gehoeren maschinelles Lernen, Sprachverarbeitung und Bildanalyse. Moderne KI-Systeme werden mit grossen Datenmengen trainiert und koennen Texte generieren, uebersetzen und zusammenfassen.`,
+    options: [
+      { key: "A", label: "Wahrscheinlich KI, weil der Text sehr allgemein, neutral und lexikonartig formuliert ist." },
+      { key: "B", label: "Wahrscheinlich Mensch, weil Fachbegriffe nur von Fachleuten kommen koennen." },
+      { key: "C", label: "Sicher Mensch, weil der Text keine Fehler enthaelt." },
+      { key: "D", label: "Nicht beurteilbar, weil Sachtexte nie typische Merkmale haben." }
+    ],
+    correct: "A",
+    feedback: "A ist am plausibelsten. Solche neutralen, glatten Zusammenfassungen lassen sich sehr leicht mit KI erzeugen. Trotzdem bleibt es eine Wahrscheinlichkeitsaussage und kein Beweis.",
+    practice: "Praxisregel: Bei glatten Sachtexten frage dich: Gibt es Quelle, Autorenschaft, Anlass und nachpruefbare Belege?"
+  },
+  {
+    title: "Runde 4 – Persoenliche Anekdote",
+    category: "Erlebnis",
+    situation: "Welche Einschaetzung passt hier am besten zu den sichtbaren Merkmalen?",
+    text: `Letzte Woche beim Arzt - ich sass schon eine Stunde im Wartezimmer, das Magazin von 2019 schon zweimal durchgeblaettert. Dann kommt die Sprechstundenhilfe und sagt: 'Herr Meier? Der Doktor hat heute leider einen Notfall.' Ich dachte nur: natuerlich. Natuerlich. Dabei hatte ich extra den Fruehtermin genommen, damit ich puenktlich zur Arbeit komme...`,
+    options: [
+      { key: "A", label: "Wahrscheinlich KI, weil der Text emotional klingt." },
+      { key: "B", label: "Wahrscheinlich Mensch, weil innere Reaktion, konkrete Details und Alltagserfahrung zusammenkommen." },
+      { key: "C", label: "Sicher Mensch, weil KI keine Gefuehle beschreiben kann." },
+      { key: "D", label: "Nicht beurteilbar, weil persoenliche Erlebnisse nichts aussagen." }
+    ],
+    correct: "B",
+    feedback: "B ist die beste Antwort. Konkrete Beobachtungen, Frustration und der innere Monolog wirken wie ein erlebter Moment. Aber auch hier gilt: Es bleibt eine begruendete Wahrscheinlichkeitsaussage.",
+    practice: "Praxisregel: Achte auf erfahrungsnahe Details. Noch besser ist es, wenn du Kontext oder Urheber nachpruefen kannst."
+  },
+  {
+    title: "Runde 5 – Formelle E-Mail",
+    category: "Buero",
+    situation: "Viele Lernende wuerden hier vorschnell urteilen. Welche Antwort ist wirklich tragfaehig?",
+    text: `Sehr geehrte Damen und Herren,\n\nbezugnehmend auf meine Anfrage vom 15. Maerz 2026 moechte ich Sie hoeflich daran erinnern, dass ich bislang keine Rueckmeldung erhalten habe. Ich bitte Sie daher, mir bis zum 20. Maerz 2026 eine Stellungnahme zukommen zu lassen.\n\nFuer Rueckfragen stehe ich Ihnen gerne zur Verfuegung.\n\nMit freundlichen Gruessen\nElisabeth Musterfrau`,
+    options: [
+      { key: "A", label: "Sicher KI, weil der Ton zu korrekt und zu sauber ist." },
+      { key: "B", label: "Wahrscheinlich Mensch, weil Daten und Fristen genannt werden." },
+      { key: "C", label: "Nicht sicher: Formeller Stil allein beweist nichts. Absender, Anlass und Kommunikationskontext muessen mitgedacht werden." },
+      { key: "D", label: "Sicher Mensch, weil echte Personen immer so schreiben." }
+    ],
+    correct: "C",
+    feedback: "C ist richtig. Genau solche Texte koennen heute sowohl Menschen als auch KI sehr leicht verfassen. Wer hier nur nach Stil urteilt, lernt Scheinsicherheit statt Pruefkompetenz.",
+    practice: "Praxisregel: Bei formellen Texten nicht auf 'zu perfekt' hereinfallen. Frage nach Absender, Kanal, Anlass und nachfolgender Handlung."
+  },
+  {
+    title: "Runde 6 – Rezept mit Dialekt",
+    category: "Kochen",
+    situation: "Hier sollst du eine begruendete Einschaetzung geben, ohne aus einem Einzelmerkmal einen Beweis zu machen.",
+    text: `Omas Pflaumenknoedel (wie sie's immer gemacht hat):\n\nKartoffeln kochen, abkuehlen lassen - aber net zu lang, sonst werden's zu trocken! Dann durchdruecken (net mit dem Mixer, des gibt a Pampe). Mehl dazu, a Ei, a bissl Salz. Teig sollt net zu weich sein. Pflaumen entkernen, a Stueckle Zucker rein. Knoedel formen, ins kochende Wasser - wenn sie oben schwimmen, noch 2 Minuetle. Butter braeunen, Semmelbroesel roesten, drueber. Fertig!`,
+    options: [
+      { key: "A", label: "Wahrscheinlich KI, weil Rezepte oft stark schematisch aufgebaut sind." },
+      { key: "B", label: "Wahrscheinlich Mensch, weil regionale Sprachfaerbung, Warnhinweise und Erfahrungswissen zusammenkommen." },
+      { key: "C", label: "Sicher Mensch, weil Dialekt fuer KI unmoeglich ist." },
+      { key: "D", label: "Nicht beurteilbar, weil Rezepte generell keine Signale enthalten." }
+    ],
+    correct: "B",
+    feedback: "B ist die tragfaehigste Antwort. Die Mischung aus Dialekt, Koerperwissen und alltagsnahen Warnungen wirkt stark menschlich. Aber auch Dialekt ist kein absoluter Beweis, sondern ein Indiz.",
+    practice: "Praxisregel: Gute Urteile trennen zwischen starken Indizien und Beweisen. Genau das ist der Schritt vom Kennen zum Koennen."
+  }
+];
+
+let currentRound = 0;
+let score = 0;
+let answered = false;
+
+function initGame() {
+  currentRound = 0;
+  score = 0;
+  answered = false;
+  document.getElementById('score-display').textContent = '0';
+  document.getElementById('total-display').textContent = '0';
+  document.getElementById('result-screen').style.display = 'none';
+  document.getElementById('game-area').style.display = 'block';
+  buildProgressDots();
+  loadRound();
+}
+
+function buildProgressDots() {
+  const container = document.getElementById('progress-dots');
+  container.innerHTML = '';
+  for (let i = 0; i < rounds.length; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'dot' + (i === 0 ? ' active' : '');
+    dot.id = 'dot-' + i;
+    container.appendChild(dot);
+  }
+}
+
+function loadRound() {
+  answered = false;
+  const r = rounds[currentRound];
+  document.getElementById('round-label').textContent = `Runde ${currentRound + 1} von ${rounds.length}`;
+  document.getElementById('round-title').textContent = r.title;
+  document.getElementById('category-badge').textContent = r.category;
+  document.getElementById('situation-box').textContent = r.situation;
+  document.getElementById('text-display').textContent = r.text;
+  document.getElementById('question-text').textContent = 'Welche Einschaetzung ist am tragfaehigsten?';
+  renderOptions(r.options);
+  document.getElementById('feedback-box').style.display = 'none';
+  document.getElementById('practice-box').style.display = 'none';
+  document.getElementById('btn-next').style.display = 'none';
+
+  for (let i = 0; i < rounds.length; i++) {
+    const dot = document.getElementById('dot-' + i);
+    if (i < currentRound) dot.className = 'dot done';
+    else if (i === currentRound) dot.className = 'dot active';
+    else dot.className = 'dot';
+  }
+}
+
+function renderOptions(options) {
+  const row = document.getElementById('options-row');
+  row.innerHTML = '';
+  options.forEach((option) => {
+    const button = document.createElement('button');
+    button.className = 'btn-answer';
+    button.type = 'button';
+    button.dataset.key = option.key;
+    button.innerHTML = `<span class="btn-key">${option.key}</span><span class="btn-copy">${option.label}</span>`;
+    button.addEventListener('click', () => answer(option.key));
+    row.appendChild(button);
+  });
+}
+
+function answer(choice) {
+  if (answered) return;
+  answered = true;
+  const r = rounds[currentRound];
+  const isCorrect = choice === r.correct;
+  if (isCorrect) score++;
+  document.getElementById('score-display').textContent = score;
+  document.getElementById('total-display').textContent = currentRound + 1;
+
+  const buttons = Array.from(document.querySelectorAll('.btn-answer'));
+  buttons.forEach((button) => {
+    button.disabled = true;
+    if (button.dataset.key === r.correct) button.classList.add('correct');
+    else if (button.dataset.key === choice) button.classList.add('wrong');
+  });
+
+  const fb = document.getElementById('feedback-box');
+  const emoji = isCorrect ? '✅' : '❌';
+  fb.textContent = emoji + ' ' + r.feedback;
+  fb.className = 'feedback-box ' + (isCorrect ? 'success' : 'error');
+  fb.style.display = 'block';
+
+  const practiceBox = document.getElementById('practice-box');
+  practiceBox.textContent = r.practice;
+  practiceBox.style.display = 'block';
+
+  document.getElementById('btn-next').style.display = 'block';
+}
+
+function nextRound() {
+  currentRound++;
+  if (currentRound >= rounds.length) {
+    showResult();
+  } else {
+    loadRound();
+  }
+}
+
+function showResult() {
+  document.getElementById('game-area').style.display = 'none';
+  const rs = document.getElementById('result-screen');
+  rs.style.display = 'block';
+  const pct = Math.round((score / rounds.length) * 100);
+  document.getElementById('final-score').textContent = `${score} / ${rounds.length} Punkte (${pct}%)`;
+  let msg = '';
+  if (pct >= 84) msg = 'Du triffst bereits tragfaehige Urteile und laesst Unsicherheit dort zu, wo sie fachlich sinnvoll ist.';
+  else if (pct >= 50) msg = 'Die Richtung stimmt. Der naechste Schritt ist, Stilmerkmale noch staerker von echten Belegen zu trennen.';
+  else msg = 'Nutze die Rueckmeldungen als Pruefraster. Ziel ist nicht Raten, sondern begruendetes Entscheiden.';
+  document.getElementById('result-msg').textContent = msg;
+}
+
+function restartGame() {
+  initGame();
+}
+
+initGame();
+
+document.addEventListener('keydown', (event) => {
+  const key = event.key.toUpperCase();
+  if (['A', 'B', 'C', 'D'].includes(key) && !answered && currentRound < rounds.length) {
+    answer(key);
+  } else if (key === 'ENTER' && answered && currentRound < rounds.length) {
+    nextRound();
+  }
+});
+</script>
+</body>
+</html>

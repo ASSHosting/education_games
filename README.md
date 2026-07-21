@@ -27,29 +27,15 @@ http://localhost:8000/
 ## Ordnerstruktur
 
 - `ai-security/` – KI-Sicherheit und Prompting-Awareness
-  - `b2b/` – vertiefte B2B-Varianten
-  - `vhs/` – niedrigschwellige VHS-Varianten
-- `data-protection/` – Datenschutz und AI Act
-  - `b2b/` – vertiefte B2B-Varianten
-  - `vhs/` – niedrigschwellige VHS-Varianten
-- `online_security/` – Online-Sicherheit (inkl. Cybermobbing-Szenario)
-- `vhs-passworttraining/` – 4-teiliges VHS-Kursmodul zum Thema Passwortsicherheit
-- `cloud_data/` – Cloud-Daten-Spiele (VHS)
 - `data-science/` – Data-Science-Lernpfad (Interaktion + Code-Praxis)
+- `online_security/` – Online-Sicherheitsübungen
+- `vhs-passworttraining/` – 4-teiliges VHS-Kursmodul zum Thema Passwortsicherheit
+- `data-protection/` – Datenschutz-Formate (u. a. VHS)
+- `cloud_data/` – Cloud-Daten-Spiele
 - `sql/` – SQL-Lernspiele
 - `python/` – Python-Lernseiten
 - `logic-and-math/` – Logik/Kombinatorik
 - `media-literacy/` – Medienkompetenz
-- `grundschule/` – Grundschul-Übungen (Deutsch, Mathematik)
-
-### Schienen B2B vs. VHS
-
-In `ai-security/` und `data-protection/` gibt es zwei parallele Schienen für unterschiedliche Zielgruppen:
-
-- **B2B** (`b2b/`): vertiefte Inhalte für betriebliche Weiterbildung
-- **VHS** (`vhs/`): niedrigschwellige Inhalte für Erwachsenenbildung
-
-Themen können in beiden Schienen vorkommen (z. B. „Data Defender", „Compliance-Check", „5-Ampel-Quiz"). Sie sind didaktisch unterschiedlich, nicht redundant.
 
 ## Data Science: gepflegte Dateiliste
 
@@ -66,11 +52,11 @@ Themen können in beiden Schienen vorkommen (z. B. „Data Defender", „Complia
 9. `data-science/matrizenmultiplikation_interaktion.html`
 10. `data-science/regularization_interaktion.html`
 
-### Code-Praxis
+### Redirects fuer alte Code-Praxis-URLs
 
-1. `data-science/lineare_regression_code_praxis.html`
+1. `data-science/lineare_regression_code_praxis.html` -> `data-science/lineare_regression_interaktion.html`
 2. `data-science/gradient_descent_code_praxis.html`
-3. `data-science/predictive_modeling_code_praxis.html`
+3. `data-science/predictive_modeling_code_praxis.html` -> `data-science/index.html`
 
 ### Optionale Einstiege (vor Thema 1)
 

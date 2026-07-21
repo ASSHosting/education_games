@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Coverage Simulator | neue fische x iSyst</title>
+    <style>
+        :root {
+            --nf-orange: #FF5000;
+            --nf-black: #1A1A1A;
+            --nf-grey: #F3F4F6;
+            --chat-bg: #e1f5fe;
+            --sheet-left: #3498db;  /* Blau: Der Plan */
+            --sheet-right: #e74c3c; /* Rot: Die Realität */
+            --sheet-mix: #8e44ad;   /* Lila: Match */
+            --null-color: #bdc3c7;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--nf-grey);
+            color: var(--nf-black);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #fff;
+            width: 100%;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            position: fixed;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .container {
+            max-width: 1100px;
+            width: 95%;
+            margin-top: 6rem;
+            margin-bottom: 4rem;
+        }
+
+        /* --- THE CHAT (Briefing) --- */
+        .chat-bubble {
+            background: #fff;
+            border-radius: 15px;
+            padding: 1.5rem;
+            position: relative;
+            margin-bottom: 2rem;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+            border-left: 5px solid var(--nf-orange);
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+        }
+
+        .avatar {
+            width: 50px; height: 50px; background: #ddd; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center; font-size: 1.5rem;
+        }
+
+        .message-content { flex: 1; }
+        .sender-name { font-weight: bold; font-size: 0.9rem; color: #666; margin-bottom: 0.3rem; }
+        .message-text { font-size: 1.1rem; line-height: 1.5; }
+
+        /* --- VISUALIZER (Blätter Metapher) --- */
+        .visualizer-stage {
+            background: #fff;
+            padding: 1rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+
+        .sheets-container {
+            position: relative;
+            width: 320px;
+            height: 180px;
+            margin: 1rem 0;
+        }
+
+        /* The Sheets */
+        .sheet {
+            position: absolute;
+            width: 180px;
+            height: 140px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            transition: all 0.4s ease;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            opacity: 0.3; /* Inactive State */
+            border: 2px solid white;
+        }
+
+        .sheet-left {
+            background: var(--sheet-left);
+            top: 20px;
+            left: 0;
+            z-index: 1;
+        }
+        
+        .sheet-right {
+            background: var(--sheet-right);
+            top: 20px;
+            right: 0;
+            z-index: 2; /* Liegt oben drauf */
+        }
+
+        /* Intersection Area (Simulated by CSS clip-path or overlap logic visually) */
+        /* For this simple sim, we use Active States to simulate lighting up */
+
+        .viz-label {
+            font-style: italic;
+            color: #666;
+            height: 1.5rem;
+            text-align: center;
+        }
+
+        /* --- Active States for Visualizer --- */
+        /* INNER: Nur die Schnittmenge leuchtet (Wir simulieren das durch Verschieben) */
+        .state-INNER .sheet-left { left: 70px; opacity: 0.8; background: var(--sheet-mix); z-index: 3; width: 180px;}
+        .state-INNER .sheet-right { right: 70px; opacity: 0; } /* Hide Right, show mix */
+        /* Wait, better logic for Inner: Show overlapping */
+        
+        .state-INNER .sheet-left { left: 20px; opacity: 0.2; }
+        .state-INNER .sheet-right { right: 20px; opacity: 0.2; }
+        .state-INNER::after {
+            content: "MATCH";
+            position: absolute; top: 40px; left: 110px; width: 100px; height: 100px;
+            background: var(--sheet-mix); z-index: 10; display: flex; align-items: center; justify-content: center;
+            color: white; font-weight: bold; border-radius: 50%; box-shadow: 0 0 20px var(--sheet-mix);
+            animation: pulse 1s infinite;
+        }
+
+        /* LEFT: Linkes Blatt voll sichtbar. Rechtes Blatt nur da wo es passt */
+        .state-LEFT .sheet-left { opacity: 1; z-index: 5; box-shadow: 0 0 15px var(--sheet-left); }
+        .state-LEFT .sheet-right { opacity: 0.3; right: 40px; z-index: 1; }
+
+        /* RIGHT: Rechtes Blatt voll sichtbar. */
+        .state-RIGHT .sheet-right { opacity: 1; z-index: 5; box-shadow: 0 0 15px var(--sheet-right); }
+        .state-RIGHT .sheet-left { opacity: 0.3; left: 40px; z-index: 1; }
+
+        /* FULL: Beide voll sichtbar nebeneinander */
+        .state-FULL .sheet-left { left: -10px; opacity: 1; }
+        .state-FULL .sheet-right { right: -10px; opacity: 1; }
+
+
+        /* --- DATA TABLES --- */
+        .data-area {
+            display: flex;
+            gap: 2rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .data-card {
+            background: #fff;
+            border-radius: 8px;
+            width: 300px;
+            padding: 1rem;
+            border-top: 5px solid #ccc;
+        }
+
+        .border-blue { border-top-color: var(--sheet-left); }
+        .border-red { border-top-color: var(--sheet-right); }
+
+        .table-title { font-weight: bold; margin-bottom: 1rem; text-transform: uppercase; font-size: 0.9rem; color: #888; }
+        
+        .row {
+            display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #eee; font-family: monospace;
+        }
+        .row:last-child { border: none; }
+
+        /* --- CONTROLS --- */
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+
+        .btn-join {
+            background: #fff;
+            border: 2px solid transparent;
+            padding: 1.5rem;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            position: relative;
+        }
+
+        .btn-join:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            border-color: #ddd;
+        }
+
+        .btn-title { font-weight: 800; font-size: 1.1rem; display: block; margin-bottom: 0.5rem; }
+        .btn-desc { font-size: 0.95rem; color: #555; line-height: 1.4; }
+
+        /* Color Coding Buttons */
+        .btn-join:nth-child(1):hover { border-color: var(--sheet-mix); } /* Inner */
+        .btn-join:nth-child(2):hover { border-color: var(--sheet-left); } /* Left */
+        .btn-join:nth-child(3):hover { border-color: var(--sheet-right); } /* Right */
+        .btn-join:nth-child(4):hover { border-color: var(--nf-orange); } /* Full */
+
+
+        /* FEEDBACK MODAL */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            display: none; justify-content: center; align-items: center; z-index: 200;
+        }
+        .modal-box {
+            background: white; padding: 2rem; border-radius: 12px; max-width: 500px; text-align: center;
+        }
+        .modal-btn {
+            background: var(--nf-black); color: white; padding: 10px 25px; border: none; border-radius: 50px; font-size: 1rem; cursor: pointer; margin-top: 1.5rem;
+        }
+
+        @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div style="font-weight: 800;">neue<span>fische</span> // Testing Suite</div>
+        <div>Ticket <span id="lvl-display">1</span> / 4</div>
+    </header>
+
+    <div class="container">
+
+        <!-- BRIEFING (Chat Style) -->
+        <div class="chat-bubble">
+            <div class="avatar">👨‍💼</div>
+            <div class="message-content">
+                <div class="sender-name">Projektleiter (via Teams)</div>
+                <div class="message-text" id="mission-text">...</div>
+            </div>
+        </div>
+
+        <!-- VISUALIZER -->
+        <div class="visualizer-stage">
+            <div style="font-size:0.8rem; color:#aaa; margin-bottom:1rem;">VISUALISIERUNG (Hover über Buttons)</div>
+            <div class="sheets-container" id="viz-container">
+                <div class="sheet sheet-left">Tabelle A<br>(Plan/Soll)</div>
+                <div class="sheet sheet-right">Tabelle B<br>(Ist/Labor)</div>
+            </div>
+            <div class="viz-label" id="viz-label">Warte auf Auswahl...</div>
+        </div>
+
+        <!-- DATA PREVIEW -->
+        <div class="data-area">
+            <div class="data-card border-blue">
+                <div class="table-title">TABELLE A (Der Plan)</div>
+                <div id="table-a"></div>
+            </div>
+            <div class="data-card border-red">
+                <div class="table-title">TABELLE B (Das Labor)</div>
+                <div id="table-b"></div>
+            </div>
+        </div>
+
+        <!-- CONTROLS -->
+        <div class="controls">
+            <!-- INNER -->
+            <button class="btn-join" onmouseenter="sim.preview('INNER')" onmouseleave="sim.resetPreview()" onclick="sim.check('INNER')">
+                <span class="btn-title">"Nur Paare anzeigen"</span>
+                <span class="btn-desc">Zeig mir nur Tests, die im Plan stehen UND Ergebnisse haben. Unfertiges interessiert mich nicht.</span>
+            </button>
+
+            <!-- LEFT -->
+            <button class="btn-join" onmouseenter="sim.preview('LEFT')" onmouseleave="sim.resetPreview()" onclick="sim.check('LEFT')">
+                <span class="btn-title">"Fokus auf den Plan"</span>
+                <span class="btn-desc">Die Plan-Liste (Links) ist heilig. Zeig mir alles. Wenn ein Ergebnis fehlt, schreib 'NULL' dran. (Coverage Check)</span>
+            </button>
+
+            <!-- RIGHT -->
+            <button class="btn-join" onmouseenter="sim.preview('RIGHT')" onmouseleave="sim.resetPreview()" onclick="sim.check('RIGHT')">
+                <span class="btn-title">"Fokus auf das Labor"</span>
+                <span class="btn-desc">Die Labor-Liste (Rechts) ist heilig. Zeig mir alles was gemessen wurde, auch wenn es gar nicht im Plan stand.</span>
+            </button>
+
+            <!-- FULL -->
+            <button class="btn-join" onmouseenter="sim.preview('FULL')" onmouseleave="sim.resetPreview()" onclick="sim.check('FULL')">
+                <span class="btn-title">"Alles auf den Tisch"</span>
+                <span class="btn-desc">Ich will das totale Chaos sehen. Plan ohne Ergebnis UND Ergebnis ohne Plan. (Audit Mode)</span>
+            </button>
+        </div>
+
+    </div>
+
+    <!-- MODAL -->
+    <div id="modal" class="modal-overlay">
+        <div class="modal-box">
+            <h2 id="modal-title">...</h2>
+            <p id="modal-msg" style="line-height:1.6; color:#555;">...</p>
+            <button class="modal-btn" onclick="sim.nextOrRetry()">Weiter</button>
+        </div>
+    </div>
+
+    <!-- TRAINER HINTS -->
+    <section style="max-width: 1100px; margin: 3rem auto; border-top: 1px solid #ccc; padding-top: 2rem;">
+        <details>
+            <summary><strong>💡 Praxis-Check für Test-Ingenieure (Warum das wichtig ist)</strong></summary>
+            <div style="background: #fff; padding: 1.5rem; margin-top: 1rem; border-radius: 8px;">
+                <p><strong>Warum JOINs im Testing?</strong></p>
+                <ul>
+                    <li><strong>LEFT JOIN</strong> ist Ihr wichtigstes Werkzeug für <em>Requirements Coverage</em>. Sie haben 100 Anforderungen (Links). Sie wollen wissen: Welche davon wurden NICHT getestet? (Wo steht rechts NULL?).</li>
+                    <li><strong>INNER JOIN</strong> nutzen Sie für <em>Kunden-Reports</em>. Der Kunde will keine unfertigen Tests sehen, sondern nur die validen Ergebnisse.</li>
+                    <li><strong>FULL JOIN</strong> ist Ihr <em>Debugger</em>. Wenn IDs durcheinander geraten sind oder alte Logs auftauchen, die zu keinem aktuellen Testfall passen, deckt dieser Join alles auf.</li>
+                </ul>
+            </div>
+        </details>
+    </section>
+
+    <script>
+        const levels = [
+            {
+                id: 1,
+                sender: "Projektleiter (Kunden-Meeting)",
+                text: "Moin! Ich muss dem Kunden gleich die Ergebnisse präsentieren. Bitte gib mir eine saubere Liste aller <strong>abgeschlossenen</strong> Tests.<br>Alles was noch offen ist (kein Ergebnis hat), rausfiltern! Das sieht sonst schlecht aus.",
+                correct: "INNER",
+                hint: "Wir wollen nur Datensätze, wo Plan (A) und Ergebnis (B) übereinstimmen. Keine Lücken.",
+                dataA: [
+                    {id: 101, val: "Test: Bremse"},
+                    {id: 102, val: "Test: Airbag"}, /* Missing in B */
+                    {id: 103, val: "Test: Navi"}
+                ],
+                dataB: [
+                    {id: 101, val: "Res: OK"},
+                    {id: 103, val: "Res: OK"}
+                ]
+            },
+            {
+                id: 2,
+                sender: "Quality Assurance (Audit)",
+                text: "Wir haben ein Problem. Ich glaube, wir haben Tests vergessen. Nimm den <strong>Testplan (Tabelle A)</strong> als Basis und zeig mir ALLES an. <br>Markiere mir, wo Ergebnisse fehlen. Ich brauche den Beweis der Lücken.",
+                correct: "LEFT",
+                hint: "Die Tabelle A (Plan) ist die führende Quelle. Wir dürfen nichts daraus verlieren, nur weil Ergebnisse fehlen.",
+                dataA: [
+                    {id: "TP-1", val: "Lasttest"},
+                    {id: "TP-2", val: "Hitzetest"},
+                    {id: "TP-3", val: "Kältetest"}
+                ],
+                dataB: [
+                    {id: "TP-1", val: "Done"},
+                    /* TP-2 missing */
+                    {id: "TP-3", val: "Done"}
+                ]
+            },
+            {
+                id: 3,
+                sender: "Labor-Leitung",
+                text: "Komisch. Mein Praktikant hat Messungen hochgeladen für Steuergeräte, die gar nicht im Plan (A) stehen. <br>Mach mal eine Abfrage mit <strong>Fokus auf die Labor-Daten (B)</strong>. Ich will sehen, welche 'Geister-Tests' wir da im System haben, die keinen Auftrag haben.",
+                correct: "RIGHT",
+                hint: "Wir wollen sicherstellen, dass wir alles aus B (Labor) sehen. Wenn dazu kein Plan (A) existiert, ist das der Fehler, den wir suchen.",
+                dataA: [
+                    {id: 50, val: "Auftrag X"},
+                    {id: 51, val: "Auftrag Y"}
+                ],
+                dataB: [
+                    {id: 50, val: "Messung X"},
+                    {id: 99, val: "Messung ??? (Ghost)"} /* Orphan */
+                ]
+            },
+            {
+                id: 4,
+                sender: "System-Admin",
+                text: "Totaler Datenbank-Crash. Wir müssen aufräumen. <br>Ich brauche eine Liste mit ALLEM. Pläne ohne Ergebnisse UND Ergebnisse ohne Pläne. <strong>Wirf alles in einen Topf</strong>, wir sortieren später.",
+                correct: "FULL",
+                hint: "Nichts darf gefiltert werden. Wir brauchen die maximale Menge aus beiden Tabellen.",
+                dataA: [
+                    {id: 1, val: "Plan A"},
+                    {id: 2, val: "Plan B"}
+                ],
+                dataB: [
+                    {id: 1, val: "Res A"},
+                    {id: 3, val: "Res C (Unplanned)"}
+                ]
+            }
+        ];
+
+        const sim = {
+            lvlIdx: 0,
+            
+            init: () => {
+                sim.loadLevel();
+            },
+
+            loadLevel: () => {
+                const lvl = levels[sim.lvlIdx];
+                document.getElementById('lvl-display').innerText = lvl.id;
+                document.getElementById('mission-text').innerHTML = lvl.text;
+                document.querySelector('.sender-name').innerText = lvl.sender;
+                
+                // Render Tables
+                sim.renderTable('table-a', lvl.dataA);
+                sim.renderTable('table-b', lvl.dataB);
+                
+                document.getElementById('modal').style.display = 'none';
+            },
+
+            renderTable: (elId, data) => {
+                const el = document.getElementById(elId);
+                el.innerHTML = '';
+                data.forEach(row => {
+                    el.innerHTML += `<div class="row"><span style="background:#eee; padding:0 4px; border-radius:3px;">${row.id}</span> <span>${row.val}</span></div>`;
+                });
+            },
+
+            preview: (type) => {
+                const container = document.getElementById('viz-container');
+                const label = document.getElementById('viz-label');
+                container.className = `sheets-container state-${type}`;
+                
+                if(type === 'INNER') label.innerText = "Schnittmenge: Nur was doppelt vorkommt.";
+                if(type === 'LEFT') label.innerText = "Dominanz Links: Tabelle A bleibt vollständig.";
+                if(type === 'RIGHT') label.innerText = "Dominanz Rechts: Tabelle B bleibt vollständig.";
+                if(type === 'FULL') label.innerText = "Vereinigung: Alles wird angezeigt.";
+            },
+
+            resetPreview: () => {
+                document.getElementById('viz-container').className = 'sheets-container';
+                document.getElementById('viz-label').innerText = "Warte auf Auswahl...";
+            },
+
+            check: (type) => {
+                const lvl = levels[sim.lvlIdx];
+                const modal = document.getElementById('modal');
+                const title = document.getElementById('modal-title');
+                const msg = document.getElementById('modal-msg');
+                const btn = document.querySelector('.modal-btn');
+
+                modal.style.display = 'flex';
+
+                if(type === lvl.correct) {
+                    title.innerText = "✅ Genau richtig!";
+                    title.style.color = "var(--nf-orange)";
+                    msg.innerHTML = `<strong>Analyse korrekt.</strong><br>${lvl.hint}<br>Das ist genau das, was der Kollege brauchte.`;
+                    btn.innerText = "Nächstes Ticket bearbeiten";
+                    btn.onclick = () => {
+                        sim.lvlIdx++;
+                        if(sim.lvlIdx < levels.length) sim.loadLevel();
+                        else alert("Alle Tickets gelöst! Großartige Arbeit.");
+                    };
+                } else {
+                    title.innerText = "⚠️ Nicht ganz...";
+                    title.style.color = "#c0392b";
+                    
+                    let explain = "";
+                    if(type === 'INNER') explain = "Mit INNER JOIN verlierst du wichtige Daten, die keinen Partner haben.";
+                    if(type === 'FULL') explain = "FULL JOIN ist hier zu viel. Wir wollen nicht alles Chaos sehen, sondern spezifisch filtern.";
+                    if(type === 'LEFT' && lvl.correct !== 'LEFT') explain = "LEFT JOIN fokussiert auf den Plan (A). Hier war aber etwas anderes gefragt.";
+                    
+                    msg.innerHTML = `<strong>Das war nicht die Anforderung.</strong><br>${explain}<br>Lies die Nachricht nochmal genau.`;
+                    btn.innerText = "Nochmal versuchen";
+                    btn.onclick = () => { modal.style.display = 'none'; };
+                }
+            },
+            
+            nextOrRetry: () => {
+                // Handled in check() logic dynamically
+            }
+        };
+
+        sim.init();
+
+    </script>
+</body>
+</html>
