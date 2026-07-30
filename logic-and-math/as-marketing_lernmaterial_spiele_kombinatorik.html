@@ -8,22 +8,21 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
 
         :root {
-            /* --- Corporate Identity --- */
-            --brand-main: #631832;      /* Bordeaux */
-            --brand-accent: #173262;    /* Navy Blue */
+            --brand-main: #631832;
+            --brand-accent: #173262;
             --text-main: #231A24;
             --text-light: #606F8C;
             --bg-body: #f0f2f5;
             --sidebar-bg: #ffffff;
             --viz-bg: rgba(255, 255, 255, 0.95);
-            --highlight-flash: #f1c40f; 
+            --highlight-flash: #f1c40f;
             --success-green: #27ae60;
         }
 
-        body { 
-            margin: 0; padding: 0; overflow: hidden; 
-            font-family: 'Inter', sans-serif; 
-            background-color: var(--bg-body); 
+        body {
+            margin: 0; padding: 0; overflow: hidden;
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-body);
             color: var(--text-main);
             height: 100vh; width: 100vw;
         }
@@ -34,7 +33,6 @@
             height: 100%; width: 100%;
         }
 
-        /* --- SIDEBAR --- */
         #sidebar {
             background: var(--sidebar-bg);
             border-right: 1px solid #ddd;
@@ -60,7 +58,6 @@
             font-size: 0.9rem; color: var(--brand-accent);
         }
 
-        /* Context Sentence for AI Step */
         .ai-sentence {
             font-size: 1.1rem; font-weight: bold; color: var(--text-main);
             background: #eef2f6; padding: 10px; border-radius: 6px;
@@ -68,24 +65,14 @@
         }
         .missing-word { color: var(--brand-main); border-bottom: 2px dashed var(--brand-main); }
 
-        /* KI Context Block */
         .ai-context-box {
-            background: rgba(99, 24, 50, 0.05); 
+            background: rgba(99, 24, 50, 0.05);
             border: 1px solid var(--brand-main);
             color: var(--brand-main);
             padding: 12px; border-radius: 6px; margin-bottom: 15px;
             font-size: 0.9rem; font-weight: 500;
         }
-        .tooltip-trigger {
-            text-decoration: underline; cursor: pointer; color: var(--brand-accent); font-weight: 700;
-            display: inline-block; margin-top: 5px; font-size: 0.8rem;
-        }
-        .tooltip-content {
-            display: none; margin-top: 8px; padding-top: 8px; border-top: 1px dashed rgba(0,0,0,0.1);
-            font-size: 0.85rem; color: var(--text-main); font-weight: 400;
-        }
 
-        /* Liste für Fazit */
         .conclusion-list { list-style: none; padding: 0; margin-bottom: 20px; }
         .conclusion-list li {
             background: #f0fff4; border-left: 4px solid var(--success-green);
@@ -99,6 +86,8 @@
         .step-content.active { display: block; }
 
         .step-note { font-size: 0.85rem; color: var(--text-light); margin-top: 12px; }
+
+        .source-note { font-size: 0.75rem; color: var(--text-light); margin-top: 4px; font-style: italic; }
 
         #prediction-bet,
         #quiz-container,
@@ -211,19 +200,18 @@
             box-shadow: 0 4px 6px rgba(23, 50, 98, 0.15);
         }
         button:hover { background: #1f4282; transform: translateY(-1px); }
-        
+
         button.secondary { background: white; color: var(--text-light); border: 1px solid #ddd; box-shadow: none; font-size: 0.85rem; padding: 10px; }
         button.secondary:hover { background: #f1f1f1; color: var(--brand-accent); }
-        
+
         button.nav-btn { background: transparent; border: 1px solid var(--brand-main); color: var(--brand-main); margin-top: 10px; box-shadow: none; }
         button.nav-btn:hover { background: var(--brand-main); color: white; }
 
         button.cta-btn { background: var(--success-green); box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3); }
         button.cta-btn:hover { background: #219150; }
-        
+
         button.restart-btn { background: #555; margin-top: 5px; }
 
-        /* Pulsierender Pfeil für Auto-Modus */
         .click-hint {
             position: absolute; left: 50%; transform: translateX(-50%); bottom: 100%;
             background: var(--brand-main); color: white; padding: 5px 10px; border-radius: 4px;
@@ -236,13 +224,11 @@
         }
         @keyframes bounce { 0%, 100% { transform: translate(-50%, 0); } 50% { transform: translate(-50%, -5px); } }
 
-
         /* --- STAGE --- */
         #stage {
             position: relative; background: #eef2f6; overflow: hidden;
             display: flex; flex-direction: column;
         }
-        #c { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; outline: none; }
 
         #top-display {
             position: relative; z-index: 10; margin: 20px auto;
@@ -255,6 +241,88 @@
         .t-white { color: #333; }
         .t-red { color: var(--brand-main); }
         .t-sum { color: var(--brand-accent); padding-left: 20px; border-left: 2px solid #ddd; }
+        .dice-res.hidden-slot { opacity: 0.35; }
+
+        /* --- CSS-3D-Würfel (kein WebGL nötig) --- */
+        #dice-scene {
+            position: relative; z-index: 5;
+            flex: 1;
+            display: flex; align-items: center; justify-content: center;
+            gap: 60px;
+            perspective: 900px;
+            perspective-origin: 50% 40%;
+            padding: 20px;
+        }
+
+        .dice-slot {
+            width: 120px; height: 120px;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: opacity 0.5s ease, transform 0.5s ease;
+        }
+        .dice-slot.is-hidden { opacity: 0; transform: scale(0.6); pointer-events: none; }
+
+        .dice-cube {
+            width: 100%; height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transform: rotateX(-25deg) rotateY(-30deg);
+            transition: transform 0.9s cubic-bezier(0.34, 1.2, 0.64, 1);
+            will-change: transform;
+        }
+
+        .dice-cube.shaking {
+            animation: dice-shake 0.5s ease-in-out;
+        }
+        @keyframes dice-shake {
+            0%   { transform: rotateX(-25deg) rotateY(-30deg) translateY(0); }
+            25%  { transform: rotateX(60deg)  rotateY(120deg) translateY(-18px); }
+            50%  { transform: rotateX(-45deg) rotateY(280deg) translateY(-30px); }
+            75%  { transform: rotateX(120deg) rotateY(430deg) translateY(-14px); }
+            100% { transform: rotateX(-25deg) rotateY(-30deg) translateY(0); }
+        }
+
+        .dice-face {
+            position: absolute; inset: 0;
+            display: grid;
+            grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+            padding: 14px; box-sizing: border-box;
+            gap: 6px;
+            border-radius: 14px;
+            box-shadow: inset 0 0 22px rgba(0,0,0,0.18), inset 0 0 3px rgba(255,255,255,0.6);
+            backface-visibility: hidden;
+        }
+        .dice-slot.white .dice-face { background: #fdfdfd; border: 1px solid #d8d8d8; }
+        .dice-slot.red   .dice-face { background: var(--brand-main); border: 1px solid #4a1024; }
+
+        .dice-slot.white .dice-pip { background: radial-gradient(circle at 30% 30%, #444 0%, #111 70%); }
+        .dice-slot.red   .dice-pip { background: radial-gradient(circle at 30% 30%, #fff 0%, #ddd 70%); }
+
+        .dice-pip {
+            border-radius: 50%;
+            width: 16px; height: 16px;
+            align-self: center; justify-self: center;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.4);
+        }
+
+        /* Face-Positionen für Würfel Kantenlänge 120px → translateZ 60px */
+        .dice-face.f-front  { transform: translateZ(60px); }
+        .dice-face.f-back   { transform: rotateY(180deg) translateZ(60px); }
+        .dice-face.f-right  { transform: rotateY(90deg)  translateZ(60px); }
+        .dice-face.f-left   { transform: rotateY(-90deg) translateZ(60px); }
+        .dice-face.f-top    { transform: rotateX(90deg)  translateZ(60px); }
+        .dice-face.f-bottom { transform: rotateX(-90deg) translateZ(60px); }
+
+        /* Pip-Positionen (Grid 3x3) für jede Würfelseite */
+        .pip-tl { grid-area: 1 / 1; }
+        .pip-tm { grid-area: 1 / 2; }
+        .pip-tr { grid-area: 1 / 3; }
+        .pip-ml { grid-area: 2 / 1; }
+        .pip-mm { grid-area: 2 / 2; }
+        .pip-mr { grid-area: 2 / 3; }
+        .pip-bl { grid-area: 3 / 1; }
+        .pip-bm { grid-area: 3 / 2; }
+        .pip-br { grid-area: 3 / 3; }
 
         /* Viz Panel */
         #viz-panel {
@@ -280,14 +348,14 @@
             opacity: 0; transform: translateY(10px); transition: all 0.3s;
         }
         #info-overlay.show { display: block; opacity: 1; transform: translateY(0); }
-        
+
         .viz-group { text-align: center; }
         .viz-head { font-size: 0.75rem; font-weight: 700; color: var(--brand-accent); text-transform: uppercase; margin-bottom: 10px; }
 
         #grid-wrapper { display: grid; grid-template-columns: 20px 1fr; gap: 5px; }
         .axis-v { grid-row: 2; writing-mode: vertical-rl; transform: rotate(180deg); font-size: 0.7rem; color: #888; font-weight: bold; text-align: center; }
         .axis-h { grid-column: 2; font-size: 0.7rem; color: #888; font-weight: bold; }
-        
+
         #grid {
             grid-column: 2; grid-row: 2; display: grid;
             grid-template-columns: repeat(6, 1fr); gap: 2px;
@@ -295,7 +363,7 @@
         }
         .cell { background: #fff; display: flex; justify-content: center; align-items: center; font-size: 0.6rem; color: #ccc; transition: all 0.2s; }
         .cell.active { background: var(--brand-main); color: white; transform: scale(1.1); z-index: 5; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
-        .cell.hl-line { background: #fff3cd; } 
+        .cell.hl-line { background: #fff3cd; }
 
         #bars {
             display: flex; align-items: flex-end; width: 240px; height: 160px;
@@ -307,17 +375,15 @@
         .bar.active-flash { background: var(--highlight-flash) !important; filter: brightness(1.1); }
         .b-lbl { font-size: 0.65rem; color: #666; margin-top: 4px; }
 
-        /* AI Word Animation (Step 4) */
         #word-viz {
             display: none; width: 240px; margin-top: 10px; border-top: 1px solid #eee; padding-top: 5px;
             justify-content: space-between; gap: 4px;
         }
-        .w-item { flex: 1; text-align: center; font-size: 0.65rem; color: var(--text-light); opacity: 0.5; transition: opacity 0.3s; background: #fff; padding: 4px; border-radius: 4px; border: 1px solid #eee; }
-        .w-item.active { opacity: 1; font-weight: bold; color: white; background: var(--brand-main); border-color: var(--brand-main); transform: scale(1.05); box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
-        .w-val { display: block; font-size: 0.6rem; margin-top: 2px; }
-        .w-word { display: block; margin-bottom: 2px; }
-        
-        /* Debug Error Box */
+        .w-item { flex: 1; text-align: center; font-size: 0.7rem; color: var(--text-light); opacity: 0.6; transition: opacity 0.3s; background: #fff; padding: 6px 4px; border-radius: 4px; border: 1px solid #eee; }
+        .w-item.active { opacity: 1; font-weight: bold; color: white; background: var(--brand-main); border-color: var(--brand-main); transform: scale(1.05); box-shadow: 0 2px 5px rgba(0,0,0,0.15); }
+        .w-val { display: block; font-size: 0.65rem; margin-top: 3px; }
+        .w-word { display: block; margin-bottom: 2px; font-size: 0.8rem; }
+
         #error-box {
             position: fixed; top: 10px; left: 50%; transform: translateX(-50%);
             background: #e74c3c; color: white; padding: 15px; border-radius: 8px;
@@ -328,9 +394,17 @@
         @media (max-width: 900px) {
             #app-layout { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
             #sidebar { height: auto; max-height: 40vh; border-right: none; border-bottom: 1px solid #ddd; padding: 20px; }
-            #viz-panel { 
-                position: relative; bottom: auto; right: auto; 
-                margin: 0; width: 100%; box-sizing: border-box; 
+            #dice-scene { gap: 30px; padding: 10px; }
+            .dice-slot { width: 90px; height: 90px; }
+            .dice-face.f-front  { transform: translateZ(45px); }
+            .dice-face.f-back   { transform: rotateY(180deg) translateZ(45px); }
+            .dice-face.f-right  { transform: rotateY(90deg)  translateZ(45px); }
+            .dice-face.f-left   { transform: rotateY(-90deg) translateZ(45px); }
+            .dice-face.f-top    { transform: rotateX(90deg)  translateZ(45px); }
+            .dice-face.f-bottom { transform: rotateX(-90deg) translateZ(45px); }
+            #viz-panel {
+                position: relative; bottom: auto; right: auto;
+                margin: 0; width: 100%; box-sizing: border-box;
                 justify-content: center; flex-wrap: wrap;
                 background: rgba(255,255,255,0.8);
             }
@@ -340,120 +414,121 @@
 </head>
 <body>
 
-    <!-- Error Display -->
     <div id="error-box">
         <strong>Fehler aufgetreten:</strong><br>
-        <span id="error-msg"></span><br><br>
-        <em id="error-tip">Tipp: WebGL ist deaktiviert oder nicht verfügbar. Aktiviere Hardwarebeschleunigung im Browser oder nutze Firefox.</em>
+        <span id="error-msg"></span>
     </div>
 
     <div id="app-layout">
-        
+
         <div id="sidebar">
             <div class="brand-header">AS Digital Marketing | Data Science Lab</div>
-            
+
             <div id="content-area">
-                <!-- STEP 0 -->
+                <!-- STEP 0: Einstieg -->
                 <div id="step-0" class="step-content active">
                     <h2>1. KI denkt nicht – sie zählt Muster</h2>
                     <p>Kennst du das? Du fragst ChatGPT etwas Einfaches und bekommst eine Antwort, die klingt wie aus dem Lehrbuch – aber irgendwie <strong>seelenlos</strong>.</p>
                     <p>Oder schlimmer: Die KI erfindet plötzlich Fakten, die es gar nicht gibt.</p>
                     <p>Warum? Weil KI <strong>nicht denkt wie ein Mensch</strong>. Sie berechnet, welches Wort als Nächstes am wahrscheinlichsten passt. Genau wie ein Würfelwurf.</p>
                     <div class="highlight-box">
-                        <strong>Dein Ziel:</strong> In 5 Minuten verstehst du, warum KI manchmal brillant ist und manchmal Unsinn erzählt – und was du dagegen tun kannst.
+                        <strong>Dein Ziel:</strong> In wenigen Minuten verstehst du, warum KI manchmal brillant ist und manchmal Unsinn erzählt – und was du dagegen tun kannst.
                     </div>
-                    <p class="step-note">Klicke auf „Würfeln“, um den ersten Einzelfall zu erzeugen.</p>
+                    <p class="step-note">Klicke rechts unten auf „Weiter", um mit dem ersten Würfel zu starten.</p>
                 </div>
 
-                <!-- STEP 1 -->
+                <!-- STEP 1: Ein Würfel = ein Wort -->
                 <div id="step-1" class="step-content">
-                    <h2>2. Vom Einzelfall zum Merkmal</h2>
-                    <p>Ein einzelnes Paar, zum Beispiel (3,4), ist für eine KI erst einmal nur eine Beobachtung.</p>
-                    <p>Erst wenn wir daraus etwas Nützliches ableiten, entsteht <strong>das Merkmal – Fachleute sagen „Feature“ dazu</strong>. Hier ist das Merkmal die Summe: 3 + 4 = 7.</p>
+                    <h2>2. Ein Würfel – ein Wort</h2>
+                    <p>Stell dir vor, du tippst auf deinem Handy „<strong>Guten</strong>" ein. Sofort schlägt die Tastatur „Morgen", „Mittag" oder „Abend" vor.</p>
+                    <p>Ein einzelnes Wort allein bringt der KI wenig. Es ist wie <strong>ein Würfelwurf</strong>: eine einzelne Beobachtung, mehr nicht.</p>
                     <div class="highlight-box">
-                        Aus zwei Rohwerten wird eine einzige, besser nutzbare Information.
+                        <strong>Klicke jetzt auf „Würfeln"</strong> und beobachte den weißen Würfel. Das ist dein erstes Wort.
                     </div>
+                    <p class="step-note">Ein Würfel = ein Token. Zu wenig Kontext, um etwas Sinnvolles vorherzusagen.</p>
                 </div>
 
-                <!-- STEP 2 -->
+                <!-- STEP 2: Zweiter Würfel = Kombination -->
                 <div id="step-2" class="step-content">
-                    <h2>3. Zwei Würfel, 36 Möglichkeiten</h2>
-                    <p>Zwei faire Würfel ergeben nicht „irgendetwas“, sondern genau <strong>36 Möglichkeiten</strong>.</p>
-                    <p>Hier siehst du, wie aus vielen Beobachtungen ein Musterraum wird. Das ist die Grundlage für Muster erkennen.</p>
+                    <h2>3. Zwei Würfel = Kombination</h2>
+                    <p>Jetzt kommt der zweite (rote) Würfel dazu. Genau wie bei „Guten <strong>Morgen</strong>": Erst zwei Wörter zusammen ergeben eine sinnvolle Kombination.</p>
+                    <p>Zwei Würfel eröffnen einen ganzen <strong>Möglichkeitsraum</strong>: rechts siehst du alle <strong>36 Kombinationen</strong>. In jeder Zelle steckt schon ein Merkmal – die Summe.</p>
                     <div class="highlight-box">
-                        Jede Zelle zeigt eine mögliche Beobachtung. Im Inhalt steckt schon das Merkmal: die Summe.
+                        Würfle ein paar Mal. Jede Kombination leuchtet im Grid auf.
                     </div>
                 </div>
 
-                <!-- STEP 3 -->
+                <!-- STEP 3: Viele Würfe = Training -->
                 <div id="step-3" class="step-content">
-                    <h2>4. Was glaubst DU?</h2>
-                    <p>Bevor wir das große Muster sichtbar machen: Welche Würfelsumme tippst du als häufigste?</p>
-                    <p>Dein Tipp ist schon eine kleine Form von Vorhersagen. Erst danach schauen wir, was die Beobachtungen wirklich zeigen.</p>
+                    <h2>4. Viele Würfe – viele Daten</h2>
+                    <p>Ein paar Würfe reichen nicht. Eine KI wird <strong>erst dann richtig gut, wenn sie viele Daten und viele Nutzer</strong> hat. Jede Beobachtung wandert in die Statistik – und irgendwann erkennt sie ein stabiles Muster.</p>
                     <div class="highlight-box">
-                        Gib zuerst deine Wette ab. Danach darfst du weiter.
+                        <strong>Klicke jetzt auf „Auto-Modus"</strong>. Das entspricht Training mit Tausenden Beispielen.
+                    </div>
+                    <p class="step-note">Beobachte, wie sich rechts aus lauter Zufall langsam eine typische Form herausschält.</p>
+                    <div id="bell-curve-callout"></div>
+                </div>
+
+                <!-- STEP 4: Häufigkeiten im Alltag -->
+                <div id="step-4" class="step-content">
+                    <h2>5. Vom Muster zur Vorhersage</h2>
+                    <p>Genau das macht eine KI auch mit Sprache: Sie zählt, welche Wörter in welchem Zusammenhang <strong>wie oft</strong> vorkommen. Wörter, die häufig zusammen auftreten, bekommen die höchste Wahrscheinlichkeit.</p>
+                    <div class="ai-sentence">
+                        „Zum Frühstück nehme ich am liebsten <span class="missing-word">_______</span>"
+                    </div>
+                    <p>Für diesen Satz hat die KI aus Milliarden deutscher Alltagsdaten drei sehr unterschiedlich häufige Vorschläge gelernt:</p>
+                    <ul style="font-size:0.9rem; margin-bottom:10px; color:#555;">
+                        <li><strong>„Brötchen"</strong> – rund drei Viertel der Deutschen essen Brot oder Brötchen zum Frühstück.</li>
+                        <li><strong>„Müsli"</strong> – die häufigste Alternative, etwa jede/r Dritte greift regelmäßig dazu.</li>
+                        <li><strong>„Sekt"</strong> – kommt vor, aber statistisch <strong>ein seltener Ausreißer</strong>.</li>
+                    </ul>
+                    <p class="source-note">Quelle: BMEL Ernährungsreport, langjährige Werte.</p>
+                    <div class="highlight-box">
+                        Beobachte rechts unten das Häufigkeits-Panel: Je öfter du würfelst, desto deutlicher wird das Muster. Die Wahrscheinlichkeiten hier sind kein Zufall – sie <strong>haben Bestand</strong>.
+                    </div>
+                </div>
+
+                <!-- STEP 5: Wette (Lösung wird NICHT verraten) -->
+                <div id="step-5" class="step-content">
+                    <h2>6. Was glaubst DU?</h2>
+                    <p>Jetzt hast du das Prinzip gesehen: manche Ergebnisse häufig, andere selten. Zeit für einen Tipp.</p>
+                    <p>Welche <strong>Würfelsumme</strong> (2 bis 12) glaubst du kommt bei zwei Würfeln <strong>am häufigsten</strong> vor?</p>
+                    <div class="highlight-box">
+                        Gib zuerst deine Wette ab. Danach lösen wir auf.
                     </div>
                     <div id="prediction-bet" style="display:none">
-                        <p><strong>Bevor wir die KI trainieren:</strong> Was glaubst DU? Welche Würfelsumme kommt am häufigsten vor?</p>
+                        <p><strong>Dein Tipp:</strong></p>
                         <div id="bet-buttons"></div>
                         <div id="bet-feedback"></div>
                     </div>
                 </div>
 
-                <!-- STEP 4 -->
-                <div id="step-4" class="step-content">
-                    <h2>5. Training: Muster werden sichtbar</h2>
-                    <p>Jetzt beginnt das eigentliche Training. Viele einzelne Beobachtungen ergeben zusammen ein stabiles Muster.</p>
-                    <p>Beobachte gleich im Balkendiagramm, wie sich aus Zufall eine typische Form herausschält.</p>
-                    <div class="highlight-box">
-                        <strong>Wichtig:</strong> Klicke jetzt auf <strong>„Auto-Modus“</strong>. Das entspricht Training mit vielen Beispielen.
-                    </div>
-                    <div id="bell-curve-callout"></div>
-                </div>
-
-                <!-- STEP 5 -->
-                <div id="step-5" class="step-content">
-                    <h2>6. Das nächste Wort vorhersagen</h2>
-                    <p>Jetzt übertragen wir das Muster auf Sprache. Die KI nutzt das Gelernte, um das nächste Wort vorzuschlagen.</p>
-                    <div class="ai-sentence">
-                        "Das Wetter ist <span class="missing-word">_______</span>"
-                    </div>
-                    <p>Statt einer Zahl gibt die KI jetzt eine Einordnung aus:</p>
-                    <ul style="font-size:0.9rem; margin-bottom:15px; color:#555;">
-                        <li><strong>"schön":</strong> häufige Summen (6, 7, 8)</li>
-                        <li><strong>"wechselhaft":</strong> mittlere Summen (4, 5, 9, 10)</li>
-                        <li><strong>"lila":</strong> seltene Summen (2, 3, 11, 12)</li>
-                    </ul>
-                    <div class="highlight-box">
-                        Das ist keine sichere Wahrheit, sondern eine gewichtete Vermutung.
-                    </div>
-                    <div class="ai-context-box">
-                        <div style="font-weight:700;margin-bottom:5px">⚠️ Was passiert, wenn eine „2" fällt?</div>
-                        Dann sagt die KI: „Das Wetter ist <strong>lila</strong>." Das macht keinen Sinn – aber es hatte eine winzige Restwahrscheinlichkeit. In der KI-Welt nennt man das eine <strong>Halluzination</strong>. Die KI lügt nicht absichtlich. Sie hat einfach einen statistischen Ausreißer erwischt.
-                    </div>
-                </div>
-
-                <!-- STEP 6 -->
+                <!-- STEP 6: Halluzination erklären -->
                 <div id="step-6" class="step-content">
-                    <h2>7. Selbsttest</h2>
-                    <p>Jetzt prüfst du, ob du das Muster verstanden hast: Warum 7 so stark ist, was Halluzinationen sind und wie gutes Prompting hilft.</p>
-                    <div class="highlight-box">
-                        Du bekommst sofort grüne oder rote Rückmeldung.
+                    <h2>7. Was ist eine Halluzination?</h2>
+                    <p>Du hast es gesehen: Die Summe <strong>7</strong> gewinnt, weil sie auf die meisten Arten entstehen kann (1+6, 2+5, 3+4 …). Die 2 und die 12 gibt es dagegen nur je einmal.</p>
+                    <div class="ai-context-box">
+                        <div style="font-weight:700;margin-bottom:5px">⚠️ Wenn die seltene Kombi trotzdem fällt …</div>
+                        Übertragen auf Sprache: Aus „Zum Frühstück nehme ich am liebsten …" wird plötzlich „<strong>Sekt</strong>". Statistisch möglich, aber sinnfrei. Genau das nennen wir eine <strong>Halluzination</strong> – die KI hat einen seltenen Ausreißer im Muster erwischt.
                     </div>
-                    <div id="quiz-container"></div>
+                    <p>Und das Ganze wird noch riskanter, wenn eine KI mit <strong>vielen Würfeln gleichzeitig</strong> arbeitet – also lange Sätze bildet. Jeder zusätzliche „Würfel" ist eine weitere Chance, dass ein Ausreißer den ganzen Satz kippt.</p>
+                    <div class="highlight-box">
+                        <strong>Merksatz:</strong> Halluzination = eine seltene Muster-Kombination, die zufällig „nach oben" gewürfelt wurde.
+                    </div>
                 </div>
 
-                <!-- STEP 7 -->
+                <!-- STEP 7: Prompting-Fazit + Quiz -->
                 <div id="step-7" class="step-content">
                     <h2>8. Dein Werkzeug: Die Würfel zinken</h2>
-                    <p>Du hast gesehen: Aus fairem Zufall entstehen Muster. Eine KI nutzt diese Muster, um das nächste Wort zu „würfeln".</p>
-                    <p><strong>Dein Hebel als Nutzer:</strong> Durch deinen Prompt bestimmst du, welche Würfel die KI benutzt.</p>
+                    <p>Du hast gesehen: Aus fairem Zufall entstehen Muster. Und Muster mit seltenen Rändern führen manchmal zu Blödsinn.</p>
+                    <p><strong>Dein Hebel als Nutzer:</strong> Durch deinen Prompt bestimmst du, welche „Würfel" die KI benutzt.</p>
                     <ul class="conclusion-list">
-                        <li><strong>Standard-Prompt</strong> = faire Würfel → langweiliger Durchschnittstext</li>
-                        <li><strong>Präziser Prompt</strong> (Rolle + Kontext + Ziel) = gezinkte Würfel → genau die Antwort, die du brauchst</li>
-                        <li><strong>Noch präziser</strong> (+ Formatvorgabe + Gegencheck) = Halluzinationen werden seltener, weil du den Spielraum für Ausreißer verkleinerst</li>
+                        <li><strong>Standard-Prompt</strong> = faire Würfel → durchschnittlicher Text, öfter mal Sekt zum Frühstück.</li>
+                        <li><strong>Präziser Prompt</strong> (Rolle + Kontext + Ziel) = gezinkte Würfel → passt zu deiner Situation.</li>
+                        <li><strong>Noch präziser</strong> (+ Format + Gegencheck) = Halluzinationen werden seltener, weil du den Spielraum für Ausreißer verkleinerst.</li>
                     </ul>
-                    <p>Gutes Prompting heißt also: Du verschiebst die Wahrscheinlichkeiten zu deinen Gunsten.</p>
+                    <p>Und jetzt: dein kurzer Selbsttest.</p>
+                    <div id="quiz-container"></div>
                 </div>
             </div>
 
@@ -467,12 +542,19 @@
         </div>
 
         <div id="stage">
-            <canvas id="c"></canvas>
-
             <div id="top-display">
-                <div class="dice-res t-white">⬜ <span id="val-w">-</span></div>
-                <div class="dice-res t-red">🟥 <span id="val-r">-</span></div>
-                <div class="dice-res t-sum">Summe: <span id="val-sum">-</span></div>
+                <div class="dice-res t-white"><span>⬜</span> <span id="val-w">–</span></div>
+                <div class="dice-res t-red hidden-slot" id="dice-res-red"><span>🟥</span> <span id="val-r">–</span></div>
+                <div class="dice-res t-sum hidden-slot" id="dice-res-sum">Summe: <span id="val-sum">–</span></div>
+            </div>
+
+            <div id="dice-scene">
+                <div class="dice-slot white" id="dice-slot-white">
+                    <div class="dice-cube" id="cube-white"></div>
+                </div>
+                <div class="dice-slot red is-hidden" id="dice-slot-red">
+                    <div class="dice-cube" id="cube-red"></div>
+                </div>
             </div>
 
             <div id="viz-panel">
@@ -492,19 +574,18 @@
                     <div class="viz-head">Häufigkeit der Summen</div>
                     <div style="font-size:0.65rem; color:#888; margin-bottom:4px;">Glockenkurve (Wissen)</div>
                     <div id="bars"></div>
-                    
-                    <!-- AI Word Animation -->
+
                     <div id="word-viz">
-                        <div class="w-item" id="word-2">
-                            <span class="w-word">"lila"</span>
+                        <div class="w-item" id="word-selten">
+                            <span class="w-word">„Sekt"</span>
                             <span class="w-val">0%</span>
                         </div>
-                        <div class="w-item" id="word-6">
-                            <span class="w-word">"wechselhaft"</span>
+                        <div class="w-item" id="word-mittel">
+                            <span class="w-word">„Müsli"</span>
                             <span class="w-val">0%</span>
                         </div>
-                        <div class="w-item" id="word-7">
-                            <span class="w-word">"schön"</span>
+                        <div class="w-item" id="word-haeufig">
+                            <span class="w-word">„Brötchen"</span>
                             <span class="w-val">0%</span>
                         </div>
                     </div>
@@ -514,553 +595,607 @@
 
     </div>
 
-    <!-- UMD fallback: include local three.min.js (place ./libs/three.min.js on the server) -->
-    <script src="./libs/three.min.js"></script>
     <script>
         (function () {
             const errorBox = document.getElementById('error-box');
             const errorMsg = document.getElementById('error-msg');
-            const errorTip = document.getElementById('error-tip');
             const showError = (msg) => {
                 if (!errorBox || !errorMsg) return;
                 errorMsg.textContent = msg;
-                if (errorTip) {
-                    let tip = 'Tipp: WebGL ist deaktiviert oder nicht verfügbar. Aktiviere Hardwarebeschleunigung im Browser oder nutze Firefox.';
-                    if (msg.includes('Three.js')) {
-                        tip = 'Tipp: Prüfe, ob ./libs/three.min.js vorhanden ist und korrekt geladen wird.';
-                    } else if (msg.includes('WebGL')) {
-                        tip = 'Tipp: WebGL ist deaktiviert oder nicht verfügbar. Aktiviere Hardwarebeschleunigung im Browser oder nutze Firefox.';
-                    } else if (msg.includes('Canvas') || msg.includes('Stage')) {
-                        tip = 'Tipp: Prüfe, ob die Elemente #c und #stage im HTML existieren.';
-                    }
-                    errorTip.textContent = tip;
-                }
                 errorBox.style.display = 'block';
             };
+            window.onerror = function(message) { showError(String(message)); };
 
-            window.onerror = function(message, source, lineno, colno, error) {
-                showError(String(message));
+            // ------------------------------------------------------------------
+            // CSS-3D-Würfel: 6 Faces mit Pips (statt Three.js/WebGL)
+            // ------------------------------------------------------------------
+            const PIP_MAP = {
+                1: ['mm'],
+                2: ['tl', 'br'],
+                3: ['tl', 'mm', 'br'],
+                4: ['tl', 'tr', 'bl', 'br'],
+                5: ['tl', 'tr', 'mm', 'bl', 'br'],
+                6: ['tl', 'ml', 'bl', 'tr', 'mr', 'br']
             };
 
-            if (!window.THREE) {
-                showError('Three.js konnte nicht geladen werden. Bitte prüfe den Pfad zu ./libs/three.min.js.');
-                return;
+            // Klassisches Würfel-Netz: gegenüberliegende Seiten summieren zu 7
+            // front=1, back=6, top=2, bottom=5, right=3, left=4
+            const FACE_VALUES = {
+                'f-front':  1,
+                'f-back':   6,
+                'f-top':    2,
+                'f-bottom': 5,
+                'f-right':  3,
+                'f-left':   4
+            };
+
+            // Rotation, die den Wert v nach vorne bringt
+            const VALUE_TO_ROTATION = {
+                1: { x: 0,    y: 0 },
+                6: { x: 0,    y: 180 },
+                2: { x: -90,  y: 0 },
+                5: { x: 90,   y: 0 },
+                3: { x: 0,    y: -90 },
+                4: { x: 0,    y: 90 }
+            };
+
+            function buildFace(faceClass, value) {
+                const face = document.createElement('div');
+                face.className = 'dice-face ' + faceClass;
+                PIP_MAP[value].forEach(pos => {
+                    const pip = document.createElement('div');
+                    pip.className = 'dice-pip pip-' + pos;
+                    face.appendChild(pip);
+                });
+                return face;
             }
 
-            // --- THREE JS ---
-            const canvas = document.querySelector('#c');
-            const stage = document.querySelector('#stage');
-            if (!canvas || !stage) {
-                showError('Canvas oder Stage-Element fehlt. Bitte prüfe die HTML-Struktur.');
-                return;
+            function buildDie(container) {
+                container.innerHTML = '';
+                Object.entries(FACE_VALUES).forEach(([faceClass, value]) => {
+                    container.appendChild(buildFace(faceClass, value));
+                });
             }
 
-            let renderer;
-            try {
-                renderer = new THREE.WebGLRenderer({canvas, antialias: true, alpha: true});
-            } catch (err) {
-                showError('WebGL konnte nicht initialisiert werden. Bitte prüfe Browser-Unterstützung.');
-                return;
+            const cubeWhite = document.getElementById('cube-white');
+            const cubeRed   = document.getElementById('cube-red');
+            const slotRed   = document.getElementById('dice-slot-red');
+            buildDie(cubeWhite);
+            buildDie(cubeRed);
+
+            // Aktueller kumulierter Rotationswinkel je Würfel (damit Animation immer nach vorn dreht)
+            const rotationState = {
+                white: { x: -25, y: -30, spins: 0 },
+                red:   { x: -25, y: -30, spins: 0 }
+            };
+
+            function rollCubeTo(cubeEl, key, value) {
+                const rot = VALUE_TO_ROTATION[value];
+                rotationState[key].spins += 1;
+                const extraSpin = 360 * (2 + (rotationState[key].spins % 2));
+                const finalX = rot.x - 25 + extraSpin;
+                const finalY = rot.y - 30 + extraSpin;
+                cubeEl.style.transform = `rotateX(${finalX}deg) rotateY(${finalY}deg)`;
+                cubeEl.classList.remove('shaking');
+                void cubeEl.offsetWidth; // reflow
+                cubeEl.classList.add('shaking');
+                setTimeout(() => cubeEl.classList.remove('shaking'), 550);
             }
-            renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            renderer.setClearColor(0xeef2f6, 1); 
 
-        const scene = new THREE.Scene();
-        scene.fog = new THREE.Fog(0xeef2f6, 10, 40);
-
-        const camera = new THREE.PerspectiveCamera(35, stage.clientWidth / stage.clientHeight, 0.1, 100);
-        camera.position.set(0, 16, 10); camera.lookAt(0, 0, 0);
-
-        function resize() {
-            const width = stage.clientWidth; const height = stage.clientHeight;
-            if (canvas.width !== width || canvas.height !== height) {
-                renderer.setSize(width, height, false);
-                camera.aspect = width / height; camera.updateProjectionMatrix();
+            // ------------------------------------------------------------------
+            // Grid (36 Kombinationen) und Balken (Summen 2-12)
+            // ------------------------------------------------------------------
+            const gridEl = document.getElementById('grid');
+            for (let i = 0; i < 36; i++) {
+                const d = document.createElement('div');
+                d.className = 'cell';
+                const r = Math.floor(i / 6);
+                const w = i % 6;
+                d.dataset.r = r + 1;
+                d.dataset.w = w + 1;
+                d.id = `c-${w+1}-${r+1}`;
+                d.innerText = (w + 1) + (r + 1);
+                gridEl.appendChild(d);
             }
-        }
-        window.addEventListener('resize', resize);
-        resize();
 
-        const ambLight = new THREE.AmbientLight(0xffffff, 0.7); scene.add(ambLight);
-        const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        dirLight.position.set(5, 15, 8); dirLight.castShadow = true;
-        dirLight.shadow.mapSize.width = 1024; dirLight.shadow.mapSize.height = 1024;
-        scene.add(dirLight);
-        const fillLight = new THREE.DirectionalLight(0xccddff, 0.4); 
-        fillLight.position.set(-5, 5, -5); scene.add(fillLight);
-
-        const plane = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.5 }));
-        plane.rotation.x = -Math.PI/2; plane.receiveShadow = true; scene.add(plane);
-
-        function createDie(colorHex, dotHex) {
-            const geo = new THREE.BoxGeometry(2, 2, 2);
-            const mats = [1, 6, 2, 5, 3, 4].map(f => {
-                const cvs = document.createElement('canvas'); cvs.width = 128; cvs.height = 128;
-                const ctx = cvs.getContext('2d'); ctx.fillStyle = colorHex; ctx.fillRect(0,0,128,128);
-                ctx.fillStyle = dotHex; const r=12; const c=64; const o=35;
-                const dots = {1:[[c,c]],2:[[c-o,c-o],[c+o,c+o]],3:[[c-o,c-o],[c,c],[c+o,c+o]],4:[[c-o,c-o],[c+o,c-o],[c-o,c+o],[c+o,c+o]],5:[[c-o,c-o],[c+o,c-o],[c,c],[c-o,c+o],[c+o,c+o]],6:[[c-o,c-o],[c+o,c-o],[c-o,c],[c+o,c],[c-o,c+o],[c+o,c+o]]};
-                dots[f].forEach(([x,y])=>{ctx.beginPath();ctx.arc(x,y,r,0,Math.PI*2);ctx.fill();});
-                ctx.strokeStyle="rgba(0,0,0,0.1)";ctx.lineWidth=5;ctx.strokeRect(0,0,128,128);
-                return new THREE.MeshStandardMaterial({map:new THREE.CanvasTexture(cvs), roughness:0.1});
-            });
-            const m = new THREE.Mesh(geo, mats); m.castShadow = true; m.receiveShadow = true;
-            return m;
-        }
-
-        const whiteDie = createDie('#ffffff', '#231A24'); whiteDie.position.set(-1.5, 1, 0); scene.add(whiteDie);
-        const redDie = createDie('#631832', '#ffffff'); redDie.position.set(1.5, 1, 0); scene.add(redDie);
-
-        // --- LOGIK ---
-        const gridEl = document.getElementById('grid');
-        for(let i=0; i<36; i++) {
-            const d = document.createElement('div'); d.className = 'cell';
-            const r = Math.floor(i/6); const w = i%6;
-            d.dataset.r = r+1; d.dataset.w = w+1; d.id = `c-${w+1}-${r+1}`;
-            d.innerText = (w+1)+(r+1); gridEl.appendChild(d);
-        }
-
-        const barsEl = document.getElementById('bars');
-        for(let i=2; i<=12; i++) {
-            barsEl.innerHTML += `<div class="b-col"><div class="bar ${i===7?'win':''}" id="b-${i}"></div><div class="b-lbl">${i}</div></div>`;
-        }
-
-        let stats = new Array(13).fill(0);
-        let maxC = 0; let isRolling = false; let step = 0;
-        let totalRolls = 0;
-        let autoIntervalId = null;
-        let rollAnimIntervalId = null;
-        const totalSteps = 8;
-        const state = {
-            prediction: null,
-            quizAnswers: {},
-            quizCorrect: 0,
-            exampleClicks: 0
-        };
-
-        // Info Button Logic
-        const infoBtn = document.getElementById('info-btn');
-        const infoOverlay = document.getElementById('info-overlay');
-        const infoText = document.getElementById('info-text');
-        const autoBtn = document.getElementById('auto-btn');
-        const autoHint = document.getElementById('auto-hint');
-        const topDisplay = document.getElementById('top-display');
-        const gridWrapper = document.getElementById('grid-wrapper');
-        const barsWrapper = document.getElementById('bars');
-        const wordViz = document.getElementById('word-viz');
-        const predictionBet = document.getElementById('prediction-bet');
-        const betButtons = document.getElementById('bet-buttons');
-        const betFeedback = document.getElementById('bet-feedback');
-        const bellCurveCallout = document.getElementById('bell-curve-callout');
-        const quizContainer = document.getElementById('quiz-container');
-        const nextBtn = document.getElementById('next-btn');
-        const rollBtn = document.getElementById('roll-btn');
-        const restartBtn = document.getElementById('restart-btn');
-
-        const quizQuestions = [
-            {
-                id: 'q1',
-                question: 'Warum kommt die Summe 7 häufiger als die Summe 2?',
-                options: [
-                    'Die 7 ist eine Glückszahl',
-                    'Es gibt mehr Kombinationen, die 7 ergeben (1+6, 2+5, 3+4…)',
-                    'Die Würfel sind manipuliert'
-                ],
-                correct: 1,
-                explanation: 'Die 7 kann auf mehr Arten entstehen als die 2. Mehr Kombinationen bedeuten: höhere Wahrscheinlichkeit.'
-            },
-            {
-                id: 'q2',
-                question: 'ChatGPT schreibt: „Napoleon gewann die Schlacht von Waterloo." Was ist passiert?',
-                options: [
-                    'Die KI hat gelogen',
-                    'Die KI hatte einen statistischen Ausreißer – eine Halluzination',
-                    'Das Internet hat falsche Daten'
-                ],
-                correct: 1,
-                explanation: 'Hier hat die KI ein falsches, aber statistisch mitgerutschtes Muster erwischt. Das nennen wir Halluzination.'
-            },
-            {
-                id: 'q3',
-                question: 'Was kannst du tun, damit ChatGPT bessere Antworten gibt?',
-                options: [
-                    'Höflicher fragen',
-                    'Rolle, Kontext und Ziel im Prompt vorgeben – die Würfel zinken',
-                    'Nichts, die KI entscheidet selbst'
-                ],
-                correct: 1,
-                explanation: 'Ein präziser Prompt lenkt die Wahrscheinlichkeiten. So bekommt die KI weniger Spielraum für Unsinn.'
+            const barsEl = document.getElementById('bars');
+            for (let i = 2; i <= 12; i++) {
+                barsEl.innerHTML += `<div class="b-col"><div class="bar ${i===7?'win':''}" id="b-${i}"></div><div class="b-lbl">${i}</div></div>`;
             }
-        ];
 
-        topDisplay.classList.add('viz-hidden');
-        gridWrapper.classList.add('viz-hidden');
-        barsWrapper.classList.add('viz-hidden');
-        wordViz.style.display = 'none';
+            // ------------------------------------------------------------------
+            // State
+            // ------------------------------------------------------------------
+            let stats = new Array(13).fill(0);
+            let maxC = 0;
+            let isRolling = false;
+            let step = 0;
+            let totalRolls = 0;
+            let autoIntervalId = null;
+            const totalSteps = 8;
 
-        infoBtn.onclick = () => {
-            infoOverlay.classList.toggle('show');
-        };
-        document.addEventListener('click', (e) => {
-            if (!infoOverlay.contains(e.target) && e.target !== infoBtn) {
-                infoOverlay.classList.remove('show');
-            }
-        });
+            const state = {
+                prediction: null,
+                predictionRevealed: false,
+                quizAnswers: {},
+                quizCorrect: 0,
+                exampleClicks: 0
+            };
 
-        function updateInfoText() {
-            if(step === 0) infoText.innerText = "Noch sehen wir nur einen einzelnen Würfelwurf. KI startet genauso: mit einzelnen Beobachtungen.";
-            else if(step === 1) infoText.innerText = "Aus zwei Zahlen wird ein Merkmal: die Summe. So erkennt die KI aus Rohdaten etwas Nützliches.";
-            else if(step === 2) infoText.innerText = "Hier liegen alle 36 Möglichkeiten offen. Jetzt wird aus Einzelfällen ein sichtbarer Musterraum.";
-            else if(step === 3) infoText.innerText = "Vorhersagen beginnt oft mit einem Tipp. Gleich prüfst du, ob dein Bauchgefühl stimmt.";
-            else if(step === 4) infoText.innerText = "Training heißt: viele Beobachtungen sammeln, bis ein stabiles Muster entsteht.";
-            else if(step === 5) infoText.innerText = "Jetzt nutzt die KI das Gelernte, um das nächste Wort vorzuschlagen.";
-            else if(step === 6) infoText.innerText = "Im Selbsttest überprüfst du, ob du Muster, Halluzinationen und gutes Prompting unterscheiden kannst.";
-            else infoText.innerText = "Gute Prompts zinken die Würfel: Rolle, Kontext und Ziel verschieben die Wahrscheinlichkeiten.";
+            // ------------------------------------------------------------------
+            // DOM Refs
+            // ------------------------------------------------------------------
+            const infoBtn = document.getElementById('info-btn');
+            const infoOverlay = document.getElementById('info-overlay');
+            const infoText = document.getElementById('info-text');
+            const autoBtn = document.getElementById('auto-btn');
+            const autoHint = document.getElementById('auto-hint');
+            const topDisplay = document.getElementById('top-display');
+            const diceResRed = document.getElementById('dice-res-red');
+            const diceResSum = document.getElementById('dice-res-sum');
+            const gridWrapper = document.getElementById('grid-wrapper');
+            const barsWrapper = document.getElementById('bars');
+            const wordViz = document.getElementById('word-viz');
+            const predictionBet = document.getElementById('prediction-bet');
+            const betButtons = document.getElementById('bet-buttons');
+            const betFeedback = document.getElementById('bet-feedback');
+            const bellCurveCallout = document.getElementById('bell-curve-callout');
+            const quizContainer = document.getElementById('quiz-container');
+            const nextBtn = document.getElementById('next-btn');
+            const rollBtn = document.getElementById('roll-btn');
+            const restartBtn = document.getElementById('restart-btn');
+            const valW = document.getElementById('val-w');
+            const valR = document.getElementById('val-r');
+            const valSum = document.getElementById('val-sum');
 
-            if(step > 2) infoOverlay.classList.remove('show');
-        }
+            // ------------------------------------------------------------------
+            // Quiz
+            // ------------------------------------------------------------------
+            const quizQuestions = [
+                {
+                    id: 'q1',
+                    question: 'Warum kommt die Summe 7 häufiger als die Summe 2?',
+                    options: [
+                        'Die 7 ist eine Glückszahl',
+                        'Es gibt mehr Kombinationen, die 7 ergeben (1+6, 2+5, 3+4 …)',
+                        'Die Würfel sind manipuliert'
+                    ],
+                    correct: 1,
+                    explanation: 'Die 7 kann auf mehr Arten entstehen als die 2. Mehr Kombinationen bedeuten: höhere Wahrscheinlichkeit.'
+                },
+                {
+                    id: 'q2',
+                    question: 'ChatGPT antwortet: „Zum Frühstück nehme ich am liebsten Sekt." Was ist da passiert?',
+                    options: [
+                        'Die KI hat gelogen',
+                        'Die KI hat einen statistischen Ausreißer erwischt – eine Halluzination',
+                        'Sekt ist tatsächlich das häufigste deutsche Frühstück'
+                    ],
+                    correct: 1,
+                    explanation: 'Genau: Sekt zum Frühstück ist ein seltenes Muster – wenn es „nach oben gewürfelt" wird, entsteht Blödsinn.'
+                },
+                {
+                    id: 'q3',
+                    question: 'Was kannst du tun, damit ChatGPT bessere Antworten gibt?',
+                    options: [
+                        'Höflicher fragen',
+                        'Rolle, Kontext und Ziel im Prompt vorgeben – die Würfel zinken',
+                        'Nichts, die KI entscheidet selbst'
+                    ],
+                    correct: 1,
+                    explanation: 'Ein präziser Prompt lenkt die Wahrscheinlichkeiten. So bekommt die KI weniger Spielraum für Unsinn.'
+                }
+            ];
 
-        function setVizVisibility(element, visible) {
-            element.classList.toggle('viz-hidden', !visible);
-            element.classList.toggle('viz-revealed', visible);
-        }
+            // ------------------------------------------------------------------
+            // Anfangszustand: alle Vizualisierungen unsichtbar, Werte auf "–"
+            // ------------------------------------------------------------------
+            topDisplay.classList.add('viz-hidden');
+            gridWrapper.classList.add('viz-hidden');
+            barsWrapper.classList.add('viz-hidden');
+            wordViz.style.display = 'none';
+            diceResRed.classList.add('hidden-slot');
+            diceResSum.classList.add('hidden-slot');
 
-        function updateBellCurveCallout() {
-            if (step === 4 && totalRolls > 0) {
-                bellCurveCallout.style.display = 'block';
-                bellCurveCallout.innerHTML = '🔔 Siehst du die Form? Das ist die berühmte GLOCKENKURVE. Die Mitte (7) kommt am häufigsten, die Ränder (2 und 12) am seltensten. Fast alles in der Natur folgt diesem Muster.' + (state.prediction === 7 ? ' <strong>Deine Wette war richtig!</strong>' : '');
-            } else {
-                bellCurveCallout.style.display = 'none';
-                bellCurveCallout.innerHTML = '';
-            }
-        }
-
-        function flashBellBars() {
-            [6, 7, 8].forEach((sum) => {
-                const bar = document.getElementById(`b-${sum}`);
-                if (bar) {
-                    bar.classList.add('active-flash');
-                    setTimeout(() => bar.classList.remove('active-flash'), 1000);
+            // ------------------------------------------------------------------
+            // Info-Overlay
+            // ------------------------------------------------------------------
+            infoBtn.onclick = () => infoOverlay.classList.toggle('show');
+            document.addEventListener('click', (e) => {
+                if (!infoOverlay.contains(e.target) && e.target !== infoBtn) {
+                    infoOverlay.classList.remove('show');
                 }
             });
-        }
 
-        function renderBetButtons() {
-            betButtons.innerHTML = '';
-            for (let sum = 2; sum <= 12; sum++) {
-                const button = document.createElement('button');
-                button.type = 'button';
-                button.className = 'bet-pill';
-                button.textContent = String(sum);
-                if (state.prediction === sum) button.classList.add('selected');
-                button.onclick = () => {
-                    state.prediction = sum;
-                    renderBetButtons();
-                    betFeedback.className = sum === 7 ? 'is-correct' : 'is-waiting';
-                    betFeedback.textContent = sum === 7
-                        ? '✅ Richtig! Die 7 hat 6 von 36 Kombinationen – mehr als jede andere Summe.'
-                        : '🤔 Spannend! Lass uns nachschauen – gleich kommt das Training.';
+            function updateInfoText() {
+                const texts = {
+                    0: 'Willkommen im Labor. Als Nächstes startest du mit einem einzelnen Würfel – wie ein einzelnes Wort auf dem Handy.',
+                    1: 'Ein Würfel = ein Wort. Zu wenig Kontext für eine sinnvolle Vorhersage.',
+                    2: 'Der zweite Würfel liefert Kontext. Erst jetzt lassen sich Kombinationen zählen (36 Zellen im Grid).',
+                    3: 'Training bedeutet: viele Beobachtungen sammeln, bis ein stabiles Muster sichtbar wird.',
+                    4: 'Deutsche Alltagsdaten geben den Wörtern sehr unterschiedliche Häufigkeiten. Genau das nutzt die KI.',
+                    5: 'Jetzt bist du dran. Tippe zuerst – gleich lösen wir auf.',
+                    6: 'Halluzination = eine seltene Kombination, die zufällig „nach oben" gewürfelt wurde.',
+                    7: 'Gute Prompts zinken die Würfel: Rolle, Kontext und Ziel verschieben die Wahrscheinlichkeiten zu deinen Gunsten.'
+                };
+                infoText.innerText = texts[step] || '';
+                if (step > 2) infoOverlay.classList.remove('show');
+            }
+
+            function setVizVisibility(element, visible) {
+                element.classList.toggle('viz-hidden', !visible);
+                element.classList.toggle('viz-revealed', visible);
+            }
+
+            function updateBellCurveCallout() {
+                // Callout erst ab Step 3, und wenn schon gewürfelt wurde.
+                // Achtung: Lösung („7") NICHT vor der Wette (Step 5) verraten.
+                if (step === 3 && totalRolls > 0) {
+                    bellCurveCallout.style.display = 'block';
+                    bellCurveCallout.innerHTML = '🔔 Siehst du die Form? Die Mitte türmt sich auf, die Ränder bleiben flach. Das ist die berühmte GLOCKENKURVE – ein Muster, das fast überall in der Natur vorkommt.';
+                } else {
+                    bellCurveCallout.style.display = 'none';
+                    bellCurveCallout.innerHTML = '';
+                }
+            }
+
+            function flashBellBars() {
+                [6, 7, 8].forEach((sum) => {
+                    const bar = document.getElementById(`b-${sum}`);
+                    if (bar) {
+                        bar.classList.add('active-flash');
+                        setTimeout(() => bar.classList.remove('active-flash'), 1000);
+                    }
+                });
+            }
+
+            function renderBetButtons() {
+                betButtons.innerHTML = '';
+                for (let sum = 2; sum <= 12; sum++) {
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.className = 'bet-pill';
+                    button.textContent = String(sum);
+                    if (state.prediction === sum) button.classList.add('selected');
+                    button.onclick = () => {
+                        state.prediction = sum;
+                        state.predictionRevealed = true;
+                        renderBetButtons();
+                        betFeedback.className = sum === 7 ? 'is-correct' : 'is-waiting';
+                        betFeedback.textContent = sum === 7
+                            ? '✅ Richtig! Die 7 hat 6 von 36 Kombinationen (1+6, 2+5, 3+4, 4+3, 5+2, 6+1) – mehr als jede andere Summe.'
+                            : '🤔 Guter Tipp – aber die 7 gewinnt. Sie hat 6 von 36 Kombinationen, die 2 und die 12 nur je 1. Klick auf „Weiter" für die Erklärung.';
+                        nextBtn.disabled = false;
+                        nextBtn.style.opacity = '1';
+                        nextBtn.style.cursor = 'pointer';
+                    };
+                    betButtons.appendChild(button);
+                }
+            }
+
+            function renderQuiz() {
+                state.quizCorrect = Object.values(state.quizAnswers).filter((answer) => answer.correct).length;
+                quizContainer.innerHTML = quizQuestions.map((question, index) => {
+                    const answerState = state.quizAnswers[question.id];
+                    const questionClass = !answerState ? 'quiz-question' : `quiz-question ${answerState.correct ? 'is-correct' : 'is-wrong'}`;
+                    const feedbackClass = answerState ? 'quiz-feedback visible' : 'quiz-feedback';
+                    const feedbackText = answerState ? `${answerState.correct ? '✅' : '❌'} ${question.explanation}` : '';
+                    return `
+                        <div class="${questionClass}">
+                            <div><strong>Frage ${index + 1}:</strong> ${question.question}</div>
+                            <div class="quiz-options">
+                                ${question.options.map((option, optionIndex) => `
+                                    <button type="button" class="quiz-option" data-question="${question.id}" data-option="${optionIndex}">
+                                        ${String.fromCharCode(65 + optionIndex)}) ${option}
+                                    </button>
+                                `).join('')}
+                            </div>
+                            <div class="${feedbackClass}">${feedbackText}</div>
+                        </div>
+                    `;
+                }).join('') + `<div class="quiz-score">Richtig beantwortet: ${state.quizCorrect} von ${quizQuestions.length}</div>`;
+
+                quizContainer.querySelectorAll('.quiz-option').forEach((button) => {
+                    button.onclick = () => {
+                        const question = quizQuestions.find((entry) => entry.id === button.dataset.question);
+                        const selected = Number(button.dataset.option);
+                        const correct = selected === question.correct;
+                        state.quizAnswers[question.id] = { selected, correct };
+                        renderQuiz();
+                        syncStepUI();
+                    };
+                });
+            }
+
+            // ------------------------------------------------------------------
+            // Step-UI-Sync
+            // ------------------------------------------------------------------
+            function syncStepUI() {
+                // Roll-Button-Label je nach Kontext
+                if (step === 1) rollBtn.textContent = '🎲 Ersten Würfel werfen';
+                else if (step === 2) rollBtn.textContent = '🎲 Beide Würfel werfen';
+                else if (step === 3) rollBtn.textContent = '🎲 Einzelwurf';
+                else rollBtn.textContent = '🎲 Einmal Würfeln';
+
+                autoBtn.textContent = autoIntervalId ? '⏹ Auto-Modus stoppen' : '⚡ Auto-Modus (Schnell)';
+
+                // Top-Display: Werte einblenden ab Step 1 (weiß), ab Step 2 auch rot+Summe
+                setVizVisibility(topDisplay, step >= 1);
+                diceResRed.classList.toggle('hidden-slot', step < 2);
+                diceResSum.classList.toggle('hidden-slot', step < 2);
+
+                // Roter Würfel: sichtbar ab Step 2
+                slotRed.classList.toggle('is-hidden', step < 2);
+
+                // 36er-Grid: sichtbar ab Step 2
+                setVizVisibility(gridWrapper, step >= 2);
+                // Balken: sichtbar ab Step 3 (Training)
+                setVizVisibility(barsWrapper, step >= 3);
+
+                // Wort-Viz (Frühstück): ab Step 4
+                if (step >= 4) {
+                    wordViz.style.display = 'flex';
+                    wordViz.classList.remove('viz-hidden');
+                    wordViz.classList.add('viz-revealed');
+                } else {
+                    wordViz.style.display = 'none';
+                    wordViz.classList.add('viz-hidden');
+                    wordViz.classList.remove('viz-revealed');
+                }
+
+                predictionBet.style.display = step === 5 ? 'block' : 'none';
+                quizContainer.style.display = step === 7 ? 'block' : 'none';
+                updateBellCurveCallout();
+
+                // Button-Sichtbarkeit je Step
+                // Step 0: nur „Weiter" (Intro)
+                // Step 1: nur weißer Würfel + „Würfeln" + „Weiter"
+                // Step 2: beide Würfel + „Würfeln" + „Weiter"
+                // Step 3: würfeln + Auto-Modus + „Weiter"
+                // Step 4: würfeln + Auto-Modus + „Weiter" (Frühstückspanel)
+                // Step 5: nur Wette + „Weiter" (nach Auswahl freigegeben)
+                // Step 6: nur „Weiter" (Erklärung)
+                // Step 7: Quiz + Restart (nach vollständigem Quiz)
+
+                if (step === 0) {
+                    rollBtn.style.display = 'none';
+                    autoBtn.style.display = 'none';
+                    restartBtn.style.display = 'none';
+                    nextBtn.style.display = 'block';
+                    autoHint.style.display = 'none';
+                } else if (step === 1 || step === 2) {
+                    rollBtn.style.display = 'block';
+                    autoBtn.style.display = 'none';
+                    restartBtn.style.display = 'none';
+                    nextBtn.style.display = 'block';
+                    autoHint.style.display = 'none';
+                } else if (step === 3) {
+                    rollBtn.style.display = 'block';
+                    autoBtn.style.display = 'block';
+                    restartBtn.style.display = 'none';
+                    nextBtn.style.display = 'block';
+                    autoHint.style.display = autoIntervalId ? 'none' : 'block';
+                } else if (step === 4) {
+                    rollBtn.style.display = 'block';
+                    autoBtn.style.display = 'block';
+                    restartBtn.style.display = 'none';
+                    nextBtn.style.display = 'block';
+                    autoHint.style.display = 'none';
+                } else if (step === 5) {
+                    rollBtn.style.display = 'none';
+                    autoBtn.style.display = 'none';
+                    restartBtn.style.display = 'none';
+                    nextBtn.style.display = 'block';
+                    autoHint.style.display = 'none';
+                } else if (step === 6) {
+                    rollBtn.style.display = 'none';
+                    autoBtn.style.display = 'none';
+                    restartBtn.style.display = 'none';
+                    nextBtn.style.display = 'block';
+                    autoHint.style.display = 'none';
+                } else {
+                    // Step 7
+                    rollBtn.style.display = 'none';
+                    autoBtn.style.display = 'none';
+                    restartBtn.style.display = 'block';
+                    nextBtn.style.display = 'none';
+                    autoHint.style.display = 'none';
+                }
+
+                // Weiter-Button ggf. sperren
+                if (step === 5) {
+                    nextBtn.disabled = state.prediction === null;
+                    nextBtn.style.opacity = nextBtn.disabled ? '0.55' : '1';
+                    nextBtn.style.cursor = nextBtn.disabled ? 'not-allowed' : 'pointer';
+                } else if (step === 7) {
+                    const allAnswered = Object.keys(state.quizAnswers).length === quizQuestions.length;
+                    nextBtn.disabled = !allAnswered;
+                    nextBtn.style.opacity = nextBtn.disabled ? '0.55' : '1';
+                    nextBtn.style.cursor = nextBtn.disabled ? 'not-allowed' : 'pointer';
+                } else {
                     nextBtn.disabled = false;
                     nextBtn.style.opacity = '1';
                     nextBtn.style.cursor = 'pointer';
-                };
-                betButtons.appendChild(button);
-            }
-        }
-
-        function renderQuiz() {
-            state.quizCorrect = Object.values(state.quizAnswers).filter((answer) => answer.correct).length;
-            quizContainer.innerHTML = quizQuestions.map((question, index) => {
-                const answerState = state.quizAnswers[question.id];
-                const questionClass = !answerState ? 'quiz-question' : `quiz-question ${answerState.correct ? 'is-correct' : 'is-wrong'}`;
-                const feedbackClass = answerState ? 'quiz-feedback visible' : 'quiz-feedback';
-                const feedbackText = answerState ? `${answerState.correct ? '✅' : '❌'} ${question.explanation}` : '';
-                return `
-                    <div class="${questionClass}">
-                        <div><strong>Frage ${index + 1}:</strong> ${question.question}</div>
-                        <div class="quiz-options">
-                            ${question.options.map((option, optionIndex) => `
-                                <button type="button" class="quiz-option" data-question="${question.id}" data-option="${optionIndex}">
-                                    ${String.fromCharCode(65 + optionIndex)}) ${option}
-                                </button>
-                            `).join('')}
-                        </div>
-                        <div class="${feedbackClass}">${feedbackText}</div>
-                    </div>
-                `;
-            }).join('') + `<div class="quiz-score">Richtig beantwortet: ${state.quizCorrect} von ${quizQuestions.length}</div>`;
-
-            quizContainer.querySelectorAll('.quiz-option').forEach((button) => {
-                button.onclick = () => {
-                    const question = quizQuestions.find((entry) => entry.id === button.dataset.question);
-                    const selected = Number(button.dataset.option);
-                    const correct = selected === question.correct;
-                    state.quizAnswers[question.id] = { selected, correct };
-                    renderQuiz();
-                    syncStepUI();
-                };
-            });
-        }
-
-        function syncStepUI() {
-            rollBtn.textContent = step === 2 ? '🎲 Neue Beispiele' : '🎲 Einmal Würfeln';
-            autoBtn.textContent = autoIntervalId ? '⏹ Auto-Modus stoppen' : '⚡ Auto-Modus (Schnell)';
-
-            setVizVisibility(topDisplay, step >= 1);
-            setVizVisibility(gridWrapper, step >= 2);
-            setVizVisibility(barsWrapper, step >= 4);
-
-            if (step >= 5) {
-                wordViz.style.display = 'flex';
-                wordViz.classList.remove('viz-hidden');
-                wordViz.classList.add('viz-revealed');
-            } else {
-                wordViz.style.display = 'none';
-                wordViz.classList.add('viz-hidden');
-                wordViz.classList.remove('viz-revealed');
-            }
-
-            predictionBet.style.display = step === 3 ? 'block' : 'none';
-            quizContainer.style.display = step === 6 ? 'block' : 'none';
-            updateBellCurveCallout();
-
-            if (step <= 2) {
-                rollBtn.style.display = 'block';
-                autoBtn.style.display = 'none';
-                restartBtn.style.display = 'none';
-                nextBtn.style.display = 'block';
-            } else if (step === 3) {
-                rollBtn.style.display = 'none';
-                autoBtn.style.display = 'none';
-                restartBtn.style.display = 'none';
-                nextBtn.style.display = 'block';
-            } else if (step === 4) {
-                rollBtn.style.display = 'block';
-                autoBtn.style.display = 'block';
-                restartBtn.style.display = 'none';
-                nextBtn.style.display = 'block';
-                autoHint.style.display = 'block';
-            } else if (step === 5) {
-                rollBtn.style.display = 'block';
-                autoBtn.style.display = 'none';
-                restartBtn.style.display = 'none';
-                nextBtn.style.display = 'block';
-                autoHint.style.display = 'none';
-            } else if (step === 6) {
-                rollBtn.style.display = 'none';
-                autoBtn.style.display = 'none';
-                restartBtn.style.display = 'none';
-                nextBtn.style.display = 'block';
-                autoHint.style.display = 'none';
-            } else {
-                rollBtn.style.display = 'none';
-                autoBtn.style.display = 'none';
-                restartBtn.style.display = 'block';
-                nextBtn.style.display = 'none';
-                autoHint.style.display = 'none';
-            }
-
-            if (step === 3) {
-                nextBtn.disabled = state.prediction === null;
-                nextBtn.style.opacity = nextBtn.disabled ? '0.55' : '1';
-                nextBtn.style.cursor = nextBtn.disabled ? 'not-allowed' : 'pointer';
-            } else if (step === 6) {
-                const allAnswered = Object.keys(state.quizAnswers).length === quizQuestions.length;
-                nextBtn.disabled = !allAnswered;
-                nextBtn.style.opacity = nextBtn.disabled ? '0.55' : '1';
-                nextBtn.style.cursor = nextBtn.disabled ? 'not-allowed' : 'pointer';
-            } else {
-                nextBtn.disabled = false;
-                nextBtn.style.opacity = '1';
-                nextBtn.style.cursor = 'pointer';
-            }
-        }
-
-        function updateUI(w, r) {
-            const s = w+r; totalRolls++;
-            document.getElementById('val-w').innerText = w;
-            document.getElementById('val-r').innerText = r;
-            document.getElementById('val-sum').innerText = s;
-
-            document.querySelectorAll('.cell').forEach(c => { c.classList.remove('active'); c.classList.remove('hl-line'); });
-            document.querySelectorAll(`.cell[data-w="${w}"]`).forEach(c => c.classList.add('hl-line'));
-            document.querySelectorAll(`.cell[data-r="${r}"]`).forEach(c => c.classList.add('hl-line'));
-            const cell = document.getElementById(`c-${w}-${r}`);
-            if(cell) { cell.classList.remove('hl-line'); cell.classList.add('active'); }
-            setTimeout(() => document.querySelectorAll('.hl-line').forEach(c => c.classList.remove('hl-line')), 600);
-
-            stats[s]++; if(stats[s] > maxC) maxC = stats[s];
-            for(let i=2; i<=12; i++) {
-                const h = (stats[i]/maxC)*100;
-                document.getElementById(`b-${i}`).style.height = Math.max(2, h) + '%';
-            }
-            const activeBar = document.getElementById(`b-${s}`);
-            if(activeBar) { activeBar.classList.add('active-flash'); setTimeout(()=>activeBar.classList.remove('active-flash'), 600); }
-
-            // LIVE UPDATE WORD VIZ
-            updateWordViz();
-        }
-
-        function updateWordViz() {
-            const sumTotal = Math.max(1, totalRolls);
-            
-            // Klassenbildung statt Einzelwerten: stabiler und didaktisch näher an Klassifikation.
-            const pLila = Math.round(((stats[2] + stats[3] + stats[11] + stats[12]) / sumTotal) * 100);
-            const pWechsel = Math.round(((stats[4] + stats[5] + stats[9] + stats[10]) / sumTotal) * 100);
-            const pSchoen = Math.round(((stats[6] + stats[7] + stats[8]) / sumTotal) * 100);
-
-            document.getElementById('word-2').querySelector('.w-val').innerText = pLila + '%';
-            document.getElementById('word-6').querySelector('.w-val').innerText = pWechsel + '%';
-            document.getElementById('word-7').querySelector('.w-val').innerText = pSchoen + '%';
-
-            // Highlight winner logic
-            document.querySelectorAll('.w-item').forEach(e => e.classList.remove('active'));
-            if(pSchoen >= pWechsel && pSchoen >= pLila && pSchoen > 0) document.getElementById('word-7').classList.add('active');
-            else if(pWechsel >= pLila && pWechsel > 0) document.getElementById('word-6').classList.add('active');
-            else if (pLila > 0) document.getElementById('word-2').classList.add('active');
-        }
-
-        function setRot(mesh, val) {
-            mesh.rotation.set(0,0,0);
-            const m = {1:{z:Math.PI/2},6:{z:-Math.PI/2},2:{},5:{x:Math.PI},3:{x:-Math.PI/2},4:{x:Math.PI/2}};
-            if(m[val].x) mesh.rotation.x = m[val].x; if(m[val].z) mesh.rotation.z = m[val].z;
-            mesh.rotation.y += (Math.random()-0.5)*0.3;
-        }
-
-        function roll(fast=false) {
-            if(isRolling) return;
-            isRolling = true;
-            const w = Math.floor(Math.random()*6)+1; const r = Math.floor(Math.random()*6)+1;
-            if(fast) { setRot(whiteDie, w); setRot(redDie, r); updateUI(w,r); isRolling = false; return; }
-            if (rollAnimIntervalId) {
-                clearInterval(rollAnimIntervalId);
-                rollAnimIntervalId = null;
-            }
-            let f = 0; rollAnimIntervalId = setInterval(() => {
-                f++; whiteDie.rotation.x+=0.4; whiteDie.rotation.z+=0.2; redDie.rotation.x+=0.3; redDie.rotation.z-=0.3;
-                whiteDie.position.y = 1 + Math.abs(Math.sin(f*0.3)*2); redDie.position.y = 1 + Math.abs(Math.sin(f*0.3+1)*2);
-                if(f>20) {
-                    clearInterval(rollAnimIntervalId);
-                    rollAnimIntervalId = null;
-                    whiteDie.position.y=1; redDie.position.y=1; setRot(whiteDie, w); setRot(redDie, r); updateUI(w,r); isRolling = false;
                 }
-            }, 20);
-        }
-
-        function stopAutoMode() {
-            const hadAutoMode = Boolean(autoIntervalId);
-            if (autoIntervalId) {
-                clearInterval(autoIntervalId);
-                autoIntervalId = null;
-            }
-            autoBtn.innerText = "⚡ Auto-Modus (Schnell)";
-            autoBtn.classList.remove('cta-btn');
-            if (step === 4 && hadAutoMode) {
-                updateBellCurveCallout();
-                flashBellBars();
-            }
-        }
-
-        // Restart Function
-        document.getElementById('restart-btn').onclick = () => {
-            // Reset Data
-            stats = new Array(13).fill(0);
-            maxC = 0;
-            totalRolls = 0;
-            step = 0;
-            isRolling = false;
-            state.prediction = null;
-            state.quizAnswers = {};
-            state.quizCorrect = 0;
-            state.exampleClicks = 0;
-            stopAutoMode();
-            autoHint.style.display = 'none';
-            if (rollAnimIntervalId) {
-                clearInterval(rollAnimIntervalId);
-                rollAnimIntervalId = null;
             }
 
-            // Reset UI Viz
-            document.getElementById('val-w').innerText = "-";
-            document.getElementById('val-r').innerText = "-";
-            document.getElementById('val-sum').innerText = "-";
-            document.querySelectorAll('.bar').forEach(b => b.style.height = '2px');
-            document.querySelectorAll('.cell').forEach(c => { c.classList.remove('active'); c.classList.remove('hl-line'); });
-            updateWordViz();
+            // ------------------------------------------------------------------
+            // Würfel-Logik
+            // ------------------------------------------------------------------
+            function updateUI(w, r, opts) {
+                opts = opts || {};
+                const twoDice = opts.twoDice !== false; // default true
+                totalRolls++;
 
-            // Reset Steps
-            document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
-            document.getElementById('step-0').classList.add('active');
+                valW.innerText = w;
+                if (twoDice) {
+                    valR.innerText = r;
+                    valSum.innerText = w + r;
+                } else {
+                    valR.innerText = '–';
+                    valSum.innerText = '–';
+                }
 
-            // Reset Buttons
-            rollBtn.style.display = 'block';
-            autoBtn.style.display = 'none';
-            restartBtn.style.display = 'none';
-            nextBtn.style.display = 'block';
+                if (twoDice) {
+                    const s = w + r;
+                    document.querySelectorAll('.cell').forEach(c => { c.classList.remove('active'); c.classList.remove('hl-line'); });
+                    document.querySelectorAll(`.cell[data-w="${w}"]`).forEach(c => c.classList.add('hl-line'));
+                    document.querySelectorAll(`.cell[data-r="${r}"]`).forEach(c => c.classList.add('hl-line'));
+                    const cell = document.getElementById(`c-${w}-${r}`);
+                    if (cell) { cell.classList.remove('hl-line'); cell.classList.add('active'); }
+                    setTimeout(() => document.querySelectorAll('.hl-line').forEach(c => c.classList.remove('hl-line')), 600);
 
+                    stats[s]++;
+                    if (stats[s] > maxC) maxC = stats[s];
+                    for (let i = 2; i <= 12; i++) {
+                        const h = (stats[i] / Math.max(1, maxC)) * 100;
+                        document.getElementById(`b-${i}`).style.height = Math.max(2, h) + '%';
+                    }
+                    const activeBar = document.getElementById(`b-${s}`);
+                    if (activeBar) { activeBar.classList.add('active-flash'); setTimeout(() => activeBar.classList.remove('active-flash'), 600); }
+                }
+
+                updateWordViz();
+            }
+
+            function updateWordViz() {
+                const sumTotal = Math.max(1, totalRolls);
+                const pSelten  = Math.round(((stats[2] + stats[3] + stats[11] + stats[12]) / sumTotal) * 100);
+                const pMittel  = Math.round(((stats[4] + stats[5] + stats[9] + stats[10]) / sumTotal) * 100);
+                const pHaeufig = Math.round(((stats[6] + stats[7] + stats[8]) / sumTotal) * 100);
+
+                document.getElementById('word-selten').querySelector('.w-val').innerText = pSelten + '%';
+                document.getElementById('word-mittel').querySelector('.w-val').innerText = pMittel + '%';
+                document.getElementById('word-haeufig').querySelector('.w-val').innerText = pHaeufig + '%';
+
+                document.querySelectorAll('.w-item').forEach(e => e.classList.remove('active'));
+                if (pHaeufig >= pMittel && pHaeufig >= pSelten && pHaeufig > 0) document.getElementById('word-haeufig').classList.add('active');
+                else if (pMittel >= pSelten && pMittel > 0) document.getElementById('word-mittel').classList.add('active');
+                else if (pSelten > 0) document.getElementById('word-selten').classList.add('active');
+            }
+
+            function roll(fast) {
+                if (isRolling) return;
+                isRolling = true;
+                const w = Math.floor(Math.random() * 6) + 1;
+                const r = Math.floor(Math.random() * 6) + 1;
+                const twoDice = step >= 2;
+
+                rollCubeTo(cubeWhite, 'white', w);
+                if (twoDice) rollCubeTo(cubeRed, 'red', r);
+
+                if (fast) {
+                    updateUI(w, r, { twoDice });
+                    isRolling = false;
+                } else {
+                    setTimeout(() => {
+                        updateUI(w, r, { twoDice });
+                        isRolling = false;
+                    }, 550);
+                }
+            }
+
+            function stopAutoMode() {
+                const hadAutoMode = Boolean(autoIntervalId);
+                if (autoIntervalId) {
+                    clearInterval(autoIntervalId);
+                    autoIntervalId = null;
+                }
+                autoBtn.innerText = "⚡ Auto-Modus (Schnell)";
+                autoBtn.classList.remove('cta-btn');
+                if (step === 3 && hadAutoMode) {
+                    updateBellCurveCallout();
+                    flashBellBars();
+                }
+            }
+
+            // ------------------------------------------------------------------
+            // Restart
+            // ------------------------------------------------------------------
+            restartBtn.onclick = () => {
+                stats = new Array(13).fill(0);
+                maxC = 0;
+                totalRolls = 0;
+                step = 0;
+                isRolling = false;
+                state.prediction = null;
+                state.predictionRevealed = false;
+                state.quizAnswers = {};
+                state.quizCorrect = 0;
+                state.exampleClicks = 0;
+                stopAutoMode();
+                autoHint.style.display = 'none';
+
+                valW.innerText = '–';
+                valR.innerText = '–';
+                valSum.innerText = '–';
+                document.querySelectorAll('.bar').forEach(b => b.style.height = '2px');
+                document.querySelectorAll('.cell').forEach(c => { c.classList.remove('active'); c.classList.remove('hl-line'); });
+                updateWordViz();
+
+                document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+                document.getElementById('step-0').classList.add('active');
+
+                renderBetButtons();
+                betFeedback.style.display = 'none';
+                betFeedback.className = '';
+                betFeedback.textContent = '';
+                bellCurveCallout.style.display = 'none';
+                bellCurveCallout.innerHTML = '';
+                renderQuiz();
+                updateInfoText();
+                syncStepUI();
+            };
+
+            const handleNextStep = () => {
+                if (step === 5 && state.prediction === null) return;
+                document.getElementById(`step-${step}`).classList.remove('active');
+                step = Math.min(step + 1, totalSteps - 1);
+                document.getElementById(`step-${step}`).classList.add('active');
+
+                updateInfoText();
+                if (step !== 3 && step !== 4) stopAutoMode();
+                syncStepUI();
+            };
+
+            rollBtn.onclick = () => {
+                stopAutoMode();
+                if (step === 2) {
+                    state.exampleClicks += 1;
+                    const burstSize = state.exampleClicks === 1 ? 1 : (state.exampleClicks === 2 ? 3 : 6);
+                    let done = 0;
+                    const runNext = () => {
+                        if (done >= burstSize) return;
+                        done++;
+                        roll(done > 1);
+                        if (done < burstSize) setTimeout(runNext, done === 1 ? 550 : 120);
+                    };
+                    runNext();
+                    return;
+                }
+                roll(false);
+            };
+
+            autoBtn.onclick = () => {
+                if (autoIntervalId) { stopAutoMode(); syncStepUI(); return; }
+                autoHint.style.display = 'none';
+                autoBtn.innerText = "⏹ Auto-Modus stoppen";
+                autoBtn.classList.add('cta-btn');
+
+                let c = 0;
+                autoIntervalId = setInterval(() => {
+                    if (!isRolling) { roll(true); c++; }
+                    if (c >= 150) stopAutoMode();
+                }, 60);
+            };
+
+            nextBtn.onclick = handleNextStep;
+
+            // Init
             renderBetButtons();
-            betFeedback.style.display = 'none';
-            betFeedback.className = '';
-            betFeedback.textContent = '';
-            bellCurveCallout.style.display = 'none';
-            bellCurveCallout.innerHTML = '';
             renderQuiz();
             updateInfoText();
             syncStepUI();
-        };
-
-        // Extracted Next Step Logic
-        const handleNextStep = () => {
-            if (step === 3 && state.prediction === null) return;
-            document.getElementById(`step-${step}`).classList.remove('active');
-            step = Math.min(step + 1, totalSteps - 1);
-            document.getElementById(`step-${step}`).classList.add('active');
-
-            updateInfoText();
-            if (step !== 4) stopAutoMode();
-            syncStepUI();
-        };
-
-        document.getElementById('roll-btn').onclick = () => {
-            stopAutoMode();
-            if (step === 2) {
-                state.exampleClicks += 1;
-                const burstSize = state.exampleClicks === 1 ? 1 : (state.exampleClicks === 2 ? 5 : 30);
-                for (let i = 0; i < burstSize; i++) roll(true);
-                return;
-            }
-            roll();
-        };
-        document.getElementById('auto-btn').onclick = () => {
-            if (autoIntervalId) {
-                stopAutoMode();
-                return;
-            }
-            autoHint.style.display = 'none';
-            autoBtn.innerText = "⏹ Auto-Modus stoppen";
-            autoBtn.classList.add('cta-btn');
-
-            let c = 0;
-            autoIntervalId = setInterval(() => {
-                if (!isRolling) {
-                    roll(true);
-                    c++;
-                }
-                if (c >= 100) {
-                    stopAutoMode();
-                }
-            }, 50);
-        };
-        document.getElementById('next-btn').onclick = handleNextStep;
-
-        // Init
-        renderBetButtons();
-        renderQuiz();
-        updateInfoText();
-        syncStepUI();
-
-        function animate() { requestAnimationFrame(animate); renderer.render(scene, camera); }
-        animate();
         })();
     </script>
 </body>
