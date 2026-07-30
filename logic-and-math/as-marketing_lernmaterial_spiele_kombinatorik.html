@@ -352,18 +352,22 @@
         .viz-group { text-align: center; }
         .viz-head { font-size: 0.75rem; font-weight: 700; color: var(--brand-accent); text-transform: uppercase; margin-bottom: 10px; }
 
-        #grid-wrapper { display: grid; grid-template-columns: 20px 1fr; gap: 5px; }
-        .axis-v { grid-row: 2; writing-mode: vertical-rl; transform: rotate(180deg); font-size: 0.7rem; color: #888; font-weight: bold; text-align: center; }
-        .axis-h { grid-column: 2; font-size: 0.7rem; color: #888; font-weight: bold; }
-
+        /* Grid mit sichtbaren 1..6-Headern oben (Weiss) und links (Rot),
+           damit die Achsen-Zuordnung eindeutig ist. Zellinhalt = Summe. */
         #grid {
-            grid-column: 2; grid-row: 2; display: grid;
-            grid-template-columns: repeat(6, 1fr); gap: 2px;
-            width: 160px; height: 160px; background: #eee; border: 1px solid #ddd;
+            display: grid;
+            grid-template-columns: 22px repeat(6, 1fr);
+            grid-template-rows: 22px repeat(6, 1fr);
+            gap: 2px;
+            width: 190px; height: 190px; background: #eee; border: 1px solid #ddd;
+            margin: 0 auto;
         }
-        .cell { background: #fff; display: flex; justify-content: center; align-items: center; font-size: 0.6rem; color: #ccc; transition: all 0.2s; }
+        .cell { background: #fff; display: flex; justify-content: center; align-items: center; font-size: 0.65rem; color: #666; transition: all 0.2s; }
         .cell.active { background: var(--brand-main); color: white; transform: scale(1.1); z-index: 5; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
         .cell.hl-line { background: #fff3cd; }
+        .cell.header { background: transparent; font-weight: bold; font-size: 0.7rem; color: #666; }
+        .cell.header.white { color: #333; }
+        .cell.header.red   { color: var(--brand-main); }
 
         #bars {
             display: flex; align-items: flex-end; width: 240px; height: 160px;
@@ -567,12 +571,8 @@
 
                 <div class="viz-group">
                     <div class="viz-head">36 Kombinationen</div>
-                    <div style="font-size:0.65rem; color:#888; margin-bottom:4px;">Inhalt = Summe</div>
-                    <div id="grid-wrapper">
-                        <div class="axis-v">Rot (1-6)</div>
-                        <div class="axis-h">Weiß (1-6)</div>
-                        <div id="grid"></div>
-                    </div>
+                    <div style="font-size:0.65rem; color:#888; margin-bottom:4px;">Spalte = Weiß · Zeile = Rot · Zelle = Summe</div>
+                    <div id="grid"></div>
                 </div>
                 <div class="viz-group">
                     <div class="viz-head">Häufigkeit der Summen</div>
@@ -692,16 +692,32 @@
             // Grid (36 Kombinationen) und Balken (Summen 2-12)
             // ------------------------------------------------------------------
             const gridEl = document.getElementById('grid');
-            for (let i = 0; i < 36; i++) {
-                const d = document.createElement('div');
-                d.className = 'cell';
-                const r = Math.floor(i / 6);
-                const w = i % 6;
-                d.dataset.r = r + 1;
-                d.dataset.w = w + 1;
-                d.id = `c-${w+1}-${r+1}`;
-                d.innerText = (w + 1) + (r + 1);
-                gridEl.appendChild(d);
+            // Ecke oben-links (leer)
+            const corner = document.createElement('div');
+            corner.className = 'cell header';
+            gridEl.appendChild(corner);
+            // Header-Zeile oben: Weisse Augen 1..6
+            for (let w = 1; w <= 6; w++) {
+                const h = document.createElement('div');
+                h.className = 'cell header white';
+                h.textContent = w;
+                gridEl.appendChild(h);
+            }
+            // 6 Datenzeilen: Header-Zelle links + 6 Kombinations-Zellen
+            for (let r = 1; r <= 6; r++) {
+                const rh = document.createElement('div');
+                rh.className = 'cell header red';
+                rh.textContent = r;
+                gridEl.appendChild(rh);
+                for (let w = 1; w <= 6; w++) {
+                    const d = document.createElement('div');
+                    d.className = 'cell';
+                    d.dataset.r = r;
+                    d.dataset.w = w;
+                    d.id = `c-${w}-${r}`;
+                    d.innerText = w + r; // Summe der beiden Augenzahlen
+                    gridEl.appendChild(d);
+                }
             }
 
             const barsEl = document.getElementById('bars');
@@ -1050,7 +1066,7 @@
 
                 if (twoDice) {
                     const s = w + r;
-                    document.querySelectorAll('.cell').forEach(c => { c.classList.remove('active'); c.classList.remove('hl-line'); });
+                    document.querySelectorAll('.cell:not(.header)').forEach(c => { c.classList.remove('active'); c.classList.remove('hl-line'); });
                     document.querySelectorAll(`.cell[data-w="${w}"]`).forEach(c => c.classList.add('hl-line'));
                     document.querySelectorAll(`.cell[data-r="${r}"]`).forEach(c => c.classList.add('hl-line'));
                     const cell = document.getElementById(`c-${w}-${r}`);
@@ -1143,7 +1159,7 @@
                 valR.innerText = '–';
                 valSum.innerText = '–';
                 document.querySelectorAll('.bar').forEach(b => b.style.height = '2px');
-                document.querySelectorAll('.cell').forEach(c => { c.classList.remove('active'); c.classList.remove('hl-line'); });
+                document.querySelectorAll('.cell:not(.header)').forEach(c => { c.classList.remove('active'); c.classList.remove('hl-line'); });
                 updateWordViz();
 
                 document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
