@@ -266,10 +266,12 @@
            Der Cube selbst rotiert ausschliesslich auf den echten Wuerfel-Wert,
            sonst wirkt jede Landung "einprogrammiert" und der sichtbare Wert
            weicht vom generierten ab. */
+        /* Vogelperspektive: der Betrachter schaut von schraeg oben auf den
+           Wuerfel wie bei einem echten Wurf. Zentrale Flaeche = TOP-Face. */
         .dice-viewport {
             width: 100%; height: 100%;
             transform-style: preserve-3d;
-            transform: rotateX(-22deg) rotateY(-32deg);
+            transform: rotateX(-55deg) rotateY(-25deg);
         }
         .dice-cube {
             width: 100%; height: 100%;
@@ -631,14 +633,16 @@
                 'f-left':   4
             };
 
-            // Rotation, die den Wert v nach vorne bringt
+            // Rotation, die das Face mit Wert v nach OBEN bringt (Vogelperspektive).
+            // f-top zeigt lokal in +Y; wir drehen den Cube so, dass das Ziel-Face
+            // ebenfalls in +Y kommt.
             const VALUE_TO_ROTATION = {
-                1: { x: 0,    y: 0 },
-                6: { x: 0,    y: 180 },
-                2: { x: -90,  y: 0 },
-                5: { x: 90,   y: 0 },
-                3: { x: 0,    y: -90 },
-                4: { x: 0,    y: 90 }
+                1: { x: -90, y: 0,   z: 0 },   // f-front (+Z)  -> oben
+                2: { x: 0,   y: 0,   z: 0 },   // f-top (+Y)    -> schon oben
+                3: { x: 0,   y: 0,   z: 90 },  // f-right (+X)  -> oben via rotateZ
+                4: { x: 0,   y: 0,   z: -90 }, // f-left (-X)   -> oben via rotateZ
+                5: { x: 180, y: 0,   z: 0 },   // f-bottom (-Y) -> oben durch 180-Kippe
+                6: { x: 90,  y: 0,   z: 0 }    // f-back (-Z)   -> oben
             };
 
             function buildFace(faceClass, value) {
@@ -674,11 +678,14 @@
                 // damit jeder Wurf visuell anders endet und nichts "einprogrammiert" wirkt.
                 const spinsX = 360 * (2 + Math.floor(Math.random() * 3));
                 const spinsY = 360 * (2 + Math.floor(Math.random() * 3));
-                const wobbleX = (Math.random() - 0.5) * 12;
-                const wobbleY = (Math.random() - 0.5) * 12;
+                const wobbleX = (Math.random() - 0.5) * 10;
+                const wobbleY = (Math.random() - 0.5) * 10;
                 const finalX = rot.x + spinsX + wobbleX;
                 const finalY = rot.y + spinsY + wobbleY;
-                cubeEl.style.transform = `rotateX(${finalX}deg) rotateY(${finalY}deg)`;
+                // Reihenfolge: rotateZ zuerst (rechts), damit die Wert-Rotation im
+                // lokalen Frame passiert und die Spins darum herum wackeln.
+                cubeEl.style.transform =
+                    `rotateX(${finalX}deg) rotateY(${finalY}deg) rotateZ(${rot.z || 0}deg)`;
             }
 
             // ------------------------------------------------------------------
