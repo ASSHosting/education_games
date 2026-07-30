@@ -262,24 +262,22 @@
         }
         .dice-slot.is-hidden { opacity: 0; transform: scale(0.6); pointer-events: none; }
 
+        /* Viewport traegt den Ansichts-Kipp, damit man 3 Faces sieht.
+           Der Cube selbst rotiert ausschliesslich auf den echten Wuerfel-Wert,
+           sonst wirkt jede Landung "einprogrammiert" und der sichtbare Wert
+           weicht vom generierten ab. */
+        .dice-viewport {
+            width: 100%; height: 100%;
+            transform-style: preserve-3d;
+            transform: rotateX(-22deg) rotateY(-32deg);
+        }
         .dice-cube {
             width: 100%; height: 100%;
             position: relative;
             transform-style: preserve-3d;
-            transform: rotateX(-25deg) rotateY(-30deg);
-            transition: transform 0.9s cubic-bezier(0.34, 1.2, 0.64, 1);
+            transform: rotateX(0deg) rotateY(0deg);
+            transition: transform 1.1s cubic-bezier(0.34, 1.2, 0.64, 1);
             will-change: transform;
-        }
-
-        .dice-cube.shaking {
-            animation: dice-shake 0.5s ease-in-out;
-        }
-        @keyframes dice-shake {
-            0%   { transform: rotateX(-25deg) rotateY(-30deg) translateY(0); }
-            25%  { transform: rotateX(60deg)  rotateY(120deg) translateY(-18px); }
-            50%  { transform: rotateX(-45deg) rotateY(280deg) translateY(-30px); }
-            75%  { transform: rotateX(120deg) rotateY(430deg) translateY(-14px); }
-            100% { transform: rotateX(-25deg) rotateY(-30deg) translateY(0); }
         }
 
         .dice-face {
@@ -550,10 +548,14 @@
 
             <div id="dice-scene">
                 <div class="dice-slot white" id="dice-slot-white">
-                    <div class="dice-cube" id="cube-white"></div>
+                    <div class="dice-viewport">
+                        <div class="dice-cube" id="cube-white"></div>
+                    </div>
                 </div>
                 <div class="dice-slot red is-hidden" id="dice-slot-red">
-                    <div class="dice-cube" id="cube-red"></div>
+                    <div class="dice-viewport">
+                        <div class="dice-cube" id="cube-red"></div>
+                    </div>
                 </div>
             </div>
 
@@ -663,23 +665,20 @@
             buildDie(cubeWhite);
             buildDie(cubeRed);
 
-            // Aktueller kumulierter Rotationswinkel je Würfel (damit Animation immer nach vorn dreht)
-            const rotationState = {
-                white: { x: -25, y: -30, spins: 0 },
-                red:   { x: -25, y: -30, spins: 0 }
-            };
+            const rotationState = { white: { spins: 0 }, red: { spins: 0 } };
 
             function rollCubeTo(cubeEl, key, value) {
                 const rot = VALUE_TO_ROTATION[value];
                 rotationState[key].spins += 1;
-                const extraSpin = 360 * (2 + (rotationState[key].spins % 2));
-                const finalX = rot.x - 25 + extraSpin;
-                const finalY = rot.y - 30 + extraSpin;
+                // Zufaellige Anzahl voller Umdrehungen (2..4) plus kleiner Wackler,
+                // damit jeder Wurf visuell anders endet und nichts "einprogrammiert" wirkt.
+                const spinsX = 360 * (2 + Math.floor(Math.random() * 3));
+                const spinsY = 360 * (2 + Math.floor(Math.random() * 3));
+                const wobbleX = (Math.random() - 0.5) * 12;
+                const wobbleY = (Math.random() - 0.5) * 12;
+                const finalX = rot.x + spinsX + wobbleX;
+                const finalY = rot.y + spinsY + wobbleY;
                 cubeEl.style.transform = `rotateX(${finalX}deg) rotateY(${finalY}deg)`;
-                cubeEl.classList.remove('shaking');
-                void cubeEl.offsetWidth; // reflow
-                cubeEl.classList.add('shaking');
-                setTimeout(() => cubeEl.classList.remove('shaking'), 550);
             }
 
             // ------------------------------------------------------------------
@@ -917,7 +916,13 @@
                 else if (step === 3) rollBtn.textContent = '🎲 Einzelwurf';
                 else rollBtn.textContent = '🎲 Einmal Würfeln';
 
-                autoBtn.textContent = autoIntervalId ? '⏹ Auto-Modus stoppen' : '⚡ Auto-Modus (Schnell)';
+                if (autoIntervalId) {
+                    autoBtn.textContent = '⚡ Training läuft …';
+                    autoBtn.disabled = true;
+                } else {
+                    autoBtn.textContent = '⚡ Auto-Modus (Schnell)';
+                    autoBtn.disabled = false;
+                }
 
                 // Top-Display: Werte einblenden ab Step 1 (weiß), ab Step 2 auch rot+Summe
                 setVizVisibility(topDisplay, step >= 1);
@@ -1101,6 +1106,7 @@
                     clearInterval(autoIntervalId);
                     autoIntervalId = null;
                 }
+                autoBtn.disabled = false;
                 autoBtn.innerText = "⚡ Auto-Modus (Schnell)";
                 autoBtn.classList.remove('cta-btn');
                 if (step === 3 && hadAutoMode) {
@@ -1177,16 +1183,19 @@
             };
 
             autoBtn.onclick = () => {
-                if (autoIntervalId) { stopAutoMode(); syncStepUI(); return; }
+                if (autoIntervalId) return; // laeuft schon, Zweit-Klick ignorieren
                 autoHint.style.display = 'none';
-                autoBtn.innerText = "⏹ Auto-Modus stoppen";
+                autoBtn.disabled = true;
+                autoBtn.innerText = "⚡ Training läuft …";
                 autoBtn.classList.add('cta-btn');
 
+                // Laeuft automatisch durch, bis die Glockenkurve klar sichtbar ist.
+                const TARGET_ROLLS = 220;
                 let c = 0;
                 autoIntervalId = setInterval(() => {
                     if (!isRolling) { roll(true); c++; }
-                    if (c >= 150) stopAutoMode();
-                }, 60);
+                    if (c >= TARGET_ROLLS) stopAutoMode();
+                }, 50);
             };
 
             nextBtn.onclick = handleNextStep;
