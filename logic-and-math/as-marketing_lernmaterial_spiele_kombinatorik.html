@@ -226,7 +226,7 @@
 
         /* --- STAGE --- */
         #stage {
-            position: relative; background: #eef2f6; overflow: hidden;
+            position: relative; background: #eef2f6; overflow: auto;
             display: flex; flex-direction: column;
         }
 
@@ -246,7 +246,8 @@
         /* --- CSS-3D-Würfel (kein WebGL nötig) --- */
         #dice-scene {
             position: relative; z-index: 5;
-            flex: 1;
+            flex: 1 0 auto;
+            min-height: 260px;
             display: flex; align-items: center; justify-content: center;
             gap: 60px;
             perspective: 900px;
@@ -324,13 +325,18 @@
         .pip-bm { grid-area: 3 / 2; }
         .pip-br { grid-area: 3 / 3; }
 
-        /* Viz Panel */
+        /* Viz Panel - im Flow, damit es die Wuerfel nie ueberdeckt.
+           Bei breitem Stage stehen Grid + Balken + Woerter nebeneinander,
+           auf schmalen Screens wird per flex-wrap umgebrochen. */
         #viz-panel {
-            position: absolute; bottom: 20px; right: 20px; z-index: 10;
+            position: relative; z-index: 10;
+            margin: 10px auto 20px auto;
             background: var(--viz-bg); backdrop-filter: blur(15px);
             padding: 20px; border-radius: 12px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.05); border: 1px solid rgba(255,255,255,0.6);
-            display: flex; gap: 30px; max-width: 90%;
+            display: flex; gap: 30px;
+            width: fit-content; max-width: calc(100% - 40px);
+            flex-wrap: wrap; justify-content: center; align-items: flex-start;
         }
 
         #info-btn {
