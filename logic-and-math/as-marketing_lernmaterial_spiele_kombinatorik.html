@@ -639,16 +639,22 @@
                 'f-left':   4
             };
 
-            // Rotation, die das Face mit Wert v nach OBEN bringt (Vogelperspektive).
-            // f-top zeigt lokal in +Y; wir drehen den Cube so, dass das Ziel-Face
-            // ebenfalls in +Y kommt.
+            // Rotation, die das Face mit Wert v visuell nach OBEN bringt.
+            // ACHTUNG CSS-Konvention: +Y zeigt nach UNTEN, "visuell oben" = -Y.
+            // f-top liegt lokal bei -Y (visuell oben), f-bottom bei +Y, f-front bei
+            // +Z, f-back bei -Z, f-right bei +X, f-left bei -X.
+            //   rotateX(+90):  +Z -> -Y   (bringt f-front nach oben)
+            //   rotateX(-90):  -Z -> -Y   (bringt f-back nach oben)
+            //   rotateX(180):  +Y -> -Y   (bringt f-bottom nach oben)
+            //   rotateZ(-90):  +X -> -Y   (bringt f-right nach oben)
+            //   rotateZ(+90):  -X -> -Y   (bringt f-left nach oben)
             const VALUE_TO_ROTATION = {
-                1: { x: -90, y: 0,   z: 0 },   // f-front (+Z)  -> oben
-                2: { x: 0,   y: 0,   z: 0 },   // f-top (+Y)    -> schon oben
-                3: { x: 0,   y: 0,   z: 90 },  // f-right (+X)  -> oben via rotateZ
-                4: { x: 0,   y: 0,   z: -90 }, // f-left (-X)   -> oben via rotateZ
-                5: { x: 180, y: 0,   z: 0 },   // f-bottom (-Y) -> oben durch 180-Kippe
-                6: { x: 90,  y: 0,   z: 0 }    // f-back (-Z)   -> oben
+                1: { x: 90,  y: 0, z: 0 },   // f-front (Wert 1)  -> oben
+                2: { x: 0,   y: 0, z: 0 },   // f-top   (Wert 2)  -> schon oben
+                3: { x: 0,   y: 0, z: -90 }, // f-right (Wert 3)  -> oben
+                4: { x: 0,   y: 0, z: 90 },  // f-left  (Wert 4)  -> oben
+                5: { x: 180, y: 0, z: 0 },   // f-bottom(Wert 5)  -> oben
+                6: { x: -90, y: 0, z: 0 }    // f-back  (Wert 6)  -> oben
             };
 
             function buildFace(faceClass, value) {
